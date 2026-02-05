@@ -6,10 +6,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
-// Path fix for build stability - using relative path
 import { SovereignAuth } from '../../../lib/auth/SovereignAuth';
 
-// Superman's Local Eye for Session Management
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -21,7 +19,6 @@ export default function GearHuntSovereignSignIn() {
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [step, setStep] = useState(1); 
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -32,105 +29,91 @@ export default function GearHuntSovereignSignIn() {
 
     try {
       if (step === 1) {
-        // Step 1: Username/Email check logic
         setStep(2);
       } else if (step === 2) {
-        // Step 2: Password Check using Sovereign Engine
-        const { user } = await SovereignAuth.signInWithPassword(authInput, password, rememberMe);
-        if (user) {
+        // Step 2: Sign in with Password
+        const result = await SovereignAuth.signInWithPassword(authInput, password);
+        // @ts-ignore
+        if (result?.user) {
           setStep(3);
         }
       } else if (step === 3) {
-        // Step 3: MFA / OTP Verification
+        // Step 3: Verify MFA
         await SovereignAuth.verifyMFA(otpCode);
         
-        // Final: Fetch role and redirect
+        // Final: Check user session and redirect
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Session lost. Please try again.");
-
-        const path = await SovereignAuth.getRedirectPath(user.id);
-        router.push(path);
+        if (user) {
+          const path = await SovereignAuth.getRedirectPath(user.id);
+          router.push(path);
+        }
       }
     } catch (err: any) {
-      setError(err.message || 'Access Denied. Check credentials.');
+      setError(err.message || 'Access Denied. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-white font-sans text-black flex flex-col items-center pt-8 pb-20 px-4">
-      {/* Brand Header */}
-      <Link href="/" className="text-3xl font-black italic uppercase mb-6 tracking-tighter">
-        Gear<span className="text-yellow-500">Hunt.</span><span className="text-xs lowercase text-gray-500 font-bold">.in</span>
+    <main className="min-h-screen bg-white font-sans text-black flex flex-col items-center pt-10 px-4">
+      <Link href="/" className="text-3xl font-black italic uppercase mb-8 tracking-tighter">
+        Gear<span className="text-yellow-500">Hunt.</span>
       </Link>
 
-      <div className="w-87.5 p-6 border border-gray-300 rounded-md shadow-sm">
-        <h1 className="text-2xl font-bold mb-4 tracking-tight">
-          {step === 1 ? 'Sign in' : step === 2 ? 'Security' : 'Verification'}
+      <div className="w-full max-w-sm p-8 border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <h1 className="text-2xl font-black mb-6 uppercase italic tracking-tighter border-b-4 border-yellow-500 inline-block">
+          {step === 1 ? '01: IDENTIFY' : step === 2 ? '02: AUTHORIZE' : '03: VERIFY'}
         </h1>
         
-        {error && <p className="text-red-600 text-[10px] font-black mb-4 uppercase italic">⚠ {error}</p>}
+        {error && (
+          <p className="bg-red-600 text-white p-2 text-[10px] font-black mb-4 uppercase italic">
+            ⚠ {error}
+          </p>
+        )}
 
-        <form className="space-y-4" onSubmit={handleAuthLogic}>
+        <form className="space-y-6" onSubmit={handleAuthLogic}>
           {step === 1 && (
             <div>
-              <label className="block text-xs font-black mb-1 text-gray-700">Email or mobile phone number</label>
+              <label className="text-[10px] font-black uppercase mb-1 block">Rider ID (Email/Mobile)</label>
               <input 
                 type="text" value={authInput} onChange={(e) => setAuthInput(e.target.value)}
-                className="w-full border border-gray-400 p-2 rounded-sm text-sm focus:border-orange-500 outline-none shadow-inner"
-                placeholder="Enter email or mobile number" required
+                className="w-full border-2 border-black p-3 font-bold outline-none focus:bg-yellow-50"
+                placeholder="ENTER EMAIL" required
               />
             </div>
           )}
 
           {step === 2 && (
             <div>
-              <label className="block text-xs font-black mb-1 text-gray-700">Password</label>
+              <label className="text-[10px] font-black uppercase mb-1 block">Security Key (Password)</label>
               <input 
                 type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-400 p-2 rounded-sm text-sm focus:border-orange-500 outline-none shadow-inner"
-                placeholder="Password" required
+                className="w-full border-2 border-black p-3 font-bold outline-none focus:bg-yellow-50"
+                placeholder="ENTER PASSWORD" required
               />
             </div>
           )}
 
           {step === 3 && (
             <div>
-              <label className="block text-xs font-black mb-1 text-gray-700">Enter OTP / Authenticator Code</label>
+              <label className="text-[10px] font-black uppercase mb-1 block">MFA Nitro Code</label>
               <input 
                 type="text" value={otpCode} onChange={(e) => setOtpCode(e.target.value)}
-                className="w-full border-2 border-dashed border-gray-400 p-2 rounded-sm text-center text-lg font-black tracking-widest outline-none focus:border-yellow-500"
+                className="w-full border-2 border-black p-3 text-center text-3xl font-black tracking-[0.4em] outline-none bg-black text-yellow-500"
                 placeholder="000000" maxLength={6} required
               />
             </div>
           )}
 
-          {step < 3 && (
-            <div className="flex items-center gap-2 py-1">
-              <input 
-                type="checkbox" id="remember" checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-3 h-3 accent-yellow-500"
-              />
-              <label htmlFor="remember" className="text-[11px] text-gray-700 cursor-pointer select-none">
-                Keep me signed in for 15 days
-              </label>
-            </div>
-          )}
-
           <button 
             disabled={loading}
-            className={`w-full ${loading ? 'bg-gray-300' : 'bg-linear-to-b from-yellow-300 to-yellow-500 active:from-yellow-400 active:to-yellow-600'} py-2 rounded-md font-black text-xs shadow-md border border-gray-400 transition-all`}
+            className="w-full bg-black text-white py-4 font-black uppercase italic hover:bg-yellow-500 hover:text-black transition-all border-2 border-black active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
           >
-            {loading ? 'Processing...' : step === 1 ? 'Continue' : step === 2 ? 'Verify' : 'Sign In'}
+            {loading ? 'FUELING...' : 'CONTINUE >>'}
           </button>
         </form>
       </div>
-
-      <footer className="mt-10 text-center">
-        <p className="text-[9px] text-gray-500 font-black tracking-widest uppercase italic">The Sovereign GearHunt Platform © 2026</p>
-      </footer>
     </main>
   );
 }

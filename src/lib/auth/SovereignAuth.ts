@@ -6,8 +6,8 @@ const supabase = createBrowserClient(
 );
 
 export const SovereignAuth = {
-  // 1. Login with Password & Remember Me
-  async signInWithPassword(email: string, pass: string, remember: boolean = false) {
+  // 1. Password Sign In
+  async signInWithPassword(email: string, pass: string) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: pass,
@@ -16,54 +16,50 @@ export const SovereignAuth = {
     return data;
   },
 
-  // 2. MFA: Pehle Challenge, Phir Verification
+  // 2. MFA: Verify with Null Safety
   async verifyMFA(code: string) {
     const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
     if (factorsError) throw factorsError;
 
     const totpFactor = factors.totp[0];
-    if (!totpFactor) throw new Error("MFA not set up. Please enroll first.");
+    if (!totpFactor) throw new Error("MFA Factor not found.");
 
-    // Create the challenge to get the challengeId
+    // Create challenge
     const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
       factorId: totpFactor.id
     });
-    if (challengeError) throw challengeError;
 
-    // Now verify using the ID from the challenge
+    // Check if challenge exists (Fixes 'possibly null' error)
+    if (challengeError || !challenge) {
+      throw new Error(challengeError?.message || "MFA Challenge failed.");
+    }
+
+    // Verify using challenge ID
     const { data: verify, error: verifyError } = await supabase.auth.mfa.verify({
       factorId: totpFactor.id,
       challengeId: challenge.id,
-      code: code,
+      code,
     });
     
     if (verifyError) throw verifyError;
     return verify;
   },
 
-  // 3. Traffic Controller (Role-based redirect)
+  // 3. Get Redirect Path
   async getRedirectPath(userId: string) {
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', userId)
       .single();
 
-    if (error) return '/UserLogin';
-
-    switch (profile?.role) {
-      case 'SuperAdmin': return '/SuperAdmin';
-      case 'UserAdmin': return '/UserAdmin';
-      case 'Seller': return '/SellerDashboard';
-      default: return '/UserLogin';
-    }
+    return profile?.role === 'SuperAdmin' ? '/SuperAdmin' : '/UserLogin';
   },
 
-  // 4. Clean Logout
+  // 4. Logout
   async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    // Logout ke baad seedha sign-in page par bhej rahe hain
-    window.location.href = '/auth/signin';
+    window.location.href = '/';
   }
 };

@@ -1,6 +1,5 @@
 /* eslint-disable */
 // @ts-nocheck
-
 const rawData = `
 2 Wheeler | Ampere | Magnus | 2015 | 2026 | Magnus Standard | Electric | Active
 2 Wheeler | Ampere | Magnus | 2015 | 2026 | Magnus Disc | Electric | Active

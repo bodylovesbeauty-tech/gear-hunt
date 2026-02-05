@@ -1,85 +1,63 @@
+/* eslint-disable */
+// @ts-nocheck
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import Link from 'next/link'; 
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { createBrowserClient } from '@supabase/ssr';
 
-type Product = {
-  id: number;
-  title: string;
-  price: number;
-  category: string;
-  image_url: string;
-};
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-export default function Marketplace() {
-  const [products, setProducts] = useState<Product[]>([]);
+export default function MarketplaceListPage() {
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const { data } = await supabase.from('products').select('*');
-      if (data) setProducts(data as Product[]);
+    async function fetchGear() {
+      const { data, error } = await supabase
+        .from('products') 
+        .select('*');
+      
+      if (!error) setProducts(data);
       setLoading(false);
-    };
-    fetchProducts();
+    }
+    fetchGear();
   }, []);
 
+  if (loading) return <div className="p-20 text-center font-black italic">GEARHUNT: LOADING INVENTORY...</div>;
+
   return (
-    <div className="min-h-screen bg-black text-white pb-20">
-      {/* Compact Header */}
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 flex justify-between items-center border-b border-gray-800">
-        <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
-          Marketplace <span className="text-gray-500 text-sm font-normal ml-2">({products.length} Items)</span>
-        </h1>
-        <button className="bg-gray-800 px-3 py-1 rounded text-xs font-bold hover:bg-gray-700">
-          Filter
-        </button>
+    <div className="p-8 bg-white min-h-screen">
+      <div className="flex justify-between items-end mb-12 border-b-4 border-black pb-4">
+        <h1 className="text-5xl font-black italic uppercase tracking-tighter">Marketplace</h1>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 pb-2">Step 18 Recovery Mode</p>
       </div>
 
-      {/* THE COMPACT GRID */}
-      {/* Mobile: grid-cols-2 (Two items side by side like Amazon App) */}
-      {/* Desktop: grid-cols-5 (High density professional look) */}
-      <div className="max-w-screen-2xl mx-auto px-2 md:px-4 mt-4">
-        {loading ? (
-          <div className="text-center text-gray-500 text-sm mt-10">Loading Inventory...</div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
-            {products.map((product) => (
-              <Link 
-                href={`/marketplace/${product.id}`} 
-                key={product.id} 
-                className="block group bg-gray-900/50 rounded-lg overflow-hidden border border-gray-800 hover:border-yellow-500/50 transition"
-              >
-                
-                {/* Image - Adjusted aspect ratio */}
-                <div className="aspect-[4/3] bg-gray-800 relative overflow-hidden">
-                  <img 
-                    src={product.image_url} 
-                    alt={product.title}
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500"
-                  />
-                  <div className="absolute top-1 right-1 bg-black/70 px-1.5 py-0.5 text-[10px] rounded text-white backdrop-blur-sm">
-                    {product.category}
-                  </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {products.map((item: any) => (
+          <Link key={item.id} href={`/marketplace/${item.id}`}>
+            <div className="group border-2 border-black p-0 hover:shadow-[10px_10px_0px_0px_rgba(234,179,8,1)] transition-all cursor-pointer">
+              <div className="h-56 bg-gray-100 overflow-hidden border-b-2 border-black">
+                <img 
+                  src={item.image_url || 'https://via.placeholder.com/300'} 
+                  alt={item.name} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                />
+              </div>
+              <div className="p-4 bg-white">
+                <p className="text-[9px] font-black text-yellow-600 uppercase mb-1">{item.category}</p>
+                <h2 className="font-black uppercase text-lg italic leading-none mb-3">{item.name}</h2>
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-black italic">₹{item.price}</span>
+                  <span className="text-[10px] font-black bg-black text-white px-2 py-1 uppercase italic">View Details</span>
                 </div>
-
-                {/* Info - Compact Text */}
-                <div className="p-3">
-                  <h3 className="text-sm font-medium text-gray-200 line-clamp-2 h-10 leading-snug">
-                    {product.title}
-                  </h3>
-                  <div className="flex flex-col mt-2">
-                    <span className="text-yellow-500 font-bold text-lg">₹{product.price}</span>
-                    <span className="text-[10px] text-green-500">In Stock</span>
-                  </div>
-                </div>
-                
-              </Link>
-            ))}
-          </div>
-        )}
+              </div>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

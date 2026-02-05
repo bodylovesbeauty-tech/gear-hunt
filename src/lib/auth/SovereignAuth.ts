@@ -1,59 +1,69 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createBrowserClient } from '@supabase/ssr';
 
-const supabase = createClientComponentClient();
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export const SovereignAuth = {
-  // 1. Universal Sign In (Sabke liye ek hi gate)
-  async signInWithPassword(email: string, pass: string, remember: boolean) {
+  // 1. Login with Password & Remember Me
+  async signInWithPassword(email: string, pass: string, remember: boolean = false) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: pass,
-      options: {
-        // Aapka 15-day 'Remember Me' logic yahan hai
-        persistSession: remember, 
-      }
     });
     if (error) throw error;
     return data;
   },
 
-  // 2. MFA/OTP Verification (Superman's Second Shield)
+  // 2. MFA: Pehle Challenge, Phir Verification
   async verifyMFA(code: string) {
-    const { data, error } = await supabase.auth.mfa.verify({
-      factorId: 'totp', 
-      code,
+    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+    if (factorsError) throw factorsError;
+
+    const totpFactor = factors.totp[0];
+    if (!totpFactor) throw new Error("MFA not set up. Please enroll first.");
+
+    // Create the challenge to get the challengeId
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+      factorId: totpFactor.id
     });
-    if (error) throw error;
-    return data;
+    if (challengeError) throw challengeError;
+
+    // Now verify using the ID from the challenge
+    const { data: verify, error: verifyError } = await supabase.auth.mfa.verify({
+      factorId: totpFactor.id,
+      challengeId: challenge.id,
+      code: code,
+    });
+    
+    if (verifyError) throw verifyError;
+    return verify;
   },
 
-  // 3. User Role Redirect (The Traffic Controller)
+  // 3. Traffic Controller (Role-based redirect)
   async getRedirectPath(userId: string) {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', userId)
       .single();
 
-    // Yahan humne har sadasya ka rasta tay kar diya hai
+    if (error) return '/UserLogin';
+
     switch (profile?.role) {
-      case 'SuperAdmin': 
-        return '/SuperAdmin'; // Aapka War Room
-      case 'UserAdmin': 
-        return '/UserAdmin'; // Staff Dashboard
-      case 'Seller': 
-        return '/SellerLogin'; // Seller ka adda
-      case 'User': 
-      default: 
-        return '/UserLogin'; // Customer/Buyer ka personal profile/home
+      case 'SuperAdmin': return '/SuperAdmin';
+      case 'UserAdmin': return '/UserAdmin';
+      case 'Seller': return '/SellerDashboard';
+      default: return '/UserLogin';
     }
   },
 
-  // 4. Logout (Family se bahar jane ka rasta)
+  // 4. Clean Logout
   async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    // Logout ke baad seedha home page
-    window.location.href = '/';
+    // Logout ke baad seedha sign-in page par bhej rahe hain
+    window.location.href = '/auth/signin';
   }
 };

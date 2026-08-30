@@ -12,7 +12,7 @@ export default function RiderLoginPage() {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
-  const [isAdminLogin, setIsAdminLogin] = useState(false)
+  const [isAdminLogin, setIsAdminLogin] = useState(() => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('next') === '/admin')
   useEffect(() => { setIsAdminLogin(new URLSearchParams(window.location.search).get('next') === '/admin') }, [])
   async function submit(event: FormEvent) { event.preventDefault(); const supabase = createClient(); setBusy(true); setMessage(''); const identifier = email.trim(); const credentials = identifier.includes('@') ? { email: identifier, password } : { phone: identifier, password }; const { error } = await supabase.auth.signInWithPassword(credentials); setBusy(false); if (error) { setMessage(error.message.toLowerCase().includes('confirm') ? 'Please confirm your email before signing in.' : 'Invalid email/mobile number or password.'); return }; window.location.assign(isAdminLogin ? '/admin' : '/dashboard/soscore') }
   async function forgotPassword() { if (!email) { setMessage('Enter your email address first.'); return }; const supabase = createClient(); setBusy(true); setMessage(''); const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback?next=/rider-login` }); setBusy(false); setMessage(error ? 'Password reset could not be started.' : 'Password reset instructions sent if the account exists.'); }

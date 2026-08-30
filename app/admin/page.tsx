@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AdminConsole from '@/components/admin-console'
 
-export const metadata = { title: 'BBBT Admin Control Room', description: 'Secure BBBT operations, rider analytics, and management console.' }
+export const metadata = { robots: { index: false, follow: false }, title: 'BBBT Admin Control Room', description: 'Secure BBBT operations, rider analytics, and management console.' }
 
 export default async function AdminPage() {
   const supabase = await createClient()

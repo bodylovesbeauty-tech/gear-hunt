@@ -402,3 +402,6 @@
     transform: none;
   }
 }
+
+/* SUPPORT pipeline endpoint marker (matches green arrow rhythm) */
+.v2-home .v2-system-node .v2-node-end{font-size:.7rem;line-height:1;color:#63df91;text-shadow:0 0 8px rgba(99,223,145,.55)}

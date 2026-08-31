@@ -53,7 +53,8 @@ export function UnifiedSignup(){
   const [f,setF]=useState({
     fullName:'',handle:'',mobile:'',email:'',
     language:'English',
-    baseLocation:'',address:'',city:'',district:'',state:'',pin:'',zone:'',
+    additionalLanguages:[] as string[],
+    baseLocation:'',address:'',city:'',district:'',state:'',pin:'',zone: '',
     bike:'',bikeReg:'',
     ecName:'',ecNumber:'',blood:'',
     groupName:'',groupProfile:'',groupSize:'',groupHandle:'',
@@ -100,7 +101,16 @@ export function UnifiedSignup(){
   }
   function back(){setErrors({});setStep(s=>Math.max(s-1,0))}
   function acknowledge(){setChecked(true);setShowResp(false)}
-  function submit(ev:React.FormEvent){ev.preventDefault();if(step!==steps.length-1||!checked)return;setDone(true)}
+  function submit(ev:React.FormEvent){
+    ev.preventDefault()
+    if(step!==steps.length-1||!checked)return
+    const application={...f,role,status:'Pending',submittedAt:new Date().toISOString(),responsibilityAcknowledged:true}
+    sessionStorage.setItem('bbbt-prototype-application',JSON.stringify(application))
+    setDone(true)
+  }
+  function toggleLanguage(language:string){
+    setF(p=>({ ...p, additionalLanguages:p.additionalLanguages.includes(language)?p.additionalLanguages.filter(x=>x!==language):p.additionalLanguages.length<2?[...p.additionalLanguages,language]:p.additionalLanguages }))
+  }
 
   const initials=(f.fullName.trim()||'BB').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()
   const previewLocation=f.baseLocation.trim()||[f.city.trim(),f.state.trim()].filter(Boolean).join(', ')
@@ -162,8 +172,17 @@ export function UnifiedSignup(){
       {step===1&&<div className="su-step">
         <p className="auth-lede">We use language to keep safety and community information clear for you.</p>
         <label>PRIMARY LANGUAGE<select value={f.language} onChange={set('language')}>
-          <option>English</option><option>Hindi</option><option>Marathi</option><option>Tamil</option>
+          <option>English</option>
         </select></label>
+        <fieldset className="language-options">
+          <legend>ADDITIONAL REGIONAL LANGUAGES <span className="eyebrow">UP TO 2</span></legend>
+          <p className="auth-lede" style={{margin:0}}>English is primary. Choose up to two additional languages. Translations are not yet live.</p>
+          <div className="language-checks">
+            {['Hindi','Bengali','Marathi','Telugu','Tamil','Gujarati','Kannada','Malayalam','Punjabi','Assamese','Odia'].map(language=><label key={language} className="language-check">
+              <input type="checkbox" checked={f.additionalLanguages.includes(language)} onChange={()=>toggleLanguage(language)} disabled={!f.additionalLanguages.includes(language)&&f.additionalLanguages.length>=2}/><span>{language}</span>
+            </label>)}
+          </div>
+        </fieldset>
       </div>}
 
       {step===2&&<div className="su-step">
@@ -232,6 +251,7 @@ export function UnifiedSignup(){
 
         {role==='Founding Rider Council Member'&&<fieldset className="form-section">
           <legend>COUNCIL APPLICATION</legend>
+          <div className="su-note su-verification-note"><strong>EMAIL VERIFICATION REQUIRED BEFORE COUNCIL ACCESS</strong><br/>This prototype does not verify email yet. Council access remains pending until verification is implemented.</div>
           <label className={errors.councilEmail?'invalid':''}>EMAIL (REQUIRED FOR COUNCIL REVIEW) {err('councilEmail','Required')}<input value={f.councilEmail} onChange={set('councilEmail')} type="email" placeholder="you@example.com"/></label>
           <div className="form-grid">
             <label>YEARS RIDING<input value={f.councilYears} onChange={set('councilYears')} inputMode="numeric" placeholder="Years"/></label>
@@ -261,7 +281,7 @@ export function UnifiedSignup(){
           <div><small>Name</small><p>{f.fullName.trim()||'—'}</p></div>
           <div><small>Handle</small><p>{f.handle.trim()||'—'}</p></div>
           <div><small>Mobile</small><p>{f.mobile.trim()||'—'}</p></div>
-          <div><small>Language</small><p>{f.language}</p></div>
+          <div><small>Languages</small><p>{[f.language,...f.additionalLanguages].join(', ')}</p></div>
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
           <div><small>Bike</small><p className={f.bike.trim()?'':'muted'}>{f.bike.trim()||'Not added'}</p></div>
           <div><small>Role requested</small><p>{role}</p></div>

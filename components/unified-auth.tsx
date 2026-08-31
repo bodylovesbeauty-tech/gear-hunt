@@ -2,8 +2,10 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
-import { applicationKey, dashboardFor, demoUsers, identityKey, prototypeApplicationId, sessionKey, type DemoUser, type PrototypeIdentity, type Role, type Status } from '@/lib/prototype-session'
+import { applicationKey, dashboardFor, demoUsers, identityKey, prototypeApplicationId, sessionKey, type DemoUser, type PrototypeIdentity, type PrototypeVehicle, type Role, type Status } from '@/lib/prototype-session'
 import './signup-flow.css'
+
+function VehiclePhoto({label,helper,photo,onChange,onRemove,inputId}:{label:string;helper:string;photo:{name:string;dataUrl:string}|null;onChange:(file?:File)=>void;onRemove:()=>void;inputId:string}){return <div className="vehicle-photo"><b>{label}</b><small>{helper} JPG, JPEG, PNG or WEBP up to 5 MB.</small>{photo?<div className="vehicle-photo-preview"><img src={photo.dataUrl} alt={label}/><span>{photo.name}</span><button type="button" className="text-button" onClick={onRemove}>Remove</button></div>:<label className="btn btn-outline photo-picker" htmlFor={inputId}>CHOOSE FILE / CAMERA<input id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>onChange(e.target.files?.[0])}/></label>}</div>}
 
 function AuthFrame({children, eyebrow='BBBT ACCESS'}:{children:React.ReactNode;eyebrow?:string}){return <main className="auth-shell"><aside className="auth-visual"><Link href="/" className="auth-brand"><img src="/bbbt-logo-red.png" alt="BBBT"/></Link><div className="auth-visual-copy"><span className="eyebrow cyan-text">RIDER WELFARE / TRUST INFRASTRUCTURE</span><h2>One account.<br/><em>Your role shapes the ride.</em></h2><p>A serious safety and community layer for India&apos;s riding communities.</p><div className="auth-visual-meta"><ShieldCheck aria-hidden="true"/><span>Prototype systems are clearly labelled before launch.</span></div></div></aside><section className="auth-panel"><div className="auth-card">{children}</div></section></main>}
 function StatePage({status,role}:{status:Status;role:Role}){const copy={Pending:['Application Under Review','Your application is with the BBBT review team. We will share the next step after verification.'],Rejected:['Application Not Approved','Your current application was not approved. You may contact BBBT support if you believe this needs review.'],Suspended:['Account Suspended','Access is paused while BBBT reviews the account. Contact support for the next step.']}[status]||['',''];let identity:PrototypeIdentity|null=null;try{identity=JSON.parse(sessionStorage.getItem(identityKey)||'null')}catch{}return <AuthFrame eyebrow={`APPLICATION STATUS / ${status.toUpperCase()}`}><span className={`eyebrow ${status==='Pending'?'orange-text':'red-text'}`}>{status==='Pending'?'REVIEW IN PROGRESS':'ACCESS STATUS'}</span><h1>{copy[0]}</h1><p className="auth-lede">{status==='Pending'?'This is a prototype review state. Approval shown here is simulated and does not represent production approval.':copy[1]}</p><div className="status-detail">{identity&&<><span>Application ID</span><strong>{identity.applicationId}</strong><span>Submitted</span><strong>{new Date(identity.createdAt).toLocaleString()}</strong></>}<span>Role applied for</span><strong>{role}</strong><span>Application status</span><strong>{status}{status==='Pending'&&' / Prototype'}</strong></div>{status==='Pending'&&<p className="su-help">Need help with this prototype application? <a href="mailto:help@bbbt.in">help@bbbt.in</a></p>}<Link className="btn btn-cyan" href="/login">BACK TO LOGIN <ArrowRight size={16}/></Link></AuthFrame>}
@@ -54,6 +56,7 @@ export function UnifiedSignup(){
   const [photoPreview,setPhotoPreview]=useState('')
   const [photoName,setPhotoName]=useState('')
   const [availability,setAvailability]=useState<Record<string,string>>({})
+  const [vehicles,setVehicles]=useState<PrototypeVehicle[]>([])
   const [f,setF]=useState({
     fullName:'',handle:'',mobile:'',email:'',
     language:'English',
@@ -126,6 +129,13 @@ export function UnifiedSignup(){
     setPhotoPreview(URL.createObjectURL(file));setPhotoName(file.name)
   }
   function removePhoto(){if(photoPreview)URL.revokeObjectURL(photoPreview);setPhotoPreview('');setPhotoName('')}
+  function emptyVehicle(index:number):PrototypeVehicle{return{id:`VEHICLE-${String(index+1).padStart(2,'0')}`,make:'',model:'',modelYear:'',currentKm:'',registration:'',fullBikePhoto:null,meterPhoto:null}}
+  function updateVehicle(id:string,key:keyof PrototypeVehicle,value:string){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:value}:v))}
+  function removeVehicle(id:string){setVehicles(list=>list.filter(v=>v.id!==id).map((v,i)=>({...v,id:`VEHICLE-${String(i+1).padStart(2,'0')}`})))}
+  function addVehicle(){if(vehicles.length<5)setVehicles(list=>[...list,emptyVehicle(list.length)])}
+  function addVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto',file?:File){if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)return;const reader=new FileReader();reader.onload=()=>setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:{name:file.name,dataUrl:String(reader.result)}}:v));reader.readAsDataURL(file)}
+  function removeVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto'){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:null}:v))}
+  function normalizeRegistration(value:string){return value.toUpperCase().replace(/[^A-Z0-9]/g,'')}
 
   function validateStep(i:number){
     const e:Record<string,string>={}
@@ -140,6 +150,7 @@ export function UnifiedSignup(){
       if(availability.email==='Already in use ✕')e.email='This email is already registered'
       if(availability.mobile==='Already in use ✕')e.mobile='This mobile number is already registered'
     }
+    if(i===3){const registrations=vehicles.map(v=>normalizeRegistration(v.registration)).filter(Boolean);if(new Set(registrations).size!==registrations.length)e.vehicleRegistration='This registration number is already used for another vehicle in this application.'}
     if(i===2){
       if(!f.baseLocation.trim())e.baseLocation='Required'
       if(f.pin.trim()&&!/^[0-9]{6}$/.test(f.pin.trim()))e.pin='Invalid PIN'
@@ -171,9 +182,9 @@ export function UnifiedSignup(){
     if(step!==steps.length-1||!checked)return
     if(Object.values(availability).some(value=>value==='Already in use ✕')){setStep(0);return}
     const submittedAt=new Date().toISOString()
-    const application={...f,role,status:'Pending' as Status,submittedAt,responsibilityAcknowledged:true}
+    const application={...f,vehicles,role,status:'Pending' as Status,submittedAt,responsibilityAcknowledged:true}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status:'Pending',selectedLanguages:[f.language,...f.additionalLanguages],createdAt:submittedAt}
+    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status:'Pending',selectedLanguages:[f.language,...f.additionalLanguages],vehicles,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     setDone(true)
@@ -279,15 +290,8 @@ export function UnifiedSignup(){
       </div>}
 
       {step===3&&<div className="su-step">
-        <p className="auth-lede">Your bike helps us tailor safety and community features. You can leave this for later.</p>
-        <div className="bike-grid">
-          <label>BIKE COMPANY / MAKE (Optional)<input value={f.bikeMake} onChange={set('bikeMake')} placeholder="Royal Enfield"/></label>
-          <label>BIKE MODEL (Optional)<input value={f.bikeModel} onChange={set('bikeModel')} placeholder="Classic 350"/></label>
-          <label>BIKE MODEL YEAR (Optional)<input value={f.bikeYear} onChange={set('bikeYear')} inputMode="numeric" placeholder="2024"/></label>
-          <label>CURRENT KM / ODOMETER (Optional)<input value={f.bikeKm} onChange={set('bikeKm')} inputMode="numeric" placeholder="18,500"/></label>
-          <label>BIKE REGISTRATION (Optional)<input value={f.bikeReg} onChange={set('bikeReg')} placeholder="UP32AB1234"/></label>
-        </div>
-      </div>}
+        <p className="auth-lede">YOUR VEHICLES (Optional). Add up to 5 vehicles. You can continue with zero.</p>
+        {vehicles.map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend><div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{vehicles.length<5?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
 
       {step===4&&<div className="su-step">
         <fieldset className="form-section">
@@ -372,7 +376,7 @@ export function UnifiedSignup(){
           <div><small>Profile Picture</small><p className={photoPreview?'':'muted'}>{photoPreview?'Added':'Not added'}</p></div>
           <div><small>Languages</small><p>{[f.language,...f.additionalLanguages].join(', ')}</p></div>
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
-          <div><small>Bike</small><p className={f.bikeMake.trim()?'':'muted'}>{[f.bikeMake,f.bikeModel,f.bikeYear].filter(Boolean).join(' ')||'Not added'}</p></div>
+          <div><small>Vehicles</small><p className={vehicles.length?'':'muted'}>{vehicles.length?`${vehicles.length} vehicle${vehicles.length===1?'':'s'} added`:'Not added'}</p></div>
           <div><small>Role requested</small><p>{role}</p></div>
           <div><small>Safety details</small><p className="muted">Kept private</p></div>
         </div>

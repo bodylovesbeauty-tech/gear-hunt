@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import './bbbt-v2-crystal.css'
 
 const gateways = [
   ['RIDER', 'Your safety identity', 'Build readiness around the ride.', '/signup'],

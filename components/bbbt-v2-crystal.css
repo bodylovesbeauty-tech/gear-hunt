@@ -1,0 +1,404 @@
+/* ============================================================
+   BBBT V2 — BLACK CRYSTAL PILOT (controlled scope)
+   Applies the existing .bcx crystal language to five homepage
+   areas ONLY: header, CTA buttons, role gateways, Trust Protocol,
+   Trust/Holding. Every selector is prefixed with .v2-home so it
+   cannot affect any other page. Material values mirror the
+   canonical .bcx system in app/design-system/crystal.css — this
+   is not a second glass system, only a scoped application of it.
+   Only surface / material / accent is set here; layout, grid,
+   section order and copy are left to the existing rules.
+   ============================================================ */
+
+.v2-home {
+  /* environment */
+  --bcx-black: #08090a;
+  --bcx-graphite: #12181a;
+  /* clarity */
+  --bcx-ink: #f4f6f4;
+  --bcx-ink-soft: #c3ccca;
+  --bcx-ink-mute: #8b9593;
+  /* structural lines */
+  --bcx-line: rgba(244, 246, 244, 0.1);
+  --bcx-line-soft: rgba(244, 246, 244, 0.055);
+  /* six controlled semantic signals */
+  --bcx-red: #ff4d40;
+  --bcx-orange: #e79a3f;
+  --bcx-blue: #5cc6e8;
+  --bcx-green: #5fd08a;
+  --bcx-white: #f4f6f4;
+  /* crystal material (identical recipe to .bcx) */
+  --bcx-crystal-solid: linear-gradient(158deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)), #12181a;
+  --bcx-crystal: linear-gradient(158deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.015) 44%, rgba(255, 255, 255, 0)), rgba(18, 24, 26, 0.55);
+  --bcx-edge: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --bcx-sh1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --bcx-sh2: 0 6px 18px rgba(0, 0, 0, 0.38);
+  --bcx-sh3: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --bcx-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bcx-std: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   1. HEADER / NAVIGATION — premium crystal control rail
+   ============================================================ */
+.v2-home .v2-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(8, 9, 10, 0.72);
+  border-bottom: 1px solid var(--bcx-line);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .v2-home .v2-nav {
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    backdrop-filter: blur(18px) saturate(120%);
+  }
+}
+.v2-home .v2-nav nav a {
+  position: relative;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--bcx-r-md, 10px);
+  border: 1px solid transparent;
+  color: var(--bcx-ink-soft);
+  transition: color var(--bcx-std), background var(--bcx-std), border-color var(--bcx-std), transform var(--bcx-fast);
+}
+.v2-home .v2-nav nav a::after {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: 0.25rem;
+  height: 1px;
+  background: transparent;
+  transition: background var(--bcx-std);
+}
+.v2-home .v2-nav nav a:hover {
+  color: var(--bcx-ink);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--bcx-line);
+  transform: translateY(-1px);
+}
+.v2-home .v2-nav nav a:hover::after {
+  background: color-mix(in srgb, var(--bcx-red) 60%, transparent);
+}
+.v2-home .v2-nav nav a[aria-current='page'] {
+  color: var(--bcx-ink);
+}
+.v2-home .v2-nav nav a[aria-current='page']::after {
+  background: var(--bcx-red);
+}
+.v2-home .v2-nav nav a:focus-visible,
+.v2-home .v2-nav-actions a:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 2px;
+  border-radius: var(--bcx-r-md, 10px);
+}
+.v2-home .v2-nav-actions .login-link,
+.v2-home .v2-nav-actions a:not(.v2-button) {
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--bcx-r-md, 10px);
+  color: var(--bcx-ink-soft);
+  transition: color var(--bcx-std), background var(--bcx-std);
+}
+.v2-home .v2-nav-actions a:not(.v2-button):hover {
+  color: var(--bcx-ink);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ============================================================
+   2. CTA BUTTONS — tactile crystal, signal as edge/glow only
+   ============================================================ */
+.v2-home .v2-button {
+  position: relative;
+  overflow: hidden;
+  --edge: var(--bcx-line);
+  --glow: transparent;
+  border: 1px solid var(--edge);
+  border-radius: var(--bcx-r-md, 10px);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+  color: var(--bcx-ink);
+  transition: transform var(--bcx-fast), box-shadow var(--bcx-std), border-color var(--bcx-std), background var(--bcx-std);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .v2-home .v2-button {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+}
+.v2-home .v2-button::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 1px;
+  height: 42%;
+  border-radius: var(--bcx-r-md, 10px) var(--bcx-r-md, 10px) 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent);
+  pointer-events: none;
+}
+.v2-home .v2-button:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--edge) 55%, var(--bcx-ink));
+  box-shadow: var(--bcx-edge), var(--bcx-sh2), 0 0 0 1px var(--glow), 0 8px 24px -10px var(--glow);
+}
+.v2-home .v2-button:active {
+  transform: translateY(0.5px) scale(0.995);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+}
+.v2-home .v2-button:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 2px;
+}
+/* primary — controlled BBBT red signal (edge + glow + gloss), not a red fill */
+.v2-home .v2-button-red {
+  --edge: color-mix(in srgb, var(--bcx-red) 60%, var(--bcx-line));
+  --glow: color-mix(in srgb, var(--bcx-red) 42%, transparent);
+  background: linear-gradient(158deg, rgba(255, 77, 64, 0.16), rgba(255, 77, 64, 0.04) 46%, rgba(255, 255, 255, 0)), #12181a;
+  color: #fff;
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .v2-home .v2-button-red {
+    background: linear-gradient(158deg, rgba(255, 77, 64, 0.2), rgba(255, 77, 64, 0.05) 46%, rgba(255, 255, 255, 0)), rgba(18, 24, 26, 0.55);
+  }
+}
+.v2-home .v2-button-red::after {
+  background: linear-gradient(180deg, rgba(255, 77, 64, 0.22), transparent);
+}
+/* secondary outline — graphite crystal with restrained white highlight */
+.v2-home .v2-button-outline {
+  --edge: var(--bcx-line);
+  --glow: color-mix(in srgb, var(--bcx-white) 24%, transparent);
+}
+/* text links — refined, not restructured */
+.v2-home .v2-text-link {
+  position: relative;
+  color: var(--bcx-ink-soft);
+  transition: color var(--bcx-std);
+}
+.v2-home .v2-text-link:hover {
+  color: var(--bcx-ink);
+}
+.v2-home .v2-text-link:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   3. ROLE GATEWAYS — premium crystal entry tiles + semantic accent
+   ============================================================ */
+.v2-home .v2-gateways .v2-audience-grid {
+  gap: 12px;
+  background: transparent;
+}
+.v2-home .v2-audience-card {
+  --accent: var(--bcx-white);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--bcx-line);
+  border-radius: var(--bcx-r-lg, 16px);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+  transition: transform var(--bcx-std), box-shadow var(--bcx-std), border-color var(--bcx-std);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .v2-home .v2-audience-card {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(14px) saturate(118%);
+    backdrop-filter: blur(14px) saturate(118%);
+  }
+}
+/* thin semantic edge light at the top of each tile */
+.v2-home .v2-audience-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent 70%);
+  opacity: 0.85;
+}
+.v2-home .v2-audience-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--bcx-line));
+  box-shadow: var(--bcx-edge), var(--bcx-sh3), 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.v2-home .v2-audience-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.v2-home .v2-audience-card small {
+  color: var(--accent);
+}
+.v2-home .v2-audience-card span {
+  color: var(--accent);
+}
+.v2-home .v2-audience-card strong {
+  color: var(--bcx-ink-soft);
+}
+/* semantic mapping: RIDER→red, GROUP ADMIN→blue, MARSHAL→orange,
+   FOUNDING RIDER COUNCIL→green, INVESTOR→analytical blue/white */
+.v2-home .v2-gateways .v2-audience-card:nth-child(1) { --accent: var(--bcx-red); }
+.v2-home .v2-gateways .v2-audience-card:nth-child(2) { --accent: var(--bcx-blue); }
+.v2-home .v2-gateways .v2-audience-card:nth-child(3) { --accent: var(--bcx-orange); }
+.v2-home .v2-gateways .v2-audience-card:nth-child(4) { --accent: var(--bcx-green); }
+.v2-home .v2-gateways .v2-audience-card:nth-child(5) { --accent: var(--bcx-blue); }
+
+/* ============================================================
+   4. TRUST PROTOCOL — infrastructure control points
+   ============================================================ */
+.v2-home .v2-core {
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh2), inset 0 0 3rem rgba(92, 198, 232, 0.06);
+}
+.v2-home .v2-protocol-nodes button {
+  --accent: var(--bcx-white);
+  border: 1px solid var(--bcx-line);
+  border-radius: var(--bcx-r-md, 10px);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+  transition: transform var(--bcx-fast), box-shadow var(--bcx-std), border-color var(--bcx-std), background var(--bcx-std);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .v2-home .v2-protocol-nodes button {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(12px) saturate(118%);
+    backdrop-filter: blur(12px) saturate(118%);
+  }
+}
+.v2-home .v2-protocol-nodes button:before {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--bcx-line));
+  box-shadow: 0 0 10px -3px var(--accent);
+}
+.v2-home .v2-protocol-nodes button span {
+  color: var(--accent);
+}
+.v2-home .v2-protocol-nodes button:hover,
+.v2-home .v2-protocol-nodes button:focus-visible {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--bcx-line));
+  box-shadow: var(--bcx-edge), var(--bcx-sh2), 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.v2-home .v2-protocol-nodes button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.v2-home .v2-protocol-nodes button.active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--bcx-line));
+  background: linear-gradient(158deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent 48%), #141c1e;
+  box-shadow: var(--bcx-edge), var(--bcx-sh2), 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+/* semantic mapping: 01 SOS→red, 04 Corridor→orange, 06 Network→blue,
+   09 Audits(verified)→green, others→neutral white */
+.v2-home .v2-protocol-nodes button:nth-child(1) { --accent: var(--bcx-red); }
+.v2-home .v2-protocol-nodes button:nth-child(4) { --accent: var(--bcx-orange); }
+.v2-home .v2-protocol-nodes button:nth-child(6) { --accent: var(--bcx-blue); }
+.v2-home .v2-protocol-nodes button:nth-child(9) { --accent: var(--bcx-green); }
+.v2-home .v2-protocol-nodes button:nth-child(10) { --accent: var(--bcx-red); }
+/* detail panel — dark crystal, readable, semantic status edge */
+.v2-home .v2-protocol-detail {
+  border-left: 2px solid var(--bcx-red);
+  border-radius: 0 var(--bcx-r-md, 10px) var(--bcx-r-md, 10px) 0;
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh2);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .v2-home .v2-protocol-detail {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(14px) saturate(118%);
+    backdrop-filter: blur(14px) saturate(118%);
+  }
+}
+
+/* ============================================================
+   5. TRUST <-> HOLDING — one black/graphite environment, accents only
+   ============================================================ */
+.v2-home .v2-worlds {
+  border: 1px solid var(--bcx-line);
+  border-radius: var(--bcx-r-lg, 16px);
+  overflow: hidden;
+  background: var(--bcx-black);
+}
+.v2-home .v2-world {
+  position: relative;
+  background: var(--bcx-crystal-solid);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .v2-home .v2-world {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(12px) saturate(115%);
+    backdrop-filter: blur(12px) saturate(115%);
+  }
+}
+/* subtle atmosphere: Trust = restrained red, verified green chips */
+.v2-home .v2-world.v2-trust {
+  background: radial-gradient(120% 80% at 0% 0%, rgba(255, 77, 64, 0.08), transparent 55%), var(--bcx-crystal-solid);
+}
+.v2-home .v2-world.v2-trust .v2-world-signals span {
+  border-color: color-mix(in srgb, var(--bcx-green) 45%, var(--bcx-line));
+  color: var(--bcx-green);
+}
+.v2-home .v2-world.v2-trust .v2-world-mark,
+.v2-home .v2-world.v2-trust .v2-kicker {
+  color: color-mix(in srgb, var(--bcx-red) 70%, var(--bcx-ink-mute));
+}
+/* Holding = restrained blue atmosphere, orange highlight chips */
+.v2-home .v2-world.v2-holding {
+  background: radial-gradient(120% 80% at 100% 0%, rgba(92, 198, 232, 0.1), transparent 55%), var(--bcx-crystal-solid);
+}
+.v2-home .v2-world.v2-holding .v2-world-signals span {
+  border-color: color-mix(in srgb, var(--bcx-orange) 45%, var(--bcx-line));
+  color: var(--bcx-orange);
+}
+.v2-home .v2-world.v2-holding .v2-world-mark,
+.v2-home .v2-world.v2-holding .v2-kicker {
+  color: color-mix(in srgb, var(--bcx-blue) 75%, var(--bcx-ink-mute));
+}
+.v2-home .v2-world h3 {
+  color: var(--bcx-ink);
+}
+.v2-home .v2-world p:not(.v2-kicker) {
+  color: var(--bcx-ink-soft);
+}
+.v2-home .v2-world a {
+  color: var(--bcx-ink);
+}
+.v2-home .v2-world a:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+/* ecosystem bridge — thin crystal route rail: connected by need, separated by purpose */
+.v2-home .v2-bridge {
+  background: var(--bcx-black);
+  border-inline: 1px solid var(--bcx-line);
+  color: var(--bcx-ink-mute);
+}
+.v2-home .v2-bridge i {
+  color: var(--bcx-green);
+}
+.v2-home .v2-world-signals span {
+  border-radius: var(--bcx-r-sm, 6px);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ============================================================
+   Reduced motion — respect user preference across pilot areas
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .v2-home .v2-nav nav a,
+  .v2-home .v2-button,
+  .v2-home .v2-audience-card,
+  .v2-home .v2-protocol-nodes button {
+    transition: none;
+  }
+  .v2-home .v2-button:hover,
+  .v2-home .v2-audience-card:hover,
+  .v2-home .v2-protocol-nodes button:hover {
+    transform: none;
+  }
+}

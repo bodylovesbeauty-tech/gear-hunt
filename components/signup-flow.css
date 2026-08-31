@@ -73,6 +73,7 @@
 .su-verification-note{margin:.2rem 0 1rem;border-left-color:var(--orange);font-size:.7rem}
 .su-verification-note strong{color:var(--orange);font:700 .62rem var(--font-mono);letter-spacing:.05em}
 .bike-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.su-auto-field input[readonly]{background:color-mix(in srgb,var(--surface) 82%,var(--blue));border-color:color-mix(in srgb,var(--blue) 45%,var(--line));cursor:not-allowed}
 .su-upload-note,.su-pin-status{display:block;margin-top:.35rem;color:var(--muted);font-size:.68rem;line-height:1.45}
 .su-file-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-top:.45rem;color:var(--foreground);font-size:.75rem}
 .su-file-row button{border:0;background:none;color:var(--blue);cursor:pointer;text-decoration:underline}

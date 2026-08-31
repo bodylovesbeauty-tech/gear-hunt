@@ -85,7 +85,7 @@
 .su-file-row button{border:0;background:none;color:var(--blue);cursor:pointer;text-decoration:underline}
 @media(max-width:700px){.bike-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.bike-grid{grid-template-columns:1fr}}
-.su-help{margin-top:1.25rem;color:var(--muted);font-size:.8rem}
+.prototype-application{display:flex;flex-direction:column;gap:.4rem;margin-top:1.25rem;padding:1rem;border:1px solid var(--orange);background:var(--surface)}.prototype-application p{margin:0;color:var(--muted);font-size:.82rem}.prototype-application b{color:var(--foreground)}.prototype-application .btn{margin-top:.5rem;align-self:flex-start}.su-help{margin-top:1.25rem;color:var(--muted);font-size:.8rem}
 .su-help a{color:var(--blue)}
 
 @media(min-width:900px){

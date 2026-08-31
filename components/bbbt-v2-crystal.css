@@ -360,9 +360,16 @@
 }
 .v2-home .v2-world h3 {
   color: var(--bcx-ink);
+  /* reserve two lines so Trust ("People first.") and Holding
+     ("Ideas into infrastructure.") headings share a baseline */
+  min-height: 8rem;
+  min-height: 2lh;
 }
 .v2-home .v2-world p:not(.v2-kicker) {
   color: var(--bcx-ink-soft);
+  /* reserve description height so the chip rows align across both worlds */
+  min-height: 5.4rem;
+  min-height: 3lh;
 }
 .v2-home .v2-world a {
   color: var(--bcx-ink);

@@ -1,0 +1,81 @@
+/* BBBT Phase 2A — progressive signup UX.
+   Scoped to .su-* and reuses existing auth tokens/classes.
+   No new design system; only guided-flow presentation. */
+
+.su-top{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.5rem}
+.su-steprow{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+.su-steplabel{color:var(--foreground);font:700 .72rem var(--font-mono);letter-spacing:.08em}
+.su-stepcount{color:var(--muted);font:700 .64rem var(--font-mono);letter-spacing:.08em;white-space:nowrap}
+.su-bar{position:relative;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.su-bar i{position:absolute;inset:0 auto 0 0;display:block;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--green));transition:width .35s cubic-bezier(.2,.7,.2,1)}
+
+/* honest prototype note */
+.su-note{margin:1.25rem 0 0;padding:.7rem .85rem;border:1px solid var(--line);border-left:2px solid var(--orange);background:var(--surface);color:var(--muted);font-size:.76rem;line-height:1.55}
+.su-note strong{color:var(--foreground)}
+
+/* live identity preview (no private safety data) */
+.su-preview{margin:0 0 1.25rem;padding:1rem;border:1px solid var(--line);background:linear-gradient(135deg,rgba(86,200,226,.06),transparent 60%),var(--surface)}
+.su-preview-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.75rem}
+.su-preview-head b{font:700 .62rem var(--font-mono);letter-spacing:.1em;color:var(--muted)}
+.su-preview-tag{padding:.2rem .5rem;border:1px solid var(--blue);color:var(--blue);font:700 .55rem var(--font-mono);letter-spacing:.06em}
+.su-preview-id{display:flex;align-items:center;gap:.75rem}
+.su-preview-avatar{display:grid;place-items:center;width:2.6rem;height:2.6rem;flex:none;border:1px solid var(--blue);color:var(--blue);font:800 1rem var(--font-mono)}
+.su-preview-id strong{display:block;font-size:1rem;line-height:1.2}
+.su-preview-id span{display:block;color:var(--muted);font:600 .72rem var(--font-mono)}
+.su-preview-meta{display:grid;grid-template-columns:1fr 1fr;gap:.45rem 1rem;margin-top:.85rem;border-top:1px solid var(--line);padding-top:.75rem}
+.su-preview-meta div{display:flex;flex-direction:column;gap:.15rem}
+.su-preview-meta small{color:var(--muted);font:600 .56rem var(--font-mono);letter-spacing:.06em;text-transform:uppercase}
+.su-preview-meta p{margin:0;font-size:.82rem;color:var(--foreground);word-break:break-word}
+.su-preview-meta p.muted{color:var(--muted)}
+
+/* inline validation */
+.auth-form label.invalid input,.auth-form label.invalid select{border-color:var(--red);box-shadow:0 0 0 3px rgba(237,63,53,.14)}
+.field-error{color:var(--red);font:600 .64rem var(--font-mono);letter-spacing:.04em}
+.su-step-error{margin:.25rem 0 0;padding:.6rem .8rem;border:1px solid var(--red);border-left:2px solid var(--red);background:rgba(237,63,53,.08);color:var(--foreground);font-size:.76rem}
+
+/* step body enters gently */
+.su-step{display:flex;flex-direction:column;gap:1rem;animation:su-fade .3s ease}
+@keyframes su-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* navigation */
+.su-nav{display:flex;gap:.75rem;margin-top:1.5rem}
+.su-nav .btn{flex:1}
+.su-nav .btn.su-back{flex:0 0 auto;min-width:6.5rem}
+
+/* review summary */
+.su-review{display:flex;flex-direction:column;gap:1rem}
+.su-review-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem 1rem;padding:1rem;border:1px solid var(--line);background:var(--surface)}
+.su-review-grid div{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.su-review-grid small{color:var(--muted);font:600 .56rem var(--font-mono);letter-spacing:.06em;text-transform:uppercase}
+.su-review-grid p{margin:0;font-size:.82rem;color:var(--foreground);word-break:break-word}
+.su-review-grid p.muted{color:var(--muted)}
+
+/* responsibility modal */
+.su-modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:1.25rem;background:rgba(6,9,10,.72);backdrop-filter:blur(6px);animation:su-fade .2s ease}
+.su-modal-card{width:min(100%,560px);max-height:88vh;overflow:auto;padding:clamp(1.25rem,4vw,2rem);border:1px solid var(--line);background:var(--panel);box-shadow:0 30px 90px rgba(0,0,0,.5)}
+.su-modal-card h2{margin:.5rem 0 .25rem;font-size:1.5rem;letter-spacing:-.03em}
+.su-modal-close{position:sticky;top:0;margin-left:auto;display:block;border:0;background:none;color:var(--muted);font:800 1.1rem var(--font-mono);cursor:pointer;line-height:1}
+.su-resp-lang{margin:1.25rem 0 .4rem;color:var(--blue);font:700 .64rem var(--font-mono);letter-spacing:.08em}
+.su-resp-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.su-resp-list li{display:flex;gap:.6rem;color:var(--foreground);font-size:.86rem;line-height:1.5}
+.su-resp-list li::before{content:'';flex:none;width:.5rem;height:.5rem;margin-top:.45rem;background:var(--green)}
+.su-modal-card .consent-row{margin-top:1.5rem}
+.su-modal-actions{display:flex;gap:.75rem;margin-top:1.25rem}
+.su-modal-actions .btn{flex:1}
+
+.su-help{margin-top:1.25rem;color:var(--muted);font-size:.8rem}
+.su-help a{color:var(--blue)}
+
+@media(min-width:900px){
+  .su-preview-meta{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:520px){
+  .su-review-grid{grid-template-columns:1fr}
+  .su-nav{flex-direction:column-reverse}
+  .su-nav .btn.su-back{width:100%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .su-step,.su-modal{animation:none}
+  .su-bar i{transition:none}
+}

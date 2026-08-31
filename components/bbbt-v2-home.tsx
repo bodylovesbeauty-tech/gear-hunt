@@ -15,7 +15,7 @@ const protocol = [
   ['02', 'Blood & Hospital Mesh', 'A future coordination layer for verified care partners.'],
   ['03', 'Safety, Training & Kit', 'Turn preparation into repeatable rider readiness.'],
   ['04', 'Navigation & Corridor Scan', 'Surface route context before and during a journey.'],
-  ['05', 'Democratic Governance', 'Keep trust, accountability, and rider voice visible.'],
+  ['05', 'Democratic Governance & Trust Matrix', 'Keep trust, accountability, and rider voice visible.'],
   ['06', 'Regional Marshal Network', 'Give experienced riders a structured support role.'],
   ['07', 'Care Pit Commerce', 'Connect route-side care with a future commercial layer.'],
   ['08', 'Training & Certification', 'Make learning visible without pretending the engine is live.'],

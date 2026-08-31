@@ -226,7 +226,7 @@ export function UnifiedSignup(){
     <form className="auth-form" onSubmit={submit}>
       {step===0&&<div className="su-step">
         <div className="form-grid">
-          <label className={errors.fullName?'invalid':''}>FULL NAME (Required) {err('fullName','Required')}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name"/></label>
+          <label className={errors.fullName?'invalid':''}>FULL NAME (Required){errors.fullName&&<span className="field-error">{errors.fullName}</span>}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name"/></label>
           <label className={errors.handle?'invalid':''}>HANDLE (Required) {availability.handle&&<span className={availability.handle.includes('✕')?'field-error':'eyebrow'}>{availability.handle}</span>}<input value={f.handle} onChange={set('handle')} onBlur={()=>checkAvailability('handle',f.handle)} placeholder="@yourriderhandle"/></label>
         </div>
         <div className="profile-photo-control">

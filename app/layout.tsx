@@ -1,6 +1,10 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
+
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bbbt.in'
 
@@ -19,5 +23,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { colorScheme: 'dark', themeColor: '#000000', userScalable: true }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className="bg-black"><body className="antialiased">{children}<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: 'BBBT', alternateName: 'Brand Biker Brotherhood Trust', url: siteUrl, description: 'Rider safety and highway emergency infrastructure for India.', areaServed: { '@type': 'Country', name: 'India' }, knowsAbout: ['rider safety', 'highway SOS', 'blood donor coordination', 'motorcycle safety'], sameAs: ['https://instagram.com/bbbt', 'https://facebook.com/bbbt', 'https://youtube.com/@bbbt'] }) }} />{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
+  return <html lang="en" className={`bg-background ${geist.variable} ${geistMono.variable}`}><body className="font-sans antialiased">{children}<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: 'BBBT', alternateName: 'Brand Biker Brotherhood Trust', url: siteUrl, description: 'Rider safety and highway emergency infrastructure for India.', areaServed: { '@type': 'Country', name: 'India' }, knowsAbout: ['rider safety', 'highway SOS', 'blood donor coordination', 'motorcycle safety'], sameAs: ['https://instagram.com/bbbt', 'https://facebook.com/bbbt', 'https://youtube.com/@bbbt'] }) }} />{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
 }

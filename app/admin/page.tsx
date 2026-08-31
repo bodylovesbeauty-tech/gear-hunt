@@ -7,7 +7,7 @@ export const metadata = { robots: { index: false, follow: false }, title: 'BBBT 
 export default async function AdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/rider-login?next=/admin')
+  if (!user) redirect('/login?next=/admin')
   const isAllowedAdmin = user.email?.toLowerCase() === 'brandbikebrotherhoodtrust@gmail.com'
   if (!isAllowedAdmin) redirect('/dashboard')
   const { data: admin } = await supabase.from('admin_users').select('role').eq('user_id', user.id).maybeSingle()

@@ -63,6 +63,15 @@
 .su-modal-actions{display:flex;gap:.75rem;margin-top:1.25rem}
 .su-modal-actions .btn{flex:1}
 
+.language-options{border:1px solid var(--line);padding:1rem;background:var(--surface)}
+.language-options legend{color:var(--muted);font:700 .62rem var(--font-mono);letter-spacing:.08em}
+.language-options legend .eyebrow{margin-left:.4rem;color:var(--blue)}
+.language-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;margin-top:.9rem}
+.language-check{display:flex;align-items:center;gap:.55rem;color:var(--foreground);font-size:.82rem}
+.language-check input{accent-color:var(--blue)}
+.language-check input:disabled{opacity:.45}
+.su-verification-note{margin:.2rem 0 1rem;border-left-color:var(--orange);font-size:.7rem}
+.su-verification-note strong{color:var(--orange);font:700 .62rem var(--font-mono);letter-spacing:.05em}
 .su-help{margin-top:1.25rem;color:var(--muted);font-size:.8rem}
 .su-help a{color:var(--blue)}
 

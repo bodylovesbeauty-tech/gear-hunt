@@ -50,19 +50,35 @@ export function UnifiedSignup(){
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
   const [errors,setErrors]=useState<Record<string,string>>({})
+  const [pinStatus,setPinStatus]=useState('')
   const [f,setF]=useState({
     fullName:'',handle:'',mobile:'',email:'',
     language:'English',
     additionalLanguages:[] as string[],
     baseLocation:'',address:'',city:'',district:'',state:'',pin:'',zone: '',
-    bike:'',bikeReg:'',
-    ecName:'',ecNumber:'',blood:'',
+    bikeMake:'',bikeModel:'',bikeYear:'',bikeKm:'',bikeReg:'',
+    ecName:'',ecNumber:'',blood:'',bloodReport:'',
     groupName:'',groupProfile:'',groupSize:'',groupHandle:'',
     marshalExp:'',
     councilEmail:'',councilYears:'',councilRides:'',councilProfile:'',councilWhy:'',councilConflict:'',
     budget:'',
   })
   const set=(k:keyof typeof f)=>(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>)=>setF(p=>({...p,[k]:e.target.value}))
+  async function lookupPin(value:string){
+    const pin=value.replace(/\\D/g,'').slice(0,6)
+    setF(p=>({...p,pin}))
+    setPinStatus('')
+    if(pin.length!==6)return
+    setPinStatus('Looking up location…')
+    try{
+      const response=await fetch(`https://api.postalpincode.in/pincode/${pin}`)
+      const data=await response.json()
+      const postOffice=data?.[0]?.Status==='Success'?data[0].PostOffice?.[0]:null
+      if(!postOffice){setPinStatus('PIN not found. You can enter Zone manually.');return}
+      setF(p=>({...p,state:p.state||postOffice.State||'',district:p.district||postOffice.District||'',city:p.city||postOffice.Name||'',zone:p.zone||postOffice.Region||postOffice.Division||''}))
+      setPinStatus('Location assisted from PIN. Please review and correct if needed.')
+    }catch{setPinStatus('Lookup unavailable. You can enter Zone manually.')}
+  }
   const err=(k:string,label:string)=>errors[k]?<span className="field-error">{errors[k]}</span>:<span className="eyebrow" style={{fontSize:'.6rem'}}>{label}</span>
 
   function validateStep(i:number){
@@ -152,7 +168,7 @@ export function UnifiedSignup(){
       </div>
       <div className="su-preview-meta">
         <div><small>Location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added yet'}</p></div>
-        <div><small>Bike</small><p className={f.bike.trim()?'':'muted'}>{f.bike.trim()||'Not added yet'}</p></div>
+        <div><small>Bike</small><p className={f.bikeMake.trim()?'':'muted'}>{[f.bikeMake,f.bikeModel].filter(Boolean).join(' ')||'Not added yet'}</p></div>
         <div><small>Rider role</small><p>{role}</p></div>
       </div>
     </div>}
@@ -160,18 +176,18 @@ export function UnifiedSignup(){
     <form className="auth-form" onSubmit={submit}>
       {step===0&&<div className="su-step">
         <div className="form-grid">
-          <label className={errors.fullName?'invalid':''}>FULL NAME {err('fullName','Required')}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name"/></label>
-          <label className={errors.handle?'invalid':''}>HANDLE {err('handle','Required')}<input value={f.handle} onChange={set('handle')} placeholder="@yourriderhandle"/></label>
+          <label className={errors.fullName?'invalid':''}>FULL NAME (Required) {err('fullName','Required')}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name"/></label>
+          <label className={errors.handle?'invalid':''}>HANDLE (Required) {err('handle','Required')}<input value={f.handle} onChange={set('handle')} placeholder="@yourriderhandle"/></label>
         </div>
         <div className="form-grid">
-          <label className={errors.mobile?'invalid':''}>MOBILE NUMBER {err('mobile','Required')}<input value={f.mobile} onChange={set('mobile')} inputMode="tel" placeholder="+91 mobile number"/></label>
-          <label className={errors.email?'invalid':''}>EMAIL {err('email','Optional')}<input value={f.email} onChange={set('email')} type="email" placeholder="you@example.com"/></label>
+          <label className={errors.mobile?'invalid':''}>MOBILE NUMBER (Required) {err('mobile','Required')}<input value={f.mobile} onChange={set('mobile')} inputMode="tel" placeholder="+91 mobile number"/></label>
+          <label className={errors.email?'invalid':''}>EMAIL (Optional) {err('email','Optional')}<input value={f.email} onChange={set('email')} type="email" placeholder="you@example.com"/></label>
         </div>
       </div>}
 
       {step===1&&<div className="su-step">
         <p className="auth-lede">We use language to keep safety and community information clear for you.</p>
-        <label>PRIMARY LANGUAGE<select value={f.language} onChange={set('language')}>
+        <label>PRIMARY LANGUAGE (Required)<select value={f.language} onChange={set('language')}>
           <option>English</option>
         </select></label>
         <fieldset className="language-options">
@@ -186,25 +202,30 @@ export function UnifiedSignup(){
       </div>}
 
       {step===2&&<div className="su-step">
-        <label className={errors.baseLocation?'invalid':''}>BASE LOCATION {err('baseLocation','Required')}<input value={f.baseLocation} onChange={set('baseLocation')} placeholder="City / state you mostly ride from"/></label>
+        <label className={errors.baseLocation?'invalid':''}>BASE LOCATION (Required) {err('baseLocation','Required')}<input value={f.baseLocation} onChange={set('baseLocation')} placeholder="City / state you mostly ride from"/></label>
         <div className="form-grid">
-          <label>ADDRESS<input value={f.address} onChange={set('address')} placeholder="Street or locality"/></label>
-          <label>CITY<input value={f.city} onChange={set('city')} placeholder="City"/></label>
+          <label>ADDRESS (Optional)<input value={f.address} onChange={set('address')} placeholder="Street or locality"/></label>
+          <label>CITY (Optional)<input value={f.city} onChange={set('city')} placeholder="City"/></label>
         </div>
         <div className="form-grid">
-          <label>DISTRICT<input value={f.district} onChange={set('district')} placeholder="District"/></label>
-          <label>STATE<input value={f.state} onChange={set('state')} placeholder="State"/></label>
+          <label>DISTRICT (Optional)<input value={f.district} onChange={set('district')} placeholder="District"/></label>
+          <label>STATE (Optional)<input value={f.state} onChange={set('state')} placeholder="State"/></label>
         </div>
         <div className="form-grid">
-          <label className={errors.pin?'invalid':''}>PIN CODE {err('pin','Optional')}<input value={f.pin} onChange={set('pin')} inputMode="numeric" placeholder="6-digit PIN"/></label>
-          <label>ZONE<input value={f.zone} onChange={set('zone')} placeholder="Zone"/></label>
+          <label className={errors.pin?'invalid':''}>PIN CODE (Optional) {err('pin','Optional')}<input value={f.pin} onChange={e=>lookupPin(e.target.value)} inputMode="numeric" maxLength={6} placeholder="6-digit PIN"/>{pinStatus&&<small className="su-pin-status">{pinStatus}</small>}</label>
+          <label>ZONE (Optional)<input value={f.zone} onChange={set('zone')} placeholder="Zone — review or enter manually"/></label>
         </div>
       </div>}
 
       {step===3&&<div className="su-step">
         <p className="auth-lede">Your bike helps us tailor safety and community features. You can leave this for later.</p>
-        <label>BIKE / VEHICLE<input value={f.bike} onChange={set('bike')} placeholder="Make, model and year"/></label>
-        <label>BIKE REGISTRATION<input value={f.bikeReg} onChange={set('bikeReg')} placeholder="Registration number"/></label>
+        <div className="bike-grid">
+          <label>BIKE COMPANY / MAKE (Optional)<input value={f.bikeMake} onChange={set('bikeMake')} placeholder="Royal Enfield"/></label>
+          <label>BIKE MODEL (Optional)<input value={f.bikeModel} onChange={set('bikeModel')} placeholder="Classic 350"/></label>
+          <label>BIKE MODEL YEAR (Optional)<input value={f.bikeYear} onChange={set('bikeYear')} inputMode="numeric" placeholder="2024"/></label>
+          <label>CURRENT KM / ODOMETER (Optional)<input value={f.bikeKm} onChange={set('bikeKm')} inputMode="numeric" placeholder="18,500"/></label>
+          <label>BIKE REGISTRATION (Optional)<input value={f.bikeReg} onChange={set('bikeReg')} placeholder="UP32AB1234"/></label>
+        </div>
       </div>}
 
       {step===4&&<div className="su-step">
@@ -212,14 +233,19 @@ export function UnifiedSignup(){
           <legend>PRIVATE / SAFETY INFORMATION</legend>
           <p className="auth-lede" style={{margin:0}}>This stays private. It is never shown on your public rider identity.</p>
           <div className="form-grid">
-            <label>EMERGENCY CONTACT NAME<input value={f.ecName} onChange={set('ecName')} placeholder="Name and relationship"/></label>
-            <label>EMERGENCY CONTACT NUMBER<input value={f.ecNumber} onChange={set('ecNumber')} inputMode="tel" placeholder="+91 mobile number"/></label>
+            <label>EMERGENCY CONTACT NAME (Optional)<input value={f.ecName} onChange={set('ecName')} placeholder="Name and relationship"/></label>
+            <label>EMERGENCY CONTACT NUMBER (Optional)<input value={f.ecNumber} onChange={set('ecNumber')} inputMode="tel" placeholder="+91 mobile number"/></label>
           </div>
-          <label>BLOOD GROUP<select value={f.blood} onChange={set('blood')}>
-            <option value="" disabled>Select blood group</option>
+          <label>YOUR BLOOD GROUP (Optional)<select value={f.blood} onChange={set('blood')}>
+            <option value="">Select blood group</option>
             <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
             <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
           </select></label>
+          <label>LATEST BLOOD GROUP TEST REPORT — LAST 1 MONTH (Optional)
+            <input type="file" accept=".pdf,image/jpeg,image/png" onChange={e=>{const file=e.target.files?.[0];if(!file)return;if(!['application/pdf','image/jpeg','image/png'].includes(file.type)){e.currentTarget.value='';setF(p=>({...p,bloodReport:''}));return}if(file.size>5*1024*1024){e.currentTarget.value='';setF(p=>({...p,bloodReport:''}));return}setF(p=>({...p,bloodReport:file.name}))}}/>
+            <small className="su-upload-note">Optional — not required to continue. PDF, JPG or PNG up to 5 MB. Stored locally for this prototype only.</small>
+            {f.bloodReport&&<span className="su-file-row">{f.bloodReport}<button type="button" onClick={e=>{const input=e.currentTarget.parentElement?.previousElementSibling as HTMLInputElement|null;if(input)input.value='';setF(p=>({...p,bloodReport:''}))}}>Clear</button></span>}
+          </label>
         </fieldset>
       </div>}
 
@@ -236,17 +262,17 @@ export function UnifiedSignup(){
 
         {role==='Group Admin'&&<fieldset className="form-section">
           <legend>GROUP ADMIN INFORMATION</legend>
-          <label className={errors.groupName?'invalid':''}>RIDING GROUP / COMMUNITY NAME {err('groupName','Required')}<input value={f.groupName} onChange={set('groupName')} placeholder="Community name"/></label>
-          <label className={errors.groupProfile?'invalid':''}>PUBLIC COMMUNITY PROFILE {err('groupProfile','Required')}<input value={f.groupProfile} onChange={set('groupProfile')} placeholder="Instagram, Facebook or URL"/></label>
+          <label className={errors.groupName?'invalid':''}>RIDING GROUP / COMMUNITY NAME (Required) {err('groupName','Required')}<input value={f.groupName} onChange={set('groupName')} placeholder="Community name"/></label>
+          <label className={errors.groupProfile?'invalid':''}>PUBLIC COMMUNITY PROFILE (Required) {err('groupProfile','Required')}<input value={f.groupProfile} onChange={set('groupProfile')} placeholder="Instagram, Facebook or URL"/></label>
           <div className="form-grid">
-            <label>COMMUNITY SIZE<input value={f.groupSize} onChange={set('groupSize')} inputMode="numeric" placeholder="Approximate riders"/></label>
-            <label>COMMUNITY HANDLE<input value={f.groupHandle} onChange={set('groupHandle')} placeholder="@communityhandle"/></label>
+            <label>COMMUNITY SIZE (Optional)<input value={f.groupSize} onChange={set('groupSize')} inputMode="numeric" placeholder="Approximate riders"/></label>
+            <label>COMMUNITY HANDLE (Optional)<input value={f.groupHandle} onChange={set('groupHandle')} placeholder="@communityhandle"/></label>
           </div>
         </fieldset>}
 
         {role==='Marshal'&&<fieldset className="form-section">
           <legend>MARSHAL EXPERIENCE</legend>
-          <label>RIDING / MARSHAL EXPERIENCE<textarea rows={3} value={f.marshalExp} onChange={set('marshalExp')} placeholder="Tell us about supporting rides or rider safety"/></label>
+          <label>RIDING / MARSHAL EXPERIENCE (Optional)<textarea rows={3} value={f.marshalExp} onChange={set('marshalExp')} placeholder="Tell us about supporting rides or rider safety"/></label>
         </fieldset>}
 
         {role==='Founding Rider Council Member'&&<fieldset className="form-section">
@@ -254,17 +280,17 @@ export function UnifiedSignup(){
           <div className="su-note su-verification-note"><strong>EMAIL VERIFICATION REQUIRED BEFORE COUNCIL ACCESS</strong><br/>This prototype does not verify email yet. Council access remains pending until verification is implemented.</div>
           <label className={errors.councilEmail?'invalid':''}>EMAIL (REQUIRED FOR COUNCIL REVIEW) {err('councilEmail','Required')}<input value={f.councilEmail} onChange={set('councilEmail')} type="email" placeholder="you@example.com"/></label>
           <div className="form-grid">
-            <label>YEARS RIDING<input value={f.councilYears} onChange={set('councilYears')} inputMode="numeric" placeholder="Years"/></label>
-            <label>ORGANISED RIDES<input value={f.councilRides} onChange={set('councilRides')} inputMode="numeric" placeholder="Approximate number"/></label>
+            <label>YEARS RIDING (Optional)<input value={f.councilYears} onChange={set('councilYears')} inputMode="numeric" placeholder="Years"/></label>
+            <label>ORGANISED RIDES (Optional)<input value={f.councilRides} onChange={set('councilRides')} inputMode="numeric" placeholder="Approximate number"/></label>
           </div>
-          <label className={errors.councilProfile?'invalid':''}>PUBLIC SOCIAL / COMMUNITY PROFILE {err('councilProfile','At least one required')}<input value={f.councilProfile} onChange={set('councilProfile')} placeholder="At least one public profile (up to five, LinkedIn optional)"/></label>
-          <label>WHY DO YOU WANT TO CONTRIBUTE?<textarea rows={3} value={f.councilWhy} onChange={set('councilWhy')} placeholder="Your rider intelligence, safety or product perspective"/></label>
-          <label>CONFLICT OF INTEREST INFORMATION<textarea rows={2} value={f.councilConflict} onChange={set('councilConflict')} placeholder="Optional disclosure"/></label>
+          <label className={errors.councilProfile?'invalid':''}>PUBLIC SOCIAL / COMMUNITY PROFILE (Required) {err('councilProfile','At least one required')}<input value={f.councilProfile} onChange={set('councilProfile')} placeholder="At least one public profile (up to five, LinkedIn optional)"/></label>
+          <label>WHY DO YOU WANT TO CONTRIBUTE? (Optional)<textarea rows={3} value={f.councilWhy} onChange={set('councilWhy')} placeholder="Your rider intelligence, safety or product perspective"/></label>
+          <label>CONFLICT OF INTEREST INFORMATION (Optional)<textarea rows={2} value={f.councilConflict} onChange={set('councilConflict')} placeholder="Optional disclosure"/></label>
         </fieldset>}
       </div>}
 
       {step===6&&<div className="su-step">
-        <label>ANNUAL SAFETY BUDGET RESEARCH<select value={f.budget} onChange={set('budget')}>
+        <label>ANNUAL SAFETY BUDGET RESEARCH (Optional)<select value={f.budget} onChange={set('budget')}>
           <option value="" disabled>Select a range</option>
           <option>Under ₹1,000</option>
           <option>₹1,000–₹2,500</option>
@@ -283,7 +309,7 @@ export function UnifiedSignup(){
           <div><small>Mobile</small><p>{f.mobile.trim()||'—'}</p></div>
           <div><small>Languages</small><p>{[f.language,...f.additionalLanguages].join(', ')}</p></div>
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
-          <div><small>Bike</small><p className={f.bike.trim()?'':'muted'}>{f.bike.trim()||'Not added'}</p></div>
+          <div><small>Bike</small><p className={f.bikeMake.trim()?'':'muted'}>{[f.bikeMake,f.bikeModel,f.bikeYear].filter(Boolean).join(' ')||'Not added'}</p></div>
           <div><small>Role requested</small><p>{role}</p></div>
           <div><small>Safety details</small><p className="muted">Kept private</p></div>
         </div>

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowRight, ChevronDown, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
-const nav = [['What is BBBT','/about'],['For Riders','/riders'],['Safety','/safety'],['Community','/community'],['Care Pit','/care-pits'],['Partners','/partners'],['Investor Brief','/investor']]
+const nav = [['What is BBBT','/about'],['For Riders','/signup'],['Safety','/safety'],['Community','/community'],['Care Pit','/care-pits'],['Partners','/contact'],['Investor Brief','/investor']]
 
 export function BrandMark(){return <Link href="/" className="brand-mark" aria-label="BBBT home"><span>BBBT</span></Link>}
 export function StatusBadge({children, tone='prototype'}:{children:React.ReactNode,tone?:string}){return <span className={`status-badge status-${tone}`}>{children}</span>}

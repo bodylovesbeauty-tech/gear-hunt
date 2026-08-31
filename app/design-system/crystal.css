@@ -1,0 +1,1111 @@
+/* ============================================================
+   BBBT BLACK CRYSTAL INTERFACE — reusable design system
+   Fully namespaced under .bcx so it never affects existing pages.
+   Environment = black. Interface = crystal. Colour = signal.
+   ============================================================ */
+
+.bcx {
+  /* environment */
+  --bcx-black: #08090a;
+  --bcx-env: #0b0d0e;
+  --bcx-graphite: #12181a;
+  --bcx-graphite-hi: #18211f;
+
+  /* information / clarity */
+  --bcx-ink: #f4f6f4;
+  --bcx-ink-soft: #c3ccca;
+  --bcx-ink-mute: #8b9593;
+
+  /* structural lines */
+  --bcx-line: rgba(244, 246, 244, 0.1);
+  --bcx-line-soft: rgba(244, 246, 244, 0.055);
+
+  /* six semantic signals (controlled) */
+  --bcx-red: #ff4d40;
+  --bcx-orange: #e79a3f;
+  --bcx-blue: #5cc6e8;
+  --bcx-green: #5fd08a;
+  --bcx-white: #f4f6f4;
+
+  /* crystal material */
+  --bcx-crystal: linear-gradient(158deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.015) 44%, rgba(255, 255, 255, 0)), rgba(18, 24, 26, 0.55);
+  --bcx-crystal-solid: linear-gradient(158deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)), #12181a;
+  --bcx-edge: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+
+  /* radius scale */
+  --bcx-r-sm: 6px;
+  --bcx-r-md: 10px;
+  --bcx-r-lg: 16px;
+  --bcx-r-pill: 999px;
+
+  /* spacing scale */
+  --bcx-s1: 4px;
+  --bcx-s2: 8px;
+  --bcx-s3: 12px;
+  --bcx-s4: 16px;
+  --bcx-s5: 24px;
+  --bcx-s6: 32px;
+  --bcx-s7: 48px;
+  --bcx-s8: 64px;
+
+  /* shadow / depth scale */
+  --bcx-sh1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --bcx-sh2: 0 6px 18px rgba(0, 0, 0, 0.38);
+  --bcx-sh3: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --bcx-sh4: 0 30px 70px rgba(0, 0, 0, 0.55);
+
+  /* motion tokens */
+  --bcx-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bcx-std: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bcx-slow: 320ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  color: var(--bcx-ink);
+  font-family: var(--font-geist), ui-sans-serif, sans-serif;
+  line-height: 1.55;
+}
+
+.bcx *,
+.bcx *::before,
+.bcx *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- crystal material ---------- */
+.bcx-crystal {
+  position: relative;
+  background: var(--bcx-crystal-solid);
+  border: 1px solid var(--bcx-line);
+  box-shadow: var(--bcx-edge), var(--bcx-sh2);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .bcx-crystal {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+  }
+}
+
+/* ---------- typography ---------- */
+.bcx-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+.bcx-eyebrow {
+  font: 700 0.66rem/1.3 var(--font-geist-mono), monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bcx-ink-mute);
+}
+.bcx-display {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  margin: 0;
+}
+.bcx-h2 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.bcx-body {
+  color: var(--bcx-ink-soft);
+  margin: 0;
+}
+.bcx-small {
+  font-size: 0.8rem;
+  color: var(--bcx-ink-mute);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.bcx-btn {
+  --edge: var(--bcx-line);
+  --glow: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bcx-s2);
+  padding: 0.72rem 1.1rem;
+  border: 1px solid var(--edge);
+  border-radius: var(--bcx-r-md);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+  color: var(--bcx-ink);
+  font: 600 0.85rem var(--font-geist), sans-serif;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform var(--bcx-fast), box-shadow var(--bcx-std), border-color var(--bcx-std), background var(--bcx-std);
+  -webkit-user-select: none;
+  user-select: none;
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .bcx-btn {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+}
+.bcx-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--edge) 55%, var(--bcx-ink));
+  box-shadow: var(--bcx-edge), var(--bcx-sh2), 0 0 0 1px var(--glow), 0 6px 22px -8px var(--glow);
+}
+.bcx-btn:active {
+  transform: translateY(0.5px) scale(0.995);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+}
+.bcx-btn:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 2px;
+}
+.bcx-btn[disabled],
+.bcx-btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--bcx-sh1);
+}
+.bcx-btn--sm {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.78rem;
+}
+.bcx-btn--lg {
+  padding: 0.95rem 1.5rem;
+  font-size: 0.95rem;
+}
+.bcx-btn__spinner {
+  width: 0.95em;
+  height: 0.95em;
+  border-radius: 50%;
+  border: 2px solid rgba(244, 246, 244, 0.25);
+  border-top-color: var(--bcx-ink);
+  animation: bcx-spin 0.7s linear infinite;
+}
+/* variants: semantic colour only as edge / glow / accent, never a full paint */
+.bcx-btn--primary {
+  --edge: color-mix(in srgb, var(--bcx-red) 55%, var(--bcx-line));
+  --glow: color-mix(in srgb, var(--bcx-red) 40%, transparent);
+}
+.bcx-btn--primary::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 1px;
+  height: 40%;
+  border-radius: var(--bcx-r-md) var(--bcx-r-md) 0 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bcx-red) 16%, transparent), transparent);
+  pointer-events: none;
+}
+.bcx-btn--secondary {
+  --edge: var(--bcx-line);
+  --glow: color-mix(in srgb, var(--bcx-white) 22%, transparent);
+}
+.bcx-btn--tech {
+  --edge: color-mix(in srgb, var(--bcx-blue) 55%, var(--bcx-line));
+  --glow: color-mix(in srgb, var(--bcx-blue) 45%, transparent);
+}
+.bcx-btn--verified {
+  --edge: color-mix(in srgb, var(--bcx-green) 55%, var(--bcx-line));
+  --glow: color-mix(in srgb, var(--bcx-green) 45%, transparent);
+}
+.bcx-btn--highway {
+  --edge: color-mix(in srgb, var(--bcx-orange) 55%, var(--bcx-line));
+  --glow: color-mix(in srgb, var(--bcx-orange) 45%, transparent);
+}
+.bcx-btn--emergency {
+  --edge: var(--bcx-red);
+  --glow: color-mix(in srgb, var(--bcx-red) 60%, transparent);
+  color: #fff;
+  background: linear-gradient(158deg, rgba(255, 77, 64, 0.28), rgba(255, 77, 64, 0.08)), #1a0f0e;
+  border-width: 1px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.bcx-btn--emergency:hover {
+  box-shadow: var(--bcx-edge), var(--bcx-sh3), 0 0 0 1px var(--bcx-red), 0 8px 30px -6px var(--glow);
+}
+.bcx-btn__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--bcx-red);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bcx-red) 30%, transparent);
+}
+
+/* ============================================================
+   TABS  +  SEGMENTED CONTROL
+   ============================================================ */
+.bcx-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--bcx-r-md);
+  border: 1px solid var(--bcx-line);
+  background: rgba(8, 9, 10, 0.6);
+}
+.bcx-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bcx-s2);
+  padding: 0.55rem 0.95rem;
+  border: 0;
+  border-radius: var(--bcx-r-sm);
+  background: transparent;
+  color: var(--bcx-ink-mute);
+  font: 600 0.8rem var(--font-geist), sans-serif;
+  cursor: pointer;
+  transition: color var(--bcx-std), background var(--bcx-std), box-shadow var(--bcx-std);
+}
+.bcx-tab:hover {
+  color: var(--bcx-ink-soft);
+  background: var(--bcx-line-soft);
+}
+.bcx-tab[aria-selected='true'] {
+  color: var(--bcx-ink);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+}
+.bcx-tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 0.9rem;
+  right: 0.9rem;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--bcx-accent, var(--bcx-blue));
+}
+.bcx-tab:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 2px;
+}
+.bcx-seg {
+  display: inline-flex;
+  border-radius: var(--bcx-r-md);
+  border: 1px solid var(--bcx-line);
+  overflow: hidden;
+  background: rgba(8, 9, 10, 0.6);
+}
+.bcx-seg button {
+  padding: 0.5rem 0.95rem;
+  border: 0;
+  border-right: 1px solid var(--bcx-line);
+  background: transparent;
+  color: var(--bcx-ink-mute);
+  font: 600 0.78rem var(--font-geist), sans-serif;
+  cursor: pointer;
+  transition: color var(--bcx-std), background var(--bcx-std);
+}
+.bcx-seg button:last-child {
+  border-right: 0;
+}
+.bcx-seg button[aria-pressed='true'] {
+  color: var(--bcx-ink);
+  background: var(--bcx-crystal-solid);
+  box-shadow: inset 0 -2px 0 var(--bcx-accent, var(--bcx-green));
+}
+.bcx-seg button:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: -2px;
+}
+
+/* ---------- toggle ---------- */
+.bcx-toggle {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: var(--bcx-r-pill);
+  border: 1px solid var(--bcx-line);
+  background: var(--bcx-graphite);
+  cursor: pointer;
+  transition: background var(--bcx-std), border-color var(--bcx-std);
+}
+.bcx-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bcx-ink-mute);
+  transition: transform var(--bcx-std), background var(--bcx-std);
+}
+.bcx-toggle[aria-checked='true'] {
+  background: color-mix(in srgb, var(--bcx-green) 22%, var(--bcx-graphite));
+  border-color: color-mix(in srgb, var(--bcx-green) 55%, var(--bcx-line));
+}
+.bcx-toggle[aria-checked='true']::after {
+  transform: translateX(18px);
+  background: var(--bcx-green);
+}
+.bcx-toggle:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   HEADER PRIMITIVE
+   ============================================================ */
+.bcx-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bcx-s5);
+  padding: 0.85rem 1.1rem;
+  border-radius: var(--bcx-r-lg);
+  border: 1px solid var(--bcx-line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), rgba(8, 9, 10, 0.7);
+  box-shadow: var(--bcx-edge);
+}
+.bcx-header nav {
+  display: flex;
+  gap: 2px;
+}
+.bcx-header__brand {
+  font: 900 1.1rem var(--font-geist-mono), monospace;
+  letter-spacing: -0.1em;
+}
+
+/* ============================================================
+   CARDS  (3 depth levels + 5 roles)
+   ============================================================ */
+.bcx-card {
+  border-radius: var(--bcx-r-lg);
+  padding: var(--bcx-s5);
+  border: 1px solid var(--bcx-line);
+  transition: transform var(--bcx-std), box-shadow var(--bcx-std), border-color var(--bcx-std);
+}
+/* depth 1 — flat graphite */
+.bcx-card--l1 {
+  background: var(--bcx-graphite);
+  box-shadow: var(--bcx-sh1);
+}
+/* depth 2 — dark crystal */
+.bcx-card--l2 {
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh2);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .bcx-card--l2 {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+  }
+}
+/* depth 3 — featured crystal + semantic accent edge */
+.bcx-card--l3 {
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh3);
+  border-color: color-mix(in srgb, var(--bcx-accent, var(--bcx-blue)) 45%, var(--bcx-line));
+  position: relative;
+  overflow: hidden;
+}
+.bcx-card--l3::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--bcx-accent, var(--bcx-blue)), transparent);
+}
+.bcx-card--interactive {
+  cursor: pointer;
+}
+.bcx-card--interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--bcx-edge), var(--bcx-sh3);
+  border-color: color-mix(in srgb, var(--bcx-line) 40%, var(--bcx-ink));
+}
+.bcx-card--interactive:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 3px;
+}
+.bcx-card__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--bcx-r-md);
+  border: 1px solid color-mix(in srgb, var(--bcx-accent, var(--bcx-blue)) 45%, var(--bcx-line));
+  color: var(--bcx-accent, var(--bcx-blue));
+  background: color-mix(in srgb, var(--bcx-accent, var(--bcx-blue)) 10%, transparent);
+  margin-bottom: var(--bcx-s4);
+}
+.bcx-card h3 {
+  margin: 0 0 var(--bcx-s2);
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+.bcx-card p {
+  margin: 0;
+  color: var(--bcx-ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.bcx-data-card strong {
+  display: block;
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+  margin: var(--bcx-s2) 0 0;
+}
+.bcx-data-card .bcx-trend {
+  font: 700 0.72rem var(--font-geist-mono), monospace;
+}
+
+/* ============================================================
+   FORM / INPUT SYSTEM
+   ============================================================ */
+.bcx-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bcx-s2);
+}
+.bcx-label {
+  font: 600 0.8rem var(--font-geist), sans-serif;
+  color: var(--bcx-ink);
+}
+.bcx-help {
+  font-size: 0.76rem;
+  color: var(--bcx-ink-mute);
+}
+.bcx-msg {
+  font: 600 0.76rem var(--font-geist-mono), monospace;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.bcx-msg--error {
+  color: var(--bcx-red);
+}
+.bcx-msg--success {
+  color: var(--bcx-green);
+}
+.bcx-msg--warning {
+  color: var(--bcx-orange);
+}
+.bcx-msg--info {
+  color: var(--bcx-blue);
+}
+.bcx-input,
+.bcx-textarea,
+.bcx-select {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--bcx-r-md);
+  border: 1px solid var(--bcx-line);
+  background: rgba(8, 9, 10, 0.55);
+  color: var(--bcx-ink);
+  font: 500 0.9rem var(--font-geist), sans-serif;
+  transition: border-color var(--bcx-std), box-shadow var(--bcx-std), background var(--bcx-std);
+}
+.bcx-textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.bcx-input::placeholder,
+.bcx-textarea::placeholder {
+  color: var(--bcx-ink-mute);
+}
+.bcx-input:focus,
+.bcx-textarea:focus,
+.bcx-select:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--bcx-blue) 60%, var(--bcx-line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bcx-blue) 22%, transparent);
+  background: rgba(8, 9, 10, 0.75);
+}
+.bcx-field[data-state='error'] .bcx-input,
+.bcx-field[data-state='error'] .bcx-textarea,
+.bcx-field[data-state='error'] .bcx-select {
+  border-color: color-mix(in srgb, var(--bcx-red) 60%, var(--bcx-line));
+}
+.bcx-field[data-state='error'] .bcx-input:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bcx-red) 22%, transparent);
+}
+.bcx-field[data-state='success'] .bcx-input {
+  border-color: color-mix(in srgb, var(--bcx-green) 60%, var(--bcx-line));
+}
+.bcx-field[data-state='warning'] .bcx-input {
+  border-color: color-mix(in srgb, var(--bcx-orange) 60%, var(--bcx-line));
+}
+.bcx-inputwrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.bcx-inputwrap svg {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--bcx-ink-mute);
+  pointer-events: none;
+}
+.bcx-inputwrap .bcx-input {
+  padding-left: 2.3rem;
+}
+.bcx-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--bcx-ink-soft);
+}
+.bcx-check input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid var(--bcx-line);
+  border-radius: var(--bcx-r-sm);
+  background: rgba(8, 9, 10, 0.6);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: border-color var(--bcx-std), background var(--bcx-std);
+}
+.bcx-check input[type='radio'] {
+  border-radius: 50%;
+}
+.bcx-check input:checked {
+  border-color: color-mix(in srgb, var(--bcx-green) 60%, var(--bcx-line));
+  background: color-mix(in srgb, var(--bcx-green) 22%, rgba(8, 9, 10, 0.6));
+}
+.bcx-check input:checked::after {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 2px;
+  background: var(--bcx-green);
+}
+.bcx-check input[type='radio']:checked::after {
+  border-radius: 50%;
+}
+.bcx-check input:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   BADGES  +  STATUS DOTS
+   ============================================================ */
+.bcx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--bcx-r-pill);
+  border: 1px solid color-mix(in srgb, var(--bcx-c, var(--bcx-ink-mute)) 45%, var(--bcx-line));
+  background: color-mix(in srgb, var(--bcx-c, var(--bcx-ink-mute)) 12%, transparent);
+  color: var(--bcx-c, var(--bcx-ink-soft));
+  font: 700 0.66rem var(--font-geist-mono), monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bcx-badge::before {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--bcx-c, var(--bcx-ink-mute));
+}
+.bcx-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font: 700 0.72rem var(--font-geist-mono), monospace;
+  color: var(--bcx-ink-soft);
+}
+.bcx-dot::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--bcx-c, var(--bcx-ink-mute));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bcx-c, var(--bcx-ink-mute)) 25%, transparent);
+}
+.bcx-c-red { --bcx-c: var(--bcx-red); }
+.bcx-c-orange { --bcx-c: var(--bcx-orange); }
+.bcx-c-blue { --bcx-c: var(--bcx-blue); }
+.bcx-c-green { --bcx-c: var(--bcx-green); }
+.bcx-c-white { --bcx-c: var(--bcx-white); }
+
+/* ============================================================
+   ALERTS  +  TOASTS
+   ============================================================ */
+.bcx-alert,
+.bcx-toast {
+  display: flex;
+  gap: var(--bcx-s3);
+  padding: var(--bcx-s4);
+  border-radius: var(--bcx-r-md);
+  border: 1px solid var(--bcx-line);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+  position: relative;
+  overflow: hidden;
+}
+.bcx-alert::before,
+.bcx-toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--bcx-c, var(--bcx-blue));
+}
+.bcx-alert__icon,
+.bcx-toast__icon {
+  color: var(--bcx-c, var(--bcx-blue));
+  flex-shrink: 0;
+}
+.bcx-alert h4,
+.bcx-toast h4 {
+  margin: 0 0 0.2rem;
+  font-size: 0.9rem;
+}
+.bcx-alert p,
+.bcx-toast p {
+  margin: 0;
+  color: var(--bcx-ink-soft);
+  font-size: 0.82rem;
+}
+.bcx-toast {
+  min-width: 300px;
+  max-width: 380px;
+}
+
+/* ============================================================
+   MODAL  +  DRAWER  +  TOOLTIP
+   ============================================================ */
+.bcx-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--bcx-s4);
+  background: rgba(4, 5, 6, 0.6);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: bcx-fade var(--bcx-std) both;
+}
+.bcx-modal {
+  width: min(100%, 480px);
+  border-radius: var(--bcx-r-lg);
+  padding: var(--bcx-s6);
+  border: 1px solid var(--bcx-line);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh4);
+  animation: bcx-pop var(--bcx-std) both;
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .bcx-modal {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    backdrop-filter: blur(24px) saturate(120%);
+  }
+}
+.bcx-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bcx-s4);
+  margin-bottom: var(--bcx-s3);
+}
+.bcx-iconbtn {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--bcx-r-sm);
+  border: 1px solid var(--bcx-line);
+  background: transparent;
+  color: var(--bcx-ink-soft);
+  cursor: pointer;
+  transition: background var(--bcx-std), color var(--bcx-std);
+}
+.bcx-iconbtn:hover {
+  background: var(--bcx-line-soft);
+  color: var(--bcx-ink);
+}
+.bcx-iconbtn:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 2px;
+}
+.bcx-drawer {
+  position: fixed;
+  z-index: 60;
+  border: 1px solid var(--bcx-line);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-sh4);
+  padding: var(--bcx-s6);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .bcx-drawer {
+    background: var(--bcx-crystal);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    backdrop-filter: blur(24px) saturate(120%);
+  }
+}
+.bcx-drawer--right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(100%, 380px);
+  animation: bcx-slide-r var(--bcx-std) both;
+}
+.bcx-drawer--bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--bcx-r-lg) var(--bcx-r-lg) 0 0;
+  animation: bcx-slide-b var(--bcx-std) both;
+}
+.bcx-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+.bcx-tooltip__bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--bcx-r-sm);
+  border: 1px solid var(--bcx-line);
+  background: rgba(8, 9, 10, 0.95);
+  color: var(--bcx-ink);
+  font-size: 0.75rem;
+  box-shadow: var(--bcx-sh2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--bcx-fast);
+}
+.bcx-tooltip:hover .bcx-tooltip__bubble,
+.bcx-tooltip:focus-within .bcx-tooltip__bubble {
+  opacity: 1;
+}
+
+/* ============================================================
+   PROGRESS  +  STEPS  +  BREADCRUMBS
+   ============================================================ */
+.bcx-progress {
+  height: 8px;
+  border-radius: var(--bcx-r-pill);
+  background: var(--bcx-graphite);
+  border: 1px solid var(--bcx-line);
+  overflow: hidden;
+}
+.bcx-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--bcx-green), color-mix(in srgb, var(--bcx-green) 60%, var(--bcx-blue)));
+  transition: width var(--bcx-slow);
+}
+.bcx-ring {
+  --v: 0;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--bcx-green) calc(var(--v) * 1%), var(--bcx-graphite) 0);
+  position: relative;
+}
+.bcx-ring::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--bcx-env);
+  border: 1px solid var(--bcx-line);
+}
+.bcx-ring span {
+  position: relative;
+  font: 700 0.9rem var(--font-geist-mono), monospace;
+}
+.bcx-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.bcx-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--bcx-ink-mute);
+  font: 600 0.75rem var(--font-geist-mono), monospace;
+}
+.bcx-step__dot {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--bcx-line);
+  font-size: 0.7rem;
+}
+.bcx-step--done .bcx-step__dot {
+  background: color-mix(in srgb, var(--bcx-green) 22%, transparent);
+  border-color: color-mix(in srgb, var(--bcx-green) 55%, var(--bcx-line));
+  color: var(--bcx-green);
+}
+.bcx-step--active {
+  color: var(--bcx-ink);
+}
+.bcx-step--active .bcx-step__dot {
+  border-color: var(--bcx-blue);
+  color: var(--bcx-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bcx-blue) 22%, transparent);
+}
+.bcx-step__bar {
+  width: 2.5rem;
+  height: 1px;
+  background: var(--bcx-line);
+  margin: 0 0.4rem;
+}
+.bcx-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: 600 0.78rem var(--font-geist), sans-serif;
+  color: var(--bcx-ink-mute);
+}
+.bcx-crumbs a {
+  color: var(--bcx-ink-soft);
+  text-decoration: none;
+}
+.bcx-crumbs a:hover {
+  color: var(--bcx-ink);
+}
+.bcx-crumbs [aria-current] {
+  color: var(--bcx-ink);
+}
+
+/* ============================================================
+   NETWORK NODE  +  MAP CONTROLS  +  TABLE
+   ============================================================ */
+.bcx-node {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: var(--bcx-s4);
+  min-width: 7rem;
+  border-radius: var(--bcx-r-md);
+  border: 1px solid color-mix(in srgb, var(--bcx-c, var(--bcx-ink-mute)) 45%, var(--bcx-line));
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh1);
+  cursor: pointer;
+  transition: transform var(--bcx-std), box-shadow var(--bcx-std), border-color var(--bcx-std);
+}
+.bcx-node:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--bcx-edge), var(--bcx-sh2), 0 0 0 1px color-mix(in srgb, var(--bcx-c, var(--bcx-blue)) 40%, transparent);
+}
+.bcx-node:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: 3px;
+}
+.bcx-node__core {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--bcx-c, var(--bcx-blue)) 55%, var(--bcx-line));
+  color: var(--bcx-c, var(--bcx-blue));
+  background: color-mix(in srgb, var(--bcx-c, var(--bcx-blue)) 10%, transparent);
+}
+.bcx-node span {
+  font: 700 0.68rem var(--font-geist-mono), monospace;
+  letter-spacing: 0.05em;
+}
+.bcx-mapctl {
+  display: inline-flex;
+  flex-direction: column;
+  border-radius: var(--bcx-r-md);
+  border: 1px solid var(--bcx-line);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh2);
+  overflow: hidden;
+}
+.bcx-mapctl button {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0;
+  border-bottom: 1px solid var(--bcx-line);
+  background: transparent;
+  color: var(--bcx-ink-soft);
+  cursor: pointer;
+  transition: background var(--bcx-std), color var(--bcx-std);
+}
+.bcx-mapctl button:last-child {
+  border-bottom: 0;
+}
+.bcx-mapctl button:hover {
+  background: var(--bcx-line-soft);
+  color: var(--bcx-ink);
+}
+.bcx-mapctl button:focus-visible {
+  outline: 2px solid var(--bcx-blue);
+  outline-offset: -2px;
+}
+.bcx-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--bcx-r-md);
+  overflow: hidden;
+  border: 1px solid var(--bcx-line);
+}
+.bcx-table th {
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  font: 700 0.68rem var(--font-geist-mono), monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bcx-ink-mute);
+  background: rgba(8, 9, 10, 0.6);
+  border-bottom: 1px solid var(--bcx-line);
+}
+.bcx-table td {
+  padding: 0.75rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--bcx-ink-soft);
+  border-bottom: 1px solid var(--bcx-line-soft);
+}
+.bcx-table tr:last-child td {
+  border-bottom: 0;
+}
+.bcx-table tbody tr {
+  transition: background var(--bcx-std);
+}
+.bcx-table tbody tr:hover {
+  background: var(--bcx-line-soft);
+}
+
+/* ============================================================
+   3D DEPTH LANGUAGE (reference primitive)
+   ============================================================ */
+.bcx-3d {
+  perspective: 900px;
+}
+.bcx-3d__panel {
+  transform: rotateX(8deg) rotateY(-12deg);
+  transform-style: preserve-3d;
+  border-radius: var(--bcx-r-lg);
+  border: 1px solid var(--bcx-line);
+  background: var(--bcx-crystal-solid);
+  box-shadow: var(--bcx-edge), var(--bcx-sh4);
+  transition: transform var(--bcx-slow);
+}
+.bcx-3d__panel:hover {
+  transform: rotateX(4deg) rotateY(-6deg) translateZ(10px);
+}
+
+/* ============================================================
+   LAB LAYOUT (preview page only)
+   ============================================================ */
+.bcx-lab {
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 80% -10%, rgba(92, 198, 232, 0.06), transparent), var(--bcx-env);
+  padding: clamp(1.25rem, 4vw, 3rem);
+}
+.bcx-lab__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--bcx-s8);
+}
+.bcx-section > header {
+  margin-bottom: var(--bcx-s5);
+  padding-bottom: var(--bcx-s3);
+  border-bottom: 1px solid var(--bcx-line);
+}
+.bcx-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bcx-s4);
+  align-items: center;
+}
+.bcx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--bcx-s4);
+}
+.bcx-swatch {
+  border-radius: var(--bcx-r-md);
+  border: 1px solid var(--bcx-line);
+  padding: var(--bcx-s4);
+  min-height: 6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.2rem;
+}
+.bcx-swatch small {
+  font: 700 0.66rem var(--font-geist-mono), monospace;
+  color: var(--bcx-ink);
+}
+.bcx-swatch span {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ============================================================
+   KEYFRAMES + REDUCED MOTION
+   ============================================================ */
+@keyframes bcx-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes bcx-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes bcx-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes bcx-slide-r {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes bcx-slide-b {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bcx *,
+  .bcx *::before,
+  .bcx *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width: 800px) {
+  .bcx-header {
+    flex-wrap: wrap;
+    gap: var(--bcx-s3);
+  }
+  .bcx-tabs,
+  .bcx-seg {
+    flex-wrap: wrap;
+  }
+  .bcx-drawer--right {
+    width: 100%;
+  }
+}

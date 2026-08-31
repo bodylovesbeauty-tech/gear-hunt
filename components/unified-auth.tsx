@@ -5,7 +5,7 @@ import { ArrowRight, ShieldCheck } from 'lucide-react'
 import { dashboardFor, demoUsers, sessionKey, type DemoUser, type Role, type Status } from '@/lib/prototype-session'
 import './signup-flow.css'
 
-function AuthFrame({children, eyebrow='BBBT ACCESS'}:{children:React.ReactNode;eyebrow?:string}){return <main className="auth-shell"><aside className="auth-visual"><Link href="/" className="auth-brand">BBBT</Link><div className="auth-visual-copy"><span className="eyebrow cyan-text">RIDER WELFARE / TRUST INFRASTRUCTURE</span><h2>One account.<br/><em>Your role shapes the ride.</em></h2><p>A serious safety and community layer for India&apos;s riding communities.</p><div className="auth-visual-meta"><ShieldCheck aria-hidden="true"/><span>Prototype systems are clearly labelled before launch.</span></div></div></aside><section className="auth-panel"><div className="auth-card">{children}</div></section></main>}
+function AuthFrame({children, eyebrow='BBBT ACCESS'}:{children:React.ReactNode;eyebrow?:string}){return <main className="auth-shell"><aside className="auth-visual"><Link href="/" className="auth-brand"><img src="/bbbt-logo-red.png" alt="BBBT"/></Link><div className="auth-visual-copy"><span className="eyebrow cyan-text">RIDER WELFARE / TRUST INFRASTRUCTURE</span><h2>One account.<br/><em>Your role shapes the ride.</em></h2><p>A serious safety and community layer for India&apos;s riding communities.</p><div className="auth-visual-meta"><ShieldCheck aria-hidden="true"/><span>Prototype systems are clearly labelled before launch.</span></div></div></aside><section className="auth-panel"><div className="auth-card">{children}</div></section></main>}
 function StatePage({status,role}:{status:Status;role:Role}){const copy={Pending:['Application Under Review','Your application is with the BBBT review team. We will share the next step after verification.'],Rejected:['Application Not Approved','Your current application was not approved. You may contact BBBT support if you believe this needs review.'],Suspended:['Account Suspended','Access is paused while BBBT reviews the account. Contact support for the next step.']}[status]||['',''];return <AuthFrame eyebrow={`APPLICATION STATUS / ${status.toUpperCase()}`}><span className={`eyebrow ${status==='Pending'?'orange-text':'red-text'}`}>{status==='Pending'?'REVIEW IN PROGRESS':'ACCESS STATUS'}</span><h1>{copy[0]}</h1><p className="auth-lede">{copy[1]}</p><div className="status-detail"><span>Role applied for</span><strong>{role}</strong><span>Application status</span><strong>{status}</strong></div><Link className="btn btn-cyan" href="/login">RETURN TO LOGIN <ArrowRight size={16}/></Link></AuthFrame>}
 export function UniversalLogin(){const [demoId,setDemoId]=useState('rider-approved');const [busy,setBusy]=useState(false);const [state,setState]=useState<{status:Status;role:Role}|null>(null);useEffect(()=>{const p=new URLSearchParams(window.location.search);const status=p.get('status') as Status|null;const role=p.get('role') as Role|null;if(status&&role)setState({status,role})},[]);if(state)return <StatePage {...state}/>;const submit=(id=demoId)=>{const user=demoUsers.find(x=>x.id===id)!;setBusy(true);sessionStorage.setItem(sessionKey,JSON.stringify({user,activeRole:user.approvedRoles[0]||user.primaryRole}));setTimeout(()=>window.location.assign(user.status==='Approved'?dashboardFor(user.approvedRoles[0]||user.primaryRole):`/login?status=${user.status}&role=${encodeURIComponent(user.primaryRole)}`),250)};return <AuthFrame><Link className="auth-brand mobile-brand" href="/">BBBT</Link><span className="eyebrow cyan-text">UNIVERSAL LOGIN / ONE ACCOUNT</span><h1>Welcome<br/><em>back.</em></h1><p className="auth-lede">Use one BBBT account for your rider, community and approved role access.</p><form className="auth-form" onSubmit={e=>{e.preventDefault();submit()}}><label>EMAIL OR MOBILE<input required placeholder="Email or +91 mobile number"/></label><label>PASSWORD<input required type="password" placeholder="Enter prototype password"/></label><button className="btn btn-cyan" disabled={busy}>{busy?'AUTHENTICATING...':'LOGIN'} <ArrowRight size={16}/></button></form><div className="auth-links"><Link href="/signup">Create a BBBT account</Link><span>Prototype recovery flow</span></div><section className="demo-access"><span className="eyebrow orange-text">PROTOTYPE DEMO ACCESS</span><p>Choose a sample identity to preview approval, restriction and role-routing states.</p><select value={demoId} onChange={e=>setDemoId(e.target.value)}>{demoUsers.map(u=><option key={u.id} value={u.id}>{u.primaryRole} — {u.status}</option>)}</select><button className="btn btn-outline" type="button" onClick={()=>submit()}>USE DEMO IDENTITY</button></section></AuthFrame>}
 export function UnifiedSignup(){
@@ -64,20 +64,43 @@ export function UnifiedSignup(){
     budget:'',
   })
   const set=(k:keyof typeof f)=>(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>)=>setF(p=>({...p,[k]:e.target.value}))
+  const bbbtZones={
+    north:['Jammu and Kashmir','Ladakh','Himachal Pradesh','Punjab','Haryana','Chandigarh','Delhi','Uttarakhand'],
+    northCentral:['Uttar Pradesh','Rajasthan'],
+    west:['Gujarat','Goa','Maharashtra'],
+    centralWest:['Madhya Pradesh','Chhattisgarh'],
+    southCentral:['Telangana','Andhra Pradesh','Karnataka'],
+    south:['Tamil Nadu','Kerala','Puducherry','Andaman and Nicobar Islands'],
+    eastNorthEast:['West Bengal','Odisha','Assam','Arunachal Pradesh','Manipur','Meghalaya','Mizoram','Nagaland','Sikkim','Tripura'],
+    eastCentral:['Bihar','Jharkhand']
+  } as const
+  function resolveBbbtZone(state:string,district:string){
+    const normalized=state.trim().toLowerCase()
+    const entry=Object.entries(bbbtZones).find(([,states])=>states.some(value=>value.toLowerCase()===normalized))
+    if(!entry)return ''
+    const names:{[key:string]:string}={north:'Z01 — NORTH',northCentral:'Z02 — NORTH-CENTRAL',west:'Z03 — WEST',centralWest:'Z04 — CENTRAL-WEST',southCentral:'Z05 — SOUTH-CENTRAL',south:'Z06 — SOUTH',eastNorthEast:'Z07 — EAST + NORTH-EAST',eastCentral:'Z08 — EAST-CENTRAL'}
+    return names[entry[0]]||''
+  }
   async function lookupPin(value:string){
-    const pin=value.replace(/\\D/g,'').slice(0,6)
-    setF(p=>({...p,pin}))
+    const pin=value.replace(/\D/g,'').slice(0,6)
+    setF(p=>({...p,pin,state:'',district:'',zone:''}))
     setPinStatus('')
     if(pin.length!==6)return
-    setPinStatus('Looking up location…')
+    if(pin.startsWith('9')){setPinStatus('Special postal service / APS context. Civilian BBBT geography was not assigned.');return}
+    setPinStatus('Detecting location…')
     try{
       const response=await fetch(`https://api.postalpincode.in/pincode/${pin}`)
+      if(!response.ok)throw new Error('postal lookup failed')
       const data=await response.json()
-      const postOffice=data?.[0]?.Status==='Success'?data[0].PostOffice?.[0]:null
-      if(!postOffice){setPinStatus('PIN not found. You can enter Zone manually.');return}
-      setF(p=>({...p,state:p.state||postOffice.State||'',district:p.district||postOffice.District||'',city:p.city||postOffice.Name||'',zone:p.zone||postOffice.Region||postOffice.Division||''}))
-      setPinStatus('Location assisted from PIN. Please review and correct if needed.')
-    }catch{setPinStatus('Lookup unavailable. You can enter Zone manually.')}
+      const offices=data?.[0]?.Status==='Success'?data[0].PostOffice||[]:[]
+      const postOffice=offices[0]
+      if(!postOffice){setPinStatus('Unable to detect location from this PIN right now.');return}
+      const state=postOffice.State||''
+      const district=postOffice.District||''
+      const zone=resolveBbbtZone(state,district)
+      setF(p=>({...p,state,district,zone}))
+      setPinStatus(zone?'Location detected. State, District and BBBT Zone are auto-detected.':'State and District detected. BBBT Zone is not mapped for this location yet.')
+    }catch{setPinStatus('Unable to detect location from this PIN right now.')}
   }
   const err=(k:string,label:string)=>errors[k]?<span className="field-error">{errors[k]}</span>:<span className="eyebrow" style={{fontSize:'.6rem'}}>{label}</span>
 
@@ -145,7 +168,7 @@ export function UnifiedSignup(){
   </AuthFrame>
 
   return <AuthFrame>
-    <Link className="auth-brand mobile-brand" href="/">BBBT</Link>
+<Link className="auth-brand mobile-brand" href="/"><img src="/bbbt-logo-red.png" alt="BBBT"/></Link>
     <span className="eyebrow cyan-text">CREATE ACCOUNT / JOIN THE NETWORK</span>
     <h1>Start your<br/><em>BBBT identity.</em></h1>
 
@@ -208,12 +231,12 @@ export function UnifiedSignup(){
           <label>CITY (Optional)<input value={f.city} onChange={set('city')} placeholder="City"/></label>
         </div>
         <div className="form-grid">
-          <label>DISTRICT (Optional)<input value={f.district} onChange={set('district')} placeholder="District"/></label>
-          <label>STATE (Optional)<input value={f.state} onChange={set('state')} placeholder="State"/></label>
+<label className="su-auto-field">DISTRICT (Auto-detected)<input value={f.district} readOnly aria-readonly="true" placeholder="Detected from PIN"/></label>
+  <label className="su-auto-field">STATE / UNION TERRITORY (Auto-detected)<input value={f.state} readOnly aria-readonly="true" placeholder="Detected from PIN"/></label>
         </div>
         <div className="form-grid">
           <label className={errors.pin?'invalid':''}>PIN CODE (Optional) {err('pin','Optional')}<input value={f.pin} onChange={e=>lookupPin(e.target.value)} inputMode="numeric" maxLength={6} placeholder="6-digit PIN"/>{pinStatus&&<small className="su-pin-status">{pinStatus}</small>}</label>
-          <label>ZONE (Optional)<input value={f.zone} onChange={set('zone')} placeholder="Zone — review or enter manually"/></label>
+          <label className="su-auto-field">BBBT ZONE (Auto-detected)<input value={f.zone} readOnly aria-readonly="true" placeholder="Detected from State + District"/></label>
         </div>
       </div>}
 

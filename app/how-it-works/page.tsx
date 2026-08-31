@@ -1,0 +1,1 @@
+import { HowItWorks } from '@/components/public-pages'; export const metadata={title:'How BBBT Works',description:'See how the proposed BBBT rider safety ecosystem connects.'}; export default function Page(){return <HowItWorks/>}

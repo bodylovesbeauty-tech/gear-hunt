@@ -1,0 +1,1 @@
+import { InfoPage } from '@/components/public-pages'; export const metadata={title:'SOS & Emergency Support | BBBT',description:'BBBT’s proposed emergency-support and rider readiness framework.'}; export default function Page(){return <InfoPage kind="emergency"/>}

@@ -1,0 +1,1 @@
+import { InfoPage } from '@/components/public-pages'; export const metadata={title:'Rider Community | BBBT',description:'BBBT’s proposed rider community participation layer.'}; export default function Page(){return <InfoPage kind="community"/>}

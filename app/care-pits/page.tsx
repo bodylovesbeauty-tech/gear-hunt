@@ -1,0 +1,1 @@
+import { InfoPage } from '@/components/public-pages'; export const metadata={title:'Care Pit Network | BBBT',description:'Discover the proposed BBBT Care Pit rider-support network.'}; export default function Page(){return <InfoPage kind="care-pits"/>}

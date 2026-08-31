@@ -1,27 +1,7 @@
-import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
-
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
-const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bbbt.in'
-
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  alternates: { canonical: '/' },
-  title: 'BBBT | India\'s Critical Highway Rider Safety & SOS Emergency Infrastructure',
-  description: 'Join the ultimate biker trust for instant highway SOS tracking, verified Blood Mesh coordination, and automated trauma center routing. Register for the core pre-launch safety network today.',
-  keywords: ['biker safety app india', 'highway sos network', 'motorcycle emergency response', 'rider blood donor mesh', 'bullet club safety infrastructure'],
-  openGraph: { title: 'BBBT | Critical Rider Safety Infrastructure', description: 'The trust protocol for India\'s riders. Instant highway SOS tracking, verified blood mesh coordination, and trauma center routing.', type: 'website', siteName: 'BBBT', locale: 'en_IN', url: siteUrl, images: ['/og-image.png'] },
-  twitter: { card: 'summary_large_image', title: 'BBBT | Critical Rider Safety Infrastructure', description: 'The trust protocol for India\'s riders.', images: ['/og-image.png'] },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
-  generator: 'BBBT',
-}
-
-export const viewport: Viewport = { colorScheme: 'dark', themeColor: '#000000', userScalable: true }
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`bg-background ${geist.variable} ${geistMono.variable}`}><body className="font-sans antialiased">{children}<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: 'BBBT', alternateName: 'Brand Biker Brotherhood Trust', url: siteUrl, description: 'Rider safety and highway emergency infrastructure for India.', areaServed: { '@type': 'Country', name: 'India' }, knowsAbout: ['rider safety', 'highway SOS', 'blood donor coordination', 'motorcycle safety'], sameAs: ['https://instagram.com/bbbt', 'https://facebook.com/bbbt', 'https://youtube.com/@bbbt'] }) }} />{process.env.NODE_ENV === 'production' && <Analytics />}</body></html>
-}
+const geist=Geist({subsets:['latin'],variable:'--font-geist'}); const geistMono=Geist_Mono({subsets:['latin'],variable:'--font-geist-mono'})
+export const metadata:Metadata={metadataBase:new URL('https://www.bbbt.in'),title:{default:'BBBT Trust | Rider Safety & Community Infrastructure',template:'%s | BBBT Trust'},description:'BBBT Trust is designing a safety, emergency-support, community and rider-welfare ecosystem for India’s riding communities.',alternates:{canonical:'/'},openGraph:{type:'website',siteName:'BBBT Trust',locale:'en_IN',title:'BBBT Trust | Rider Safety & Community Infrastructure',description:'A proposed safety and community infrastructure layer for Indian riders.',url:'https://www.bbbt.in/'},twitter:{card:'summary_large_image',title:'BBBT Trust | Rider Safety & Community Infrastructure',description:'A proposed safety and community infrastructure layer for Indian riders.'},robots:{index:true,follow:true}}
+export const viewport:Viewport={themeColor:'#0b0f10',colorScheme:'dark',width:'device-width',initialScale:1}
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en" className={`${geist.variable} ${geistMono.variable}`}><body>{children}</body></html>}

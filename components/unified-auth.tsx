@@ -51,6 +51,9 @@ export function UnifiedSignup(){
   const [step,setStep]=useState(0)
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
+  const [photoPreview,setPhotoPreview]=useState('')
+  const [photoName,setPhotoName]=useState('')
+  const [availability,setAvailability]=useState<Record<string,string>>({})
   const [f,setF]=useState({
     fullName:'',handle:'',mobile:'',email:'',
     language:'English',
@@ -103,6 +106,26 @@ export function UnifiedSignup(){
     }catch{setPinStatus('Unable to detect location from this PIN right now.')}
   }
   const err=(k:string,label:string)=>errors[k]?<span className="field-error">{errors[k]}</span>:<span className="eyebrow" style={{fontSize:'.6rem'}}>{label}</span>
+  function normalizeHandle(value:string){return value.trim().replace(/^@/,'').toLowerCase()}
+  function normalizeEmail(value:string){return value.trim().toLowerCase()}
+  function normalizeMobile(value:string){return value.replace(/\\D/g,'').replace(/^0/,'')}
+  function checkAvailability(field:'handle'|'email'|'mobile',value:string){
+    const normalized=field==='handle'?normalizeHandle(value):field==='email'?normalizeEmail(value):normalizeMobile(value)
+    if(!normalized||(field==='email'&&!/^\\S+@\\S+\\.\\S+$/.test(normalized))||(field==='mobile'&&!/^\\d{10,12}$/.test(normalized)))return
+    setAvailability(p=>({...p,[field]:'Checking availability…'}))
+    window.setTimeout(()=>{
+      let duplicate=demoUsers.some(user=>field==='handle'?normalizeHandle(user.handle)===normalized:field==='email'?false:normalizeMobile(user.id)===normalized)
+      try{const saved=JSON.parse(sessionStorage.getItem('bbbt-prototype-application')||'null');if(saved)duplicate=duplicate||(field==='handle'?normalizeHandle(saved.handle)===normalized:field==='email'?normalizeEmail(saved.email||'')===normalized:normalizeMobile(saved.mobile)===normalized)}catch{}
+      setAvailability(p=>({...p,[field]:duplicate?'Already in use ✕':'Available ✓'}))
+    },300)
+  }
+  function addPhoto(file?:File){
+    if(!file)return
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){setPhotoPreview('');setPhotoName('');return}
+    if(photoPreview)URL.revokeObjectURL(photoPreview)
+    setPhotoPreview(URL.createObjectURL(file));setPhotoName(file.name)
+  }
+  function removePhoto(){if(photoPreview)URL.revokeObjectURL(photoPreview);setPhotoPreview('');setPhotoName('')}
 
   function validateStep(i:number){
     const e:Record<string,string>={}
@@ -113,6 +136,9 @@ export function UnifiedSignup(){
       if(!m)e.mobile='Required'
       else if(!/^\+?[0-9][0-9\s-]{7,14}$/.test(m))e.mobile='Invalid mobile'
       if(f.email.trim()&&!/^\S+@\S+\.\S+$/.test(f.email.trim()))e.email='Invalid email'
+      if(availability.handle==='Already in use ✕')e.handle='This handle is already registered'
+      if(availability.email==='Already in use ✕')e.email='This email is already registered'
+      if(availability.mobile==='Already in use ✕')e.mobile='This mobile number is already registered'
     }
     if(i===2){
       if(!f.baseLocation.trim())e.baseLocation='Required'
@@ -143,6 +169,7 @@ export function UnifiedSignup(){
   function submit(ev:React.FormEvent){
     ev.preventDefault()
     if(step!==steps.length-1||!checked)return
+    if(Object.values(availability).some(value=>value==='Already in use ✕')){setStep(0);return}
     const application={...f,role,status:'Pending',submittedAt:new Date().toISOString(),responsibilityAcknowledged:true}
     sessionStorage.setItem('bbbt-prototype-application',JSON.stringify(application))
     setDone(true)
@@ -200,11 +227,18 @@ export function UnifiedSignup(){
       {step===0&&<div className="su-step">
         <div className="form-grid">
           <label className={errors.fullName?'invalid':''}>FULL NAME (Required) {err('fullName','Required')}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name"/></label>
-          <label className={errors.handle?'invalid':''}>HANDLE (Required) {err('handle','Required')}<input value={f.handle} onChange={set('handle')} placeholder="@yourriderhandle"/></label>
+          <label className={errors.handle?'invalid':''}>HANDLE (Required) {availability.handle&&<span className={availability.handle.includes('✕')?'field-error':'eyebrow'}>{availability.handle}</span>}<input value={f.handle} onChange={set('handle')} onBlur={()=>checkAvailability('handle',f.handle)} placeholder="@yourriderhandle"/></label>
+        </div>
+        <div className="profile-photo-control">
+          <span className="profile-photo-label">Profile Picture (Optional)</span>
+          {photoPreview?<div className="profile-photo-selected"><img src={photoPreview} alt="Profile preview"/><div><span className="su-file-row">{photoName}</span><button type="button" onClick={()=>document.getElementById('profile-photo-input')?.click()}>Change photo</button><button type="button" onClick={removePhoto}>Remove</button></div></div>:<div className="profile-photo-actions"><label className="btn btn-outline" htmlFor="profile-photo-input">Choose from Gallery / Files</label><label className="btn btn-outline" htmlFor="profile-camera-input">Open Camera</label></div>}
+          <input id="profile-photo-input" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>addPhoto(e.target.files?.[0])}/>
+          <input id="profile-camera-input" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" capture="user" onChange={e=>addPhoto(e.target.files?.[0])}/>
+          <small>JPG, JPEG, PNG or WEBP up to 5 MB. Preview-only in this prototype.</small>
         </div>
         <div className="form-grid">
-          <label className={errors.mobile?'invalid':''}>MOBILE NUMBER (Required) {err('mobile','Required')}<input value={f.mobile} onChange={set('mobile')} inputMode="tel" placeholder="+91 mobile number"/></label>
-          <label className={errors.email?'invalid':''}>EMAIL (Optional) {err('email','Optional')}<input value={f.email} onChange={set('email')} type="email" placeholder="you@example.com"/></label>
+          <label className={errors.mobile?'invalid':''}>MOBILE NUMBER (Required) {availability.mobile&&<span className={availability.mobile.includes('✕')?'field-error':'eyebrow'}>{availability.mobile}</span>}<input value={f.mobile} onChange={set('mobile')} onBlur={()=>checkAvailability('mobile',f.mobile)} inputMode="tel" placeholder="+91 mobile number"/></label>
+          <label className={errors.email?'invalid':''}>EMAIL (Optional) {availability.email&&<span className={availability.email.includes('✕')?'field-error':'eyebrow'}>{availability.email}</span>}<input value={f.email} onChange={set('email')} onBlur={()=>checkAvailability('email',f.email)} type="email" placeholder="you@example.com"/></label>
         </div>
       </div>}
 
@@ -330,6 +364,8 @@ export function UnifiedSignup(){
           <div><small>Name</small><p>{f.fullName.trim()||'—'}</p></div>
           <div><small>Handle</small><p>{f.handle.trim()||'—'}</p></div>
           <div><small>Mobile</small><p>{f.mobile.trim()||'—'}</p></div>
+          <div><small>Email</small><p>{f.email.trim()||'Not added'}</p></div>
+          <div><small>Profile Picture</small><p className={photoPreview?'':'muted'}>{photoPreview?'Added':'Not added'}</p></div>
           <div><small>Languages</small><p>{[f.language,...f.additionalLanguages].join(', ')}</p></div>
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
           <div><small>Bike</small><p className={f.bikeMake.trim()?'':'muted'}>{[f.bikeMake,f.bikeModel,f.bikeYear].filter(Boolean).join(' ')||'Not added'}</p></div>

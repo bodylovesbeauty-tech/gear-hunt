@@ -73,6 +73,12 @@
 .su-verification-note{margin:.2rem 0 1rem;border-left-color:var(--orange);font-size:.7rem}
 .su-verification-note strong{color:var(--orange);font:700 .62rem var(--font-mono);letter-spacing:.05em}
 .bike-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.profile-photo-control{display:flex;flex-direction:column;gap:.6rem;padding:1rem;border:1px solid var(--line);background:var(--surface)}
+.profile-photo-label{font:700 .68rem var(--font-mono);letter-spacing:.07em;color:var(--foreground)}
+.profile-photo-actions{display:flex;gap:.75rem;flex-wrap:wrap}.profile-photo-actions .btn{flex:1;min-width:10rem;text-align:center;cursor:pointer}
+.profile-photo-selected{display:flex;align-items:center;gap:1rem}.profile-photo-selected img{width:4.5rem;height:4.5rem;object-fit:cover;border:1px solid var(--blue)}
+.profile-photo-selected div{display:flex;flex-direction:column;align-items:flex-start;gap:.35rem}.profile-photo-selected button{border:0;background:none;padding:0;color:var(--blue);font:600 .72rem var(--font-mono);text-decoration:underline;cursor:pointer}
+.profile-photo-control>small{color:var(--muted);font-size:.68rem;line-height:1.45}.profile-photo-control>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .su-auto-field input[readonly]{background:color-mix(in srgb,var(--surface) 82%,var(--blue));border-color:color-mix(in srgb,var(--blue) 45%,var(--line));cursor:not-allowed}
 .su-upload-note,.su-pin-status{display:block;margin-top:.35rem;color:var(--muted);font-size:.68rem;line-height:1.45}
 .su-file-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-top:.45rem;color:var(--foreground);font-size:.75rem}

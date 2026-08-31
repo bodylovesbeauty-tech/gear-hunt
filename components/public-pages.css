@@ -1,0 +1,184 @@
+/* ============================================================
+   BBBT V2 — PUBLIC PAGE LAYOUT SYSTEM (Phase 1B)
+   Layout scaffolding only. Visual language (crystal material,
+   semantic signals, spacing, motion) is reused from the Black
+   Crystal design system via .bcx tokens defined in
+   app/design-system/crystal.css. No visual primitives are
+   duplicated here — cards/badges/alerts/tabs/nodes come from
+   components/ui/crystal.tsx.
+   ============================================================ */
+
+.pp .bcx-eyebrow { color: var(--bcx-red); }
+
+/* ---------- section shell ---------- */
+.pp-section {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(3.5rem, 7vw, 6.5rem) 1.25rem;
+}
+.pp-section--tight { padding-top: clamp(2rem, 4vw, 3rem); }
+.pp-section--alt { background: var(--bcx-black); border-block: 1px solid var(--bcx-line-soft); }
+
+.pp-head { max-width: 60ch; margin-bottom: clamp(2rem, 4vw, 3rem); }
+.pp-head h2 {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  margin: 0.75rem 0 0;
+  color: var(--bcx-ink);
+  text-wrap: balance;
+}
+.pp-head p { margin: 1rem 0 0; color: var(--bcx-ink-soft); max-width: 58ch; line-height: 1.6; }
+.pp-head--split { display: flex; gap: 2.5rem; justify-content: space-between; align-items: flex-end; max-width: none; }
+.pp-head--split > div:first-child { max-width: 60ch; }
+
+/* ---------- generic auto grid ---------- */
+.pp-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.pp-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.pp-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.pp-grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+/* card internals reused across pages (built on .bcx-card) */
+.pp-card-icon {
+  display: inline-grid; place-items: center;
+  width: 2.5rem; height: 2.5rem; margin-bottom: 1rem;
+  border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-md);
+  color: var(--bcx-accent, var(--bcx-blue));
+  background: rgba(255,255,255,0.02);
+}
+.pp-card h3 { margin: 0 0 0.4rem; font-size: 1.05rem; letter-spacing: -0.01em; color: var(--bcx-ink); }
+.pp-card p { margin: 0 0 1rem; color: var(--bcx-ink-soft); line-height: 1.55; font-size: 0.92rem; }
+.pp-card__foot { margin-top: auto; padding-top: 0.75rem; }
+
+/* ---------- eyebrow chips row ---------- */
+.pp-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+.pp-chip {
+  padding: 0.5rem 0.7rem; border: 1px solid var(--bcx-line);
+  border-radius: var(--bcx-r-pill); font: 700 0.66rem/1 var(--font-geist-mono), monospace;
+  letter-spacing: 0.06em; color: var(--bcx-ink-soft); background: rgba(255,255,255,0.015);
+}
+
+/* ============================================================ ABOUT */
+.pp-reality { display: grid; gap: 1px; background: var(--bcx-line-soft); border: 1px solid var(--bcx-line-soft); border-radius: var(--bcx-r-lg); overflow: hidden; grid-template-columns: repeat(3, 1fr); }
+.pp-reality > div { background: var(--bcx-env); padding: 1.5rem; }
+.pp-reality b { display: block; font: 700 0.66rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.1em; color: var(--bcx-red); margin-bottom: 0.75rem; }
+.pp-reality p { margin: 0; color: var(--bcx-ink-soft); font-size: 0.92rem; line-height: 1.55; }
+
+/* trust / holding institutional split */
+.pp-th { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.pp-th__panel { padding: 1.75rem; border-radius: var(--bcx-r-lg); border: 1px solid var(--bcx-line); background: var(--bcx-crystal-solid); position: relative; overflow: hidden; }
+.pp-th__panel::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--bcx-accent); }
+.pp-th__panel h3 { margin: 0.75rem 0 0.25rem; font-size: 1.3rem; letter-spacing: -0.02em; color: var(--bcx-ink); }
+.pp-th__panel .pp-role { font: 700 0.66rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.1em; color: var(--bcx-accent); text-transform: uppercase; }
+.pp-th__panel ul { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.5rem; }
+.pp-th__panel li { color: var(--bcx-ink-soft); font-size: 0.9rem; padding-left: 1.1rem; position: relative; }
+.pp-th__panel li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 5px; height: 5px; border-radius: 50%; background: var(--bcx-accent); }
+
+/* vision timeline */
+.pp-timeline { display: grid; gap: 0; }
+.pp-timeline > div { display: grid; grid-template-columns: 8rem 1fr; gap: 1.5rem; padding: 1.25rem 0; border-top: 1px solid var(--bcx-line-soft); }
+.pp-timeline > div:last-child { border-bottom: 1px solid var(--bcx-line-soft); }
+.pp-timeline .pp-phase { font: 700 0.7rem/1.3 var(--font-geist-mono), monospace; letter-spacing: 0.08em; color: var(--bcx-blue); }
+.pp-timeline h4 { margin: 0 0 0.25rem; color: var(--bcx-ink); font-size: 1rem; }
+.pp-timeline p { margin: 0; color: var(--bcx-ink-soft); font-size: 0.9rem; line-height: 1.5; }
+
+/* ============================================================ SAFETY / phase tabs */
+.pp-scenarios { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 1.75rem; }
+.pp-topics { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2.5rem; }
+
+/* ============================================================ EMERGENCY / CARE workflow rail */
+.pp-flow { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 0; margin-top: 1.75rem; border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); overflow: hidden; }
+.pp-flow__node { position: relative; padding: 1.5rem 1.25rem 1.5rem 1.5rem; background: var(--bcx-crystal-solid); border-right: 1px solid var(--bcx-line-soft); display: flex; flex-direction: column; gap: 0.6rem; min-height: 10rem; }
+.pp-flow__node:last-child { border-right: 0; }
+.pp-flow__node > span.pp-flow__n { font: 700 0.66rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.1em; color: var(--bcx-accent); }
+.pp-flow__node h4 { margin: 0; font-size: 0.98rem; color: var(--bcx-ink); letter-spacing: -0.01em; }
+.pp-flow__node p { margin: 0; font-size: 0.82rem; color: var(--bcx-ink-soft); line-height: 1.5; }
+.pp-flow__node .pp-flow__arrow { position: absolute; right: -1px; top: 50%; transform: translateY(-50%); color: var(--bcx-green); background: var(--bcx-env); padding: 2px; z-index: 1; }
+.pp-flow__node .pp-flow__end { margin-top: auto; color: var(--bcx-green); font: 700 0.6rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.08em; }
+
+/* ============================================================ CARE PIT map */
+.pp-map { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1rem; margin-top: 1.75rem; align-items: stretch; }
+.pp-map__canvas { position: relative; min-height: 22rem; border-radius: var(--bcx-r-lg); overflow: hidden; border: 1px solid var(--bcx-line); background: linear-gradient(180deg, rgba(92,198,232,0.06), transparent 40%), var(--bcx-black); }
+.pp-map__route { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: repeating-linear-gradient(90deg, var(--bcx-orange) 0 14px, transparent 14px 26px); opacity: 0.6; }
+.pp-map__nodes { position: absolute; inset: 0; }
+.pp-map__pin { position: absolute; transform: translate(-50%, -50%); display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid var(--bcx-accent); color: var(--bcx-accent); background: rgba(11,13,14,0.85); cursor: pointer; transition: transform var(--bcx-fast), box-shadow var(--bcx-fast); }
+.pp-map__pin:hover, .pp-map__pin:focus-visible, .pp-map__pin[aria-pressed='true'] { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bcx-accent) 22%, transparent); outline: none; }
+.pp-map__label { position: absolute; left: 1rem; top: 1rem; font: 700 0.62rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.1em; color: var(--bcx-ink-mute); }
+.pp-map__detail { padding: 1.5rem; border-radius: var(--bcx-r-lg); border: 1px solid var(--bcx-line); background: var(--bcx-crystal-solid); display: flex; flex-direction: column; gap: 0.75rem; }
+.pp-map__detail h4 { margin: 0; font-size: 1.15rem; color: var(--bcx-ink); }
+.pp-map__detail .pp-cat { font: 700 0.66rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.1em; color: var(--bcx-accent); text-transform: uppercase; }
+.pp-map__detail dl { margin: 0.5rem 0 0; display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; }
+.pp-map__detail dt { color: var(--bcx-ink-mute); font-size: 0.78rem; font-family: var(--font-geist-mono), monospace; }
+.pp-map__detail dd { margin: 0; color: var(--bcx-ink-soft); font-size: 0.85rem; text-align: right; }
+.pp-map__services { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.25rem; }
+
+/* ============================================================ COMMUNITY / COUNCIL loop */
+.pp-loop { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-top: 1.75rem; }
+.pp-loop__step { padding: 0.85rem 1rem; border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-md); background: var(--bcx-crystal-solid); font-size: 0.85rem; color: var(--bcx-ink); }
+.pp-loop__step b { display: block; font: 700 0.6rem/1.4 var(--font-geist-mono), monospace; letter-spacing: 0.08em; color: var(--bcx-accent); }
+.pp-loop__arrow { color: var(--bcx-green); flex: none; }
+
+/* ============================================================ HOW IT WORKS stages */
+.pp-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 1.75rem; background: var(--bcx-line-soft); border: 1px solid var(--bcx-line-soft); border-radius: var(--bcx-r-lg); overflow: hidden; }
+.pp-stage { position: relative; background: var(--bcx-env); padding: 1.5rem 1.25rem; min-height: 11rem; display: flex; flex-direction: column; gap: 0.5rem; transition: background var(--bcx-std); }
+.pp-stage:hover { background: var(--bcx-graphite); }
+.pp-stage > span.pp-stage__n { font: 700 1.4rem/1 var(--font-geist-mono), monospace; letter-spacing: -0.02em; color: var(--bcx-accent); }
+.pp-stage h4 { margin: 0.25rem 0 0; font-size: 0.98rem; color: var(--bcx-ink); }
+.pp-stage p { margin: 0; font-size: 0.82rem; color: var(--bcx-ink-soft); line-height: 1.5; }
+.pp-stage .pp-stage__status { margin-top: auto; }
+
+/* ============================================================ FAQ categories */
+.pp-faq { display: grid; grid-template-columns: 260px 1fr; gap: 2.5rem; align-items: start; }
+.pp-faq__nav { position: sticky; top: 6rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.pp-faq__nav button { text-align: left; padding: 0.7rem 0.85rem; border: 1px solid transparent; border-radius: var(--bcx-r-md); background: transparent; color: var(--bcx-ink-soft); font: 600 0.85rem/1.2 var(--font-geist), sans-serif; cursor: pointer; letter-spacing: 0.01em; transition: all var(--bcx-fast); }
+.pp-faq__nav button:hover { color: var(--bcx-ink); background: rgba(255,255,255,0.03); }
+.pp-faq__nav button[aria-pressed='true'] { color: var(--bcx-ink); border-color: var(--bcx-line); background: var(--bcx-crystal-solid); }
+.pp-faq__nav button span { font: 700 0.6rem/1 var(--font-geist-mono), monospace; color: var(--bcx-blue); margin-right: 0.5rem; }
+.pp-faq__list { display: grid; gap: 0.5rem; }
+.pp-faq__cat-title { font: 700 0.7rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.12em; color: var(--bcx-ink-mute); text-transform: uppercase; margin: 0 0 0.5rem; }
+.pp-qa { border: 1px solid var(--bcx-line-soft); border-radius: var(--bcx-r-md); background: var(--bcx-crystal-solid); overflow: hidden; }
+.pp-qa button { width: 100%; display: flex; align-items: center; gap: 1rem; padding: 1.1rem 1.25rem; background: none; border: 0; color: var(--bcx-ink); text-align: left; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+.pp-qa button svg { margin-left: auto; flex: none; transition: transform var(--bcx-fast); color: var(--bcx-ink-mute); }
+.pp-qa button[aria-expanded='true'] svg { transform: rotate(180deg); }
+.pp-qa p { margin: 0; padding: 0 1.25rem 1.2rem; color: var(--bcx-ink-soft); line-height: 1.6; font-size: 0.9rem; }
+
+/* ============================================================ CONTACT routing */
+.pp-routes { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-top: 1.75rem; }
+.pp-route { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.5rem; border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); background: var(--bcx-crystal-solid); text-decoration: none; color: inherit; transition: transform var(--bcx-fast), border-color var(--bcx-fast); position: relative; overflow: hidden; }
+.pp-route::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--bcx-accent); opacity: 0.8; }
+.pp-route:hover, .pp-route:focus-visible { transform: translateY(-3px); border-color: var(--bcx-accent); outline: none; }
+.pp-route .pp-route__who { font: 700 0.66rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.08em; color: var(--bcx-accent); text-transform: uppercase; }
+.pp-route h3 { margin: 0.35rem 0 0; font-size: 1.1rem; color: var(--bcx-ink); }
+.pp-route p { margin: 0; color: var(--bcx-ink-soft); font-size: 0.88rem; line-height: 1.5; }
+.pp-route .pp-route__go { margin-top: auto; padding-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; color: var(--bcx-ink); font-size: 0.8rem; font-weight: 600; }
+
+/* ---------- CTA band ---------- */
+.pp-band { max-width: 1240px; margin: 0 auto; padding: clamp(2.5rem, 5vw, 4rem) 1.25rem clamp(4rem, 8vw, 6rem); }
+.pp-band__inner { border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); background: var(--bcx-crystal-solid); padding: clamp(2rem, 4vw, 3rem); display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; justify-content: space-between; }
+.pp-band__inner h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -0.03em; color: var(--bcx-ink); max-width: 24ch; }
+.pp-band__inner p { margin: 0.5rem 0 0; color: var(--bcx-ink-soft); max-width: 44ch; font-size: 0.92rem; }
+
+/* ============================================================ RESPONSIVE */
+@media (max-width: 900px) {
+  .pp-th, .pp-map, .pp-grid--2, .pp-grid--3, .pp-grid--4 { grid-template-columns: 1fr; }
+  .pp-faq { grid-template-columns: 1fr; }
+  .pp-faq__nav { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 0.5rem; }
+  .pp-faq__nav button { white-space: nowrap; }
+  .pp-reality { grid-template-columns: 1fr; }
+  .pp-stages { grid-template-columns: repeat(2, 1fr); }
+  .pp-head--split { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+  /* workflow rail becomes vertical on small screens */
+  .pp-flow { grid-auto-flow: row; grid-auto-columns: auto; }
+  .pp-flow__node { border-right: 0; border-bottom: 1px solid var(--bcx-line-soft); min-height: 0; }
+  .pp-flow__node:last-child { border-bottom: 0; }
+  .pp-flow__node .pp-flow__arrow { right: 50%; top: auto; bottom: -1px; transform: translate(50%, 50%) rotate(90deg); }
+}
+@media (max-width: 560px) {
+  .pp-stages { grid-template-columns: 1fr; }
+  .pp-timeline > div { grid-template-columns: 1fr; gap: 0.35rem; }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .pp * { transition: none !important; animation: none !important; }
+}

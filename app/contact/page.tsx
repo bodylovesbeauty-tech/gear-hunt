@@ -1,1 +1,8 @@
-import { Cta, Hero, SectionLabel, Shell } from '@/components/public-site'; export const metadata={title:'Contact BBBT',description:'Contact BBBT about rider safety, communities, partnerships and the Founding Rider Council.'}; export default function Page(){return <Shell><main><Hero label="Contact BBBT" title="Start with the right conversation." lede="Choose the pathway closest to your work. This prototype does not expose private contact details or create a live support ticket."/><section className="page-content"><div className="contact-grid">{[['Rider / Community','Safety participation and rider questions'],['Riding Group','Community admin and local network ideas'],['Founding Rider Council','Experienced rider contribution'],['Partner','Care Pit and safety collaboration'],['Investor','Controlled future ecosystem conversation']].map(([a,b])=><article className="contact-card" key={a}><strong>{a}</strong><span>{b}</span></article>)}</div><div style={{marginTop:'2rem'}}><Cta href="mailto:connect@bbbt.in">Email BBBT</Cta></div></section></main></Shell>}
+import { ContactPage } from '@/components/public-pages'
+export const metadata = {
+  title: 'Contact BBBT',
+  description: 'Contact BBBT about rider safety, communities, partnerships, the Founding Rider Council and the future ecosystem.',
+  alternates: { canonical: '/contact' },
+  openGraph: { title: 'Contact BBBT', description: 'Choose the right pathway to start a conversation with BBBT.', url: 'https://www.bbbt.in/contact', type: 'website' },
+}
+export default function Page() { return <ContactPage /> }

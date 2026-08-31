@@ -1,0 +1,1 @@
+import { FAQPage } from '@/components/public-pages'; export const metadata={title:'FAQ | BBBT Trust',description:'Honest answers about BBBT, rider safety, Care Pits and the proposed ecosystem.'}; export default function Page(){return <FAQPage/>}

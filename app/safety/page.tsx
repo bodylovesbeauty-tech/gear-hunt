@@ -1,0 +1,1 @@
+import { InfoPage } from '@/components/public-pages'; export const metadata={title:'Rider Safety Infrastructure | BBBT',description:'The proposed BBBT rider safety infrastructure for Indian riding communities.'}; export default function Page(){return <InfoPage kind="safety"/>}

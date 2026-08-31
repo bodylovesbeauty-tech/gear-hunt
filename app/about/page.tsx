@@ -1,0 +1,1 @@
+import { InfoPage } from '@/components/public-pages'; export const metadata={title:'About BBBT Trust',description:'About Brand Biker Brotherhood Trust and its proposed rider-welfare mission.'}; export default function Page(){return <InfoPage kind="about"/>}

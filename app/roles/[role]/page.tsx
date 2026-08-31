@@ -1,0 +1,11 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { ResponsibilityNotice } from '@/components/role-entry'
+
+const content: Record<string, { title: string; eyebrow: string; intro: string; responsibilities: string[]; cta: string; href: string }> = {
+  marshal: { title: 'Marshal', eyebrow: 'Local response leader', intro: 'A marshal helps turn a rider community into a calm, accountable first-response network.', responsibilities: ['Coordinate trusted riders within a defined area', 'Follow the Trust Protocol during incidents', 'Never replace emergency services or medical professionals', 'Keep communication factual, respectful, and privacy-aware'], cta: 'Return to role selection', href: '/#join' },
+  'group-admin': { title: 'Group Admin', eyebrow: 'Community coordinator', intro: 'Group Admins bring existing riding communities into BBBT with clear expectations and responsible access.', responsibilities: ['Register and maintain group information', 'Invite members with informed consent', 'Promote safety readiness and responsible conduct', 'Support verification without collecting unnecessary personal data'], cta: 'Return to role selection', href: '/#join' },
+  council: { title: 'Founding Council', eyebrow: 'Trust and governance', intro: 'The Founding Council helps define standards, accountability, and the long-term trust model.', responsibilities: ['Review governance principles and safety standards', 'Challenge assumptions with evidence', 'Protect rider dignity, privacy, and autonomy', 'Help the network grow without compromising its purpose'], cta: 'Request council conversation', href: 'mailto:hello@brandbikebrotherhoodtrust.com' },
+}
+
+export default async function RolePage({ params }: { params: Promise<{ role: string }> }) { const data = content[(await params).role]; if (!data) notFound(); return <main className="page-shell role-page"><div className="section-label">{data.eyebrow}</div><h1>{data.title}</h1><p className="page-lede">{data.intro}</p><div className="information-card"><h2>What this role means</h2><ul>{data.responsibilities.map((item) => <li key={item}>{item}</li>)}</ul></div><ResponsibilityNotice /><Link className="btn btn-red" href={data.href}>{data.cta}</Link></main> }

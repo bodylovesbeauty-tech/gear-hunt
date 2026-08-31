@@ -1,7 +1,3 @@
 import type { MetadataRoute } from 'next'
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bbbt.in'
-
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [{ url: siteUrl, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 }, { url: `${siteUrl}/safety-guides`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 }, { url: `${siteUrl}/#protocol`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 }, { url: `${siteUrl}/#ledger`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 }, { url: `${siteUrl}/#vault`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 }]
-}
+const routes=['','about','safety','emergency','care-pits','community','founding-rider-council','how-it-works','faq','contact','privacy','terms','community-guidelines']
+export default function sitemap():MetadataRoute.Sitemap{return routes.map((route,i)=>({url:`https://www.bbbt.in/${route}`,lastModified:new Date(),changeFrequency:i<1?'weekly':'monthly',priority:i<1?1:.7}))}

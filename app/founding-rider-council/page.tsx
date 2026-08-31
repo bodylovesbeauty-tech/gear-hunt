@@ -1,0 +1,1 @@
+import { InfoPage } from '@/components/public-pages'; export const metadata={title:'Founding Rider Council | BBBT',description:'Learn about the proposed BBBT Founding Rider Council.'}; export default function Page(){return <InfoPage kind="founding-rider-council"/>}

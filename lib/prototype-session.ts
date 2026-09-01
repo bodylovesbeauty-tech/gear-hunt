@@ -19,3 +19,14 @@ export type PrototypeIdentity={id:string;applicationId:string;fullName:string;ha
 export function prototypeApplicationId(application:{submittedAt?:string;fullName?:string;handle?:string}){const source=`${application.submittedAt||''}|${application.fullName||''}|${application.handle||''}`;let hash=0;for(let i=0;i<source.length;i++)hash=(hash*31+source.charCodeAt(i))>>>0;return `BBBT-PROTO-${hash.toString(16).toUpperCase().padStart(8,'0')}`}
 export function dashboardFor(role:Role){return role==='Rider'?'/rider-dashboard':role==='Group Admin'?'/group-admin-dashboard':role==='Marshal'?'/marshal-dashboard':'/founding-rider-council-dashboard'}
 export function roleForPath(path:string):Role|undefined{return path.includes('group-admin')?'Group Admin':path.includes('marshal')?'Marshal':path.includes('founding-rider')?'Founding Rider Council Member':path.includes('rider-dashboard')?'Rider':undefined}
+// Roles that are auto-approved on successful signup. Founding Rider Council Member (and, in the wider product, Investor) require manual approval.
+export const registryKey='bbbt-prototype-registry'
+export const autoApprovedRoles:Role[]=['Rider','Group Admin','Marshal']
+export function isAutoApproved(role:Role){return autoApprovedRoles.includes(role)}
+// Prototype-level normalisers for cross-role uniqueness. Not production-grade — no server/Supabase auth is connected yet.
+export function normEmail(v:string){return (v||'').trim().toLowerCase()}
+export function normHandle(v:string){return (v||'').trim().replace(/^@/,'').toLowerCase()}
+export function normMobile(v:string){let d=(v||'').replace(/[^0-9]/g,'');if(d.length===12&&d.startsWith('91'))d=d.slice(2);if(d.length===11&&d.startsWith('0'))d=d.slice(1);return d}
+export function readRegistry():PrototypeIdentity[]{try{if(typeof window==='undefined')return [];const raw=sessionStorage.getItem(registryKey);const list=raw?JSON.parse(raw):[];return Array.isArray(list)?list:[]}catch{return []}}
+export function saveIdentityToRegistry(identity:PrototypeIdentity){try{const list=readRegistry().filter(x=>x.id!==identity.id);list.push(identity);sessionStorage.setItem(registryKey,JSON.stringify(list))}catch{}}
+export function duplicateField(field:'mobile'|'email'|'handle',value:string,excludeId?:string):boolean{const reg=readRegistry();if(field==='handle'){const n=normHandle(value);if(!n)return false;return demoUsers.some(u=>normHandle(u.handle)===n)||reg.some(u=>u.id!==excludeId&&normHandle(u.handle)===n)}if(field==='email'){const n=normEmail(value);if(!n)return false;return reg.some(u=>u.id!==excludeId&&u.email&&normEmail(u.email)===n)}const n=normMobile(value);if(!n)return false;return reg.some(u=>u.id!==excludeId&&u.mobile&&normMobile(u.mobile)===n)}

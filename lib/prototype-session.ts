@@ -16,6 +16,12 @@ export const applicationKey='bbbt-prototype-application'
 export const identityKey='bbbt-prototype-identity'
 export type PrototypeVehicle={id:string;make:string;model:string;modelYear:string;currentKm:string;registration:string;fullBikePhoto:{name:string;dataUrl:string}|null;meterPhoto:{name:string;dataUrl:string}|null}
 export type PrototypeSafetyKit={status:'NOT ACTIVATED'|'ACTIVE';linkedVehicleId:string|null;activatedAt:string|null;kitId:string}
+export type GovernanceMember={id:string;name:string;handle:string;role:Role;joinedAt:string;office?:'GROUP ADMIN'|'GROUP MARSHAL'}
+export type GovernanceElection={id:string;office:'GROUP ADMIN'|'GROUP MARSHAL';candidateIds:string[];votes:Record<string,string>;status:'OPEN'|'CLOSED';winnerId?:string;createdAt:string;rideId?:string}
+export type GovernanceRide={id:string;title:string;route:string;date:string;meetingPoint:string;notes:string;status:'DRAFT'|'CONFIRMED'|'COMPLETED';createdAt:string;completedAt?:string}
+export type GovernanceNotification={id:string;message:string;createdAt:string;read:boolean}
+export type PrototypeGroup={id:string;name:string;createdAt:string;cycleStart:string;cycleEnd:string;adminId:string;members:GovernanceMember[];elections:GovernanceElection[];rides:GovernanceRide[];notifications:GovernanceNotification[]}
+export const groupKey='bbbt-prototype-group'
 export type PrototypeIdentity={id:string;applicationId:string;fullName:string;handle:string;mobile:string;email:string;requestedRole:Role;status:Status;selectedLanguages:string[];vehicles:PrototypeVehicle[];safetyKit?:PrototypeSafetyKit;address?:string;city?:string;state?:string;district?:string;pinCode?:string;bbbtZone?:string;emergencyName?:string;emergencyNumber?:string;bloodGroup?:string;profilePhoto?:{name:string;dataUrl:string}|null;bloodReport?:{name:string;dataUrl:string}|null;createdAt:string}
 export function prototypeApplicationId(application:{submittedAt?:string;fullName?:string;handle?:string}){const source=`${application.submittedAt||''}|${application.fullName||''}|${application.handle||''}`;let hash=0;for(let i=0;i<source.length;i++)hash=(hash*31+source.charCodeAt(i))>>>0;return `BBBT-PROTO-${hash.toString(16).toUpperCase().padStart(8,'0')}`}
 export function dashboardFor(role:Role){return role==='Rider'?'/rider-dashboard':role==='Group Admin'?'/group-admin-dashboard':role==='Marshal'?'/marshal-dashboard':'/founding-rider-council-dashboard'}

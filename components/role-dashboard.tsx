@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Copy, ShieldCheck, Camera, Trash2, Plus, Save } from 'lucide-react'
 import { OpenRides } from '@/components/open-rides'
 import { FRCDashboardShell } from '@/components/frc-dashboard-shell'
+import { ExaminationEngine } from '@/components/examination-engine'
 import { applicationKey, dashboardFor, groupKey, identityKey, roleForPath, sessionKey, type DemoUser, type GovernanceElection, type GovernanceMember, type GovernanceRide, type PrototypeGroup, type PrototypeIdentity, type PrototypeVehicle, type Role } from '@/lib/prototype-session'
 const nav:Record<Role,string[]>={Rider:['Overview','Safety','Community','Training','Tokens','Referrals','Profile'],'Group Admin':['Overview','Safety','Community','Training','Tokens','Referrals','Profile'],Marshal:['Overview','Safety','Training','Activity','Profile'],'Founding Rider Council Member':['Overview','Safety','Community','Training','Product Testing','Rider Intelligence','Profile']}
 const roleTone:Record<Role,string>={Rider:'Rider command centre','Group Admin':'Community administration','Marshal':'Field operations','Founding Rider Council Member':'Council intelligence'}

@@ -111,10 +111,10 @@ export function UnifiedSignup(){
   const err=(k:string,label:string)=>errors[k]?<span className="field-error">{errors[k]}</span>:<span className="eyebrow" style={{fontSize:'.6rem'}}>{label}</span>
   function normalizeHandle(value:string){return value.trim().replace(/^@/,'').toLowerCase()}
   function normalizeEmail(value:string){return value.trim().toLowerCase()}
-  function normalizeMobile(value:string){return value.replace(/\\D/g,'').replace(/^0/,'')}
+  function normalizeMobile(value:string){return normMobile(value)}
   function checkAvailability(field:'handle'|'email'|'mobile',value:string){
     const normalized=field==='handle'?normalizeHandle(value):field==='email'?normalizeEmail(value):normalizeMobile(value)
-    if(!normalized||(field==='email'&&!/^\\S+@\\S+\\.\\S+$/.test(normalized))||(field==='mobile'&&!/^\\d{10,12}$/.test(normalized)))return
+    if(!normalized||(field==='email'&&!/^\S+@\S+\.\S+$/.test(normalized))||(field==='mobile'&&!/^\d{10,12}$/.test(normalized)))return
     setAvailability(p=>({...p,[field]:'Checking availability…'}))
     window.setTimeout(()=>{
       const duplicate=duplicateField(field,value)

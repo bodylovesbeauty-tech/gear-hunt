@@ -1,4 +1,7 @@
 'use client'
-import {useEffect} from 'react'
+import {createContext,useContext,useEffect,useMemo,useState} from 'react'
 import {GlobalPreferences} from '@/components/global-preferences'
-export function PreferenceProvider({children}:{children:React.ReactNode}){useEffect(()=>{const raw=sessionStorage.getItem('bbbt-global-preferences');if(raw){try{const p=JSON.parse(raw);document.documentElement.lang=p.language||'en';document.documentElement.dir=p.language==='ar'?'rtl':'ltr'}catch{}}},[]);return <>{children}<GlobalPreferences/></>}
+import {defaultPreferences,languageFor,readPreferences,savePreferences,type CurrencyCode,type LanguageCode,type Preferences} from '@/lib/global-preferences'
+const PreferenceContext=createContext<{preferences:Preferences;setLanguage:(v:LanguageCode)=>void;setCurrency:(v:CurrencyCode)=>void}>({preferences:defaultPreferences,setLanguage:()=>{},setCurrency:()=>{}})
+export function usePreferences(){return useContext(PreferenceContext)}
+export function PreferenceProvider({children}:{children:React.ReactNode}){const [preferences,setPreferences]=useState(defaultPreferences);useEffect(()=>{const saved=readPreferences();const browser=typeof navigator!=='undefined'?navigator.language.split('-')[0]:'en';const supported=['en','hi','ur','bn','ta','te','mr','gu','kn','ml','pa','ar'];const next=saved===defaultPreferences&&supported.includes(browser)?{...saved,language:browser as LanguageCode}:saved;setPreferences(next)},[]);useEffect(()=>{document.documentElement.lang=preferences.language;document.documentElement.dir=languageFor(preferences.language).dir;savePreferences(preferences)},[preferences]);const value=useMemo(()=>({preferences,setLanguage:(language:LanguageCode)=>setPreferences(p=>({...p,language})),setCurrency:(currency:CurrencyCode)=>setPreferences(p=>({...p,currency}))}),[preferences]);return <PreferenceContext.Provider value={value}>{children}<GlobalPreferences/></PreferenceContext.Provider>}

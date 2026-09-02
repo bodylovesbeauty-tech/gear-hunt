@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import ContactRequestForm from '@/components/contact-request-form'
 import Image from 'next/image'
 import { useState } from 'react'
 import { Cta, Hero, Shell, StatusBadge } from '@/components/public-site'
@@ -608,7 +609,7 @@ const contactRoutes: { who: string; title: string; body: string; href: string; l
   { who: 'Rider', title: 'Safety & participation', body: 'Questions about riding safely and joining the community.', href: '/signup', label: 'Rider signup', accent: 'white', icon: Bike },
   { who: 'Group Admin', title: 'Bring your group', body: 'Coordinate a local riding community inside BBBT.', href: '/community', label: 'Community', accent: 'blue', icon: Users },
   { who: 'Marshal', title: 'On-ground safety', body: 'Support future response coordination in your region.', href: '/safety', label: 'Safety', accent: 'orange', icon: Flag },
-  { who: 'Council', title: 'Rider intelligence', body: 'Contribute deep experience, testing and feedback.', href: '/founding-rider-council', label: 'Council', accent: 'green', icon: Landmark },
+  { who: 'Council', title: 'Rider intelligence', body: 'Contribute deep experience, testing and feedback.', href: '/signup?role=Founding%20Rider%20Council%20Member', label: 'Council', accent: 'green', icon: Landmark },
   { who: 'Investor', title: 'Future ecosystem', body: 'A controlled conversation about the BBBT brief.', href: '/investor', label: 'Investor brief', accent: 'blue', icon: Milestone },
   { who: 'Partner', title: 'Care Pit & safety', body: 'Collaborate on rider support and safety infrastructure.', href: 'mailto:connect@bbbt.in', label: 'Email BBBT', accent: 'orange', icon: Handshake },
   { who: 'General', title: 'Anything else', body: 'For any other question about BBBT and its direction.', href: 'mailto:connect@bbbt.in', label: 'Email BBBT', accent: 'white', icon: Mail },
@@ -636,6 +637,7 @@ export function ContactPage() {
           ))}
         </div>
       </section>
+      <section className="pp-section contact-intake"><Head eyebrow="Secure request intake" title="Send a contact request" lede="Your request is stored for manual review. Do not use this form for emergencies." /><ContactRequestForm /></section>
     </PageFrame>
   )
 }

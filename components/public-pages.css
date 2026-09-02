@@ -9,6 +9,7 @@
    ============================================================ */
 
 .pp .bcx-eyebrow { color: var(--bcx-red); }
+.contact-intake{max-width:62rem}.contact-request-form{display:grid;gap:1rem;max-width:58rem}.contact-request-form label{display:grid;gap:.35rem;color:var(--bcx-muted);font:700 .68rem var(--font-geist-mono),monospace;text-transform:uppercase}.contact-request-form input,.contact-request-form select,.contact-request-form textarea{width:100%;padding:.7rem;border:1px solid var(--bcx-line);background:var(--bcx-black);color:var(--bcx-white);font:400 .9rem var(--font-geist),sans-serif;text-transform:none}.contact-request-form textarea{resize:vertical}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.contact-request-form small,.contact-success p{color:var(--bcx-muted);line-height:1.5}.form-error{color:var(--bcx-red)}.contact-success{display:grid;gap:1rem;padding:1.5rem;border:1px solid var(--bcx-green);background:var(--bcx-panel)}.contact-success strong{color:var(--bcx-green);font:700 1rem var(--font-geist-mono),monospace}
 .hero--with-image{display:grid;grid-template-columns:minmax(0,1fr) minmax(20rem,.85fr);gap:2rem;align-items:center}.hero-image{position:relative;min-height:20rem;overflow:hidden;border:1px solid var(--bcx-line);background:var(--bcx-black)}.hero-image img{width:100%;height:100%;object-fit:cover}.hero-image::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,9,10,.2),transparent 55%);pointer-events:none}
 
 /* ---------- section shell ---------- */

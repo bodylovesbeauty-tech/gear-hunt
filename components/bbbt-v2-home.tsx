@@ -9,10 +9,12 @@ import './bbbt-v2-crystal.css'
 
 const gateways = [
   ['RIDER', 'Your safety identity', 'Build readiness around the ride.', '/signup'],
-  ['GROUP ADMIN', 'Your community', 'Give your group a safer rhythm.', '/community'],
-  ['MARSHAL', 'Your responsibility', 'Support the people riding with you.', '/safety'],
-  ['FOUNDING RIDER COUNCIL', 'Your experience', 'Help test what riders need next.', '/signup?role=Founding%20Rider%20Council%20Member'],
-  ['INVESTOR', 'The opportunity', 'See the ecosystem behind the work.', '/investor'],
+  ['GROUP ADMIN', 'Your community', 'Give your group a safer rhythm.', '/signup?role=Group%20Admin'],
+  ['GROUP MARSHAL', 'Your responsibility', 'Support the people riding with you.', '/signup?role=Group%20Marshal'],
+  ['INDEPENDENT MARSHAL', 'Your responsibility', 'Support riders beyond one group.', '/signup?role=Independent%20Marshal'],
+  ['FOUNDING RIDER COUNCIL MEMBER', 'Your experience', 'Help test what riders need next.', '/signup?role=Founding%20Rider%20Council%20Member'],
+  ['INVESTOR', 'The opportunity', 'See the ecosystem behind the work.', '/signup?role=Investor'],
+  ['PARTNER', 'The opportunity', 'Help shape the support ecosystem.', '/contact'],
 ]
 const protocol = [
   ['01', 'SOS / Emergency Queues', 'Organise urgent signals into a clearer response concept.'],
@@ -66,7 +68,7 @@ export function BbbtV2Home() {
 
       <section className="v2-faq v2-section"><div><p className="v2-kicker">QUESTIONS WORTH ANSWERING</p><h2>Start with<br /><span>clarity.</span></h2></div><div>{faqs.map(([q, answer], i) => <div className="v2-faq-item" key={q}><button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} aria-expanded={openFaq === i}><span>0{i + 1}</span>{q}<b>{openFaq === i ? '−' : '+'}</b></button>{openFaq === i && <p>{answer}</p>}</div>)}</div></section>
 
-      <section className="v2-final"><p className="v2-kicker">FOR EVERY RIDER WHO BELIEVES THE ROAD CAN BE BETTER</p><h2>Ready when<br /><span>the road isn&apos;t.</span></h2><div className="v2-actions"><Link className="v2-button v2-button-red" href="/signup">Join BBBT ↗</Link><Link className="v2-text-link" href="/signup?role=Founding%20Rider%20Council%20Member">Council</Link><Link className="v2-text-link" href="/contact">Partner</Link><Link className="v2-text-link" href="/investor">Investor</Link></div><small className="v2-status">PROTOTYPE / PRE-LAUNCH / NO FINAL MEMBERSHIP PRICE DISPLAYED</small></section>
+      <section className="v2-final"><p className="v2-kicker">FOR EVERY RIDER WHO BELIEVES THE ROAD CAN BE BETTER</p><h2>Ready when<br /><span>the road isn&apos;t.</span></h2><div className="v2-actions"><Link className="v2-button v2-button-red" href="/signup">Join BBBT ↗</Link>{gateways.map(([label,, ,href]) => <Link className="v2-text-link" href={href} key={`final-${label}`}>{label === 'RIDER' ? 'As a Rider' : label.split(' ').map((word) => word[0] + word.slice(1).toLowerCase()).join(' ')}</Link>)}</div><small className="v2-status">PROTOTYPE / PRE-LAUNCH / NO FINAL MEMBERSHIP PRICE DISPLAYED</small></section>
 
     </main>
   )

@@ -619,7 +619,7 @@ export function ContactPage() {
     <PageFrame
       label="Contact BBBT"
       title="Start with the right conversation."
-      lede="Choose the pathway closest to your work. This prototype does not expose private contact details or create a live support ticket."
+      lede="This is the official BBBT contact pathway. Choose the route closest to your work; submitted details may be used for manual review and routing. This prototype does not create live emergency support."
       ctaHref="mailto:connect@bbbt.in"
       ctaLabel="Email BBBT"
     >

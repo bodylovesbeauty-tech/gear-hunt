@@ -131,7 +131,7 @@ function AboutPage() {
 
       <section className="pp-section pp-section--alt">
         <Head eyebrow="Contribution" title="Experience from the road shapes what comes next." lede="Experienced riders and local communities are intended to contribute knowledge, testing and honest feedback through the Founding Rider Council — a contribution layer, not an ownership claim." />
-        <Link className="pp-route__go" href="/founding-rider-council" style={{ color: 'var(--bcx-blue)' }}>Explore the Founding Rider Council <ChevronRight size={15} /></Link>
+        <Link className="pp-route__go" href="/signup?role=Founding%20Rider%20Council%20Member" style={{ color: 'var(--bcx-blue)' }}>Explore the Founding Rider Council <ChevronRight size={15} /></Link>
       </section>
 
       <section className="pp-section">
@@ -206,7 +206,7 @@ function SafetyPage() {
         </CrystalAlert>
       </section>
 
-      <Band title="Help build rider safety that actually teaches." text="Riders with real experience shape these modules through the Founding Rider Council." href="/founding-rider-council" label="Explore the Council" />
+      <Band title="Help build rider safety that actually teaches." text="Riders with real experience shape these modules through the Founding Rider Council." href="/signup?role=Founding%20Rider%20Council%20Member" label="Explore the Council" />
     </PageFrame>
   )
 }

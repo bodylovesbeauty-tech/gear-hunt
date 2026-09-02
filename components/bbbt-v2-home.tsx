@@ -69,7 +69,7 @@ export function BbbtV2Home() {
 
       <section className="v2-faq v2-section"><div><p className="v2-kicker">QUESTIONS WORTH ANSWERING</p><h2>Start with<br /><span>clarity.</span></h2></div><div>{faqs.map(([q, answer], i) => <div className="v2-faq-item" key={q}><button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} aria-expanded={openFaq === i}><span>0{i + 1}</span>{q}<b>{openFaq === i ? '−' : '+'}</b></button>{openFaq === i && <p>{answer}</p>}</div>)}</div></section>
 
-      <section className="v2-final"><p className="v2-kicker">FOR EVERY RIDER WHO BELIEVES THE ROAD CAN BE BETTER</p><h2>Ready when<br /><span>the road isn&apos;t.</span></h2><div className="v2-actions"><Link className="v2-button v2-button-red" href="/signup">Join BBBT ↗</Link>{gateways.map(([label,, ,href]) => <Link className="v2-text-link" href={href} key={`final-${label}`}>{label === 'RIDER' ? 'As a Rider' : label.split(' ').map((word) => word[0] + word.slice(1).toLowerCase()).join(' ')}</Link>)}</div><div className="v2-status"><small>PROTOTYPE / PRE-LAUNCH / MEMBERSHIP PRICING UNDER DEVELOPMENT</small><span>BBBT is learning what riders are comfortable investing in their safety before finalising membership pricing.</span></div></section>
+      <section className="v2-final"><p className="v2-kicker">FOR EVERY RIDER WHO BELIEVES THE ROAD CAN BE BETTER</p><h2>Ready when<br /><span>the road isn&apos;t.</span></h2><div className="v2-actions"><Link className="v2-button v2-button-red" href="/signup">Join BBBT ↗</Link>{gateways.map(([label,, ,href]) => <Link className="v2-text-link" href={href} key={`final-${label}`}>{label === 'RIDER' ? 'As a Rider' : label.split(' ').map((word) => word[0] + word.slice(1).toLowerCase()).join(' ')}</Link>)}</div></section>
 
     </main>
   )

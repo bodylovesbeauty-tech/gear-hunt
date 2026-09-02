@@ -48,6 +48,7 @@ export function UnifiedSignup(){
 
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
+  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;if(requested&&roleList.includes(requested))setRole(requested)},[])
   const [checked,setChecked]=useState(false)
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 import { Cta, Hero, Shell, StatusBadge } from '@/components/public-site'
 import { CrystalAlert, CrystalBadge, CrystalTabs, type BadgeStatus } from '@/components/ui/crystal'
@@ -27,6 +28,17 @@ function Status({ children }: { children: string }) {
   return <CrystalBadge status={statusMap[children] ?? 'information'}>{children}</CrystalBadge>
 }
 
+const pageImages: Record<string,{src:string;alt:string}> = {
+  'About BBBT Trust': {src:'/images/about-solo-rider.png',alt:'Adult rider standing beside a motorcycle and looking toward an open road.'},
+  'How BBBT works': {src:'/images/how-it-works-road.png',alt:'Motorcycle journey on a winding highway representing connected rider support.'},
+  'Rider Safety Infrastructure': {src:'/images/safety-check.png',alt:'Rider checking protective helmet, gloves and jacket beside a motorcycle.'},
+  'Rider Community': {src:'/images/community-riders.png',alt:'Mixed group of adult riders talking beside motorcycles after a ride.'},
+  'Care Pit Network': {src:'/images/care-pit-support.png',alt:'Riders taking a supported rest stop beside parked motorcycles.'},
+  'Founding Rider Council': {src:'/images/council-discussion.png',alt:'Experienced riders discussing a map and safety ideas around an outdoor table.'},
+  'Investor Brief': {src:'/images/investor-technology.png',alt:'Motorcycle rider silhouette on a highway with subtle technology and data atmosphere.'},
+  'Contact BBBT': {src:'/images/care-pit-support.png',alt:'Two riders speaking and helping one another beside motorcycles.'},
+}
+
 function PageFrame({
   label, title, lede, ctaHref = '/contact', ctaLabel = 'Start a conversation', children,
 }: {
@@ -35,7 +47,7 @@ function PageFrame({
   return (
     <Shell>
       <main className="pp">
-        <Hero label={label} title={title} lede={lede}><Cta href={ctaHref}>{ctaLabel}</Cta></Hero>
+        <Hero label={label} title={title} lede={lede} image={pageImages[label]}><Cta href={ctaHref}>{ctaLabel}</Cta></Hero>
         <div className="bcx pp-body">{children}</div>
       </main>
     </Shell>
@@ -131,7 +143,7 @@ function AboutPage() {
 
       <section className="pp-section pp-section--alt">
         <Head eyebrow="Contribution" title="Experience from the road shapes what comes next." lede="Experienced riders and local communities are intended to contribute knowledge, testing and honest feedback through the Founding Rider Council — a contribution layer, not an ownership claim." />
-        <Link className="pp-route__go" href="/founding-rider-council" style={{ color: 'var(--bcx-blue)' }}>Explore the Founding Rider Council <ChevronRight size={15} /></Link>
+        <Link className="pp-route__go" href="/signup?role=Founding%20Rider%20Council%20Member" style={{ color: 'var(--bcx-blue)' }}>Explore the Founding Rider Council <ChevronRight size={15} /></Link>
       </section>
 
       <section className="pp-section">
@@ -206,7 +218,7 @@ function SafetyPage() {
         </CrystalAlert>
       </section>
 
-      <Band title="Help build rider safety that actually teaches." text="Riders with real experience shape these modules through the Founding Rider Council." href="/founding-rider-council" label="Explore the Council" />
+      <Band title="Help build rider safety that actually teaches." text="Riders with real experience shape these modules through the Founding Rider Council." href="/signup?role=Founding%20Rider%20Council%20Member" label="Explore the Council" />
     </PageFrame>
   )
 }

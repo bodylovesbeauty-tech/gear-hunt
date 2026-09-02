@@ -32,7 +32,8 @@ const faqs = [
   ['What is BBBT?', 'BBBT is a prototype of rider safety and community infrastructure for India. It is being designed in phases.'],
   ['Is BBBT a social network?', 'No. BBBT is designed to add structured safety, readiness, governance, and support around communities that already exist.'],
   ['Are emergency features live?', 'No. SOS, dispatch, blood mesh, live Care Pit availability, and emergency coordination are future concepts.'],
-  ['Who can join?', 'Riders, community admins, Marshals, and experienced riders interested in the Founding Rider Council can register interest.'],
+  ['Who can join BBBT?', 'Riders, Group Admins, Group Marshals, Independent Marshals, Founding Rider Council Members, Partners, and Investors can choose the pathway that fits their role.'],
+  ['How will BBBT decide its membership price?', 'BBBT is currently learning how much riders are comfortable spending on their safety each year. This is a self-declared safety-spending preference and is not a purchase commitment or an actual spending record. BBBT will use aggregated rider insights together with operational and safety requirements to help determine an appropriate future annual membership price.'],
 ]
 
 export function BbbtV2Home() {
@@ -68,7 +69,7 @@ export function BbbtV2Home() {
 
       <section className="v2-faq v2-section"><div><p className="v2-kicker">QUESTIONS WORTH ANSWERING</p><h2>Start with<br /><span>clarity.</span></h2></div><div>{faqs.map(([q, answer], i) => <div className="v2-faq-item" key={q}><button onClick={() => setOpenFaq(openFaq === i ? -1 : i)} aria-expanded={openFaq === i}><span>0{i + 1}</span>{q}<b>{openFaq === i ? '−' : '+'}</b></button>{openFaq === i && <p>{answer}</p>}</div>)}</div></section>
 
-      <section className="v2-final"><p className="v2-kicker">FOR EVERY RIDER WHO BELIEVES THE ROAD CAN BE BETTER</p><h2>Ready when<br /><span>the road isn&apos;t.</span></h2><div className="v2-actions"><Link className="v2-button v2-button-red" href="/signup">Join BBBT ↗</Link>{gateways.map(([label,, ,href]) => <Link className="v2-text-link" href={href} key={`final-${label}`}>{label === 'RIDER' ? 'As a Rider' : label.split(' ').map((word) => word[0] + word.slice(1).toLowerCase()).join(' ')}</Link>)}</div><small className="v2-status">PROTOTYPE / PRE-LAUNCH / NO FINAL MEMBERSHIP PRICE DISPLAYED</small></section>
+      <section className="v2-final"><p className="v2-kicker">FOR EVERY RIDER WHO BELIEVES THE ROAD CAN BE BETTER</p><h2>Ready when<br /><span>the road isn&apos;t.</span></h2><div className="v2-actions"><Link className="v2-button v2-button-red" href="/signup">Join BBBT ↗</Link>{gateways.map(([label,, ,href]) => <Link className="v2-text-link" href={href} key={`final-${label}`}>{label === 'RIDER' ? 'As a Rider' : label.split(' ').map((word) => word[0] + word.slice(1).toLowerCase()).join(' ')}</Link>)}</div><div className="v2-status"><small>PROTOTYPE / PRE-LAUNCH / MEMBERSHIP PRICING UNDER DEVELOPMENT</small><span>BBBT is learning what riders are comfortable investing in their safety before finalising membership pricing.</span></div></section>
 
     </main>
   )

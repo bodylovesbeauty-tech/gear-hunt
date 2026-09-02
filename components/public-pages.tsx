@@ -41,13 +41,13 @@ const pageImages: Record<string,{src:string;alt:string}> = {
 }
 
 function PageFrame({
-  label, title, lede, ctaHref = '/contact', ctaLabel = 'Start a conversation', children,
+  label, title, lede, ctaHref = '/contact', ctaLabel = 'Start a conversation', className = '', children,
 }: {
-  label: string; title: string; lede: string; ctaHref?: string; ctaLabel?: string; children: React.ReactNode
+  label: string; title: string; lede: string; ctaHref?: string; ctaLabel?: string; className?: string; children: React.ReactNode
 }) {
   return (
     <Shell>
-      <main className="pp">
+      <main className={`pp ${className}`}>
         <Hero label={label} title={title} lede={lede} image={pageImages[label]}><Cta href={ctaHref}>{ctaLabel}</Cta></Hero>
         <div className="bcx pp-body">{children}</div>
       </main>
@@ -617,6 +617,7 @@ const contactRoutes: { who: string; title: string; body: string; href: string; l
 export function ContactPage() {
   return (
     <PageFrame
+      className="legal-page"
       label="Contact BBBT"
       title="Start with the right conversation."
       lede="This is the official BBBT contact pathway. Choose the route closest to your work; submitted details may be used for manual review and routing. This prototype does not create live emergency support."

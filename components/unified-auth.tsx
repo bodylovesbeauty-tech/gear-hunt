@@ -266,13 +266,13 @@ export function UnifiedSignup(){
       {step===1&&<div className="su-step">
         <p className="auth-lede">We use language to keep safety and community information clear for you.</p>
         <label>PRIMARY LANGUAGE (Required)<select value={f.language} onChange={set('language')}>
-          <option>English</option>
-        </select></label>
+{['English','Hinglish','Hindi','Bengali','Bodo','Dogri','Gujarati','Kannada','Kashmiri','Konkani','Malayalam','Manipuri / Meitei','Marathi','Maithili','Nepali','Odia','Punjabi','Sanskrit','Santali','Sindhi','Tamil','Telugu','Urdu','Arabic'].map(language=><option key={language}>{language}</option>)}
+  </select></label>
         <fieldset className="language-options">
           <legend>ADDITIONAL REGIONAL LANGUAGES <span className="eyebrow">UP TO 2</span></legend>
           <p className="auth-lede" style={{margin:0}}>English is primary. Choose up to two additional languages. Translations are not yet live.</p>
           <div className="language-checks">
-            {['Hindi','Bengali','Marathi','Telugu','Tamil','Gujarati','Kannada','Malayalam','Punjabi','Assamese','Odia'].map(language=><label key={language} className="language-check">
+            {['Hinglish','Hindi','Bengali','Bodo','Dogri','Gujarati','Kannada','Kashmiri','Konkani','Malayalam','Manipuri / Meitei','Marathi','Maithili','Nepali','Odia','Punjabi','Sanskrit','Santali','Sindhi','Tamil','Telugu','Urdu','Arabic'].map(language=><label key={language} className="language-check">
               <input type="checkbox" checked={f.additionalLanguages.includes(language)} onChange={()=>toggleLanguage(language)} disabled={!f.additionalLanguages.includes(language)&&f.additionalLanguages.length>=2}/><span>{language}</span>
             </label>)}
           </div>

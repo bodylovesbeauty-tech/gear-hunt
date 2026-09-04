@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Languages, Mic, Send, Siren, Volume2, X } from 'lucide-react'
+import { languages as registryLanguages, readPreferences } from '@/lib/global-preferences'
 
-const languages = ['English', 'हिन्दी', 'বাংলা', 'मराठी', 'తెలుగు', 'தமிழ்', 'ગુજરાતી', 'ಕನ್ನಡ', 'മലയാളം', 'ਪੰਜਾਬੀ', 'অসমীয়া', 'ଓଡ଼ିଆ', 'संस्कृतम्', 'اردو', 'नेपाली', 'कोंकणी', 'سنڌي', 'डोगरी', 'बोड़ो', 'काश्मीरी', 'मणिपुरी', 'संताली']
-const speechLocales: Record<string, string> = { English: 'en-IN', 'हिन्दी': 'hi-IN', 'বাংলা': 'bn-IN', 'मराठी': 'mr-IN', 'తెలుగు': 'te-IN', 'தமிழ்': 'ta-IN', 'ગુજરાતી': 'gu-IN', 'ಕನ್ನಡ': 'kn-IN', 'മലയാളം': 'ml-IN', 'ਪੰਜਾਬੀ': 'pa-IN', 'অসমীয়া': 'as-IN', 'ଓଡ଼ିଆ': 'or-IN', 'اردو': 'ur-IN', 'नेपाली': 'ne-IN', 'سنڌي': 'sd-IN', 'काश्मीरी': 'ks-IN', 'मणिपुरी': 'mni-IN', 'संताली': 'sat-IN' }
+const languages = ['English', 'Hinglish', 'हिन्दी', 'বাংলা', 'मराठी', 'తెలుగు', 'தமிழ்', 'ગુજરાતી', 'ಕನ್ನಡ', 'മലയാളം', 'ਪੰਜਾਬੀ', 'অসমীয়া', 'ଓଡ଼ିଆ', 'संस्कृतम्', 'اردو', 'नेपाली', 'कोंकणी', 'سنڌي', 'डोगरी', 'बोड़ो', 'काश्मीरी', 'मणिपुरी', 'संताली']
+const speechLocales: Record<string, string> = { English: 'en-IN', Hinglish: 'hi-IN', 'हिन्दी': 'hi-IN', 'বাংলা': 'bn-IN', 'मराठी': 'mr-IN', 'తెలుగు': 'te-IN', 'தமிழ்': 'ta-IN', 'ગુજરાતી': 'gu-IN', 'ಕನ್ನಡ': 'kn-IN', 'മലയാളം': 'ml-IN', 'ਪੰਜਾਬੀ': 'pa-IN', 'অসমীয়া': 'as-IN', 'ଓଡ଼ିଆ': 'or-IN', 'اردو': 'ur-IN', 'नेपाली': 'ne-IN', 'سنڌي': 'sd-IN', 'काश्मीरी': 'ks-IN', 'मणिपुरी': 'mni-IN', 'संताली': 'sat-IN' }
 const answers: Record<string, string> = {
   join: 'BBBT helps verified riders reach SOS responders, Care Pits, blood donors, and trauma support faster. You join a human safety network built for the road.',
   sos: 'Say Help or press SOS. This prototype will start the emergency sequence, show nearby support, and prepare the India emergency fallback numbers.',
@@ -25,6 +26,7 @@ export function BBBTAssistant({ compact = false }: { compact?: boolean }) {
   const [listening, setListening] = useState(false)
   const [message, setMessage] = useState('')
   const [voiceLanguage, setVoiceLanguage] = useState('English')
+  useEffect(() => { const preference = readPreferences(); const option = registryLanguages.find((item) => item.code === preference.language); if (option) setVoiceLanguage(option.label) }, [])
   const [answer, setAnswer] = useState(answers.join)
   const respond = (text: string) => { const lower = text.toLowerCase(); setAnswer(lower.includes('sos') || lower.includes('help') ? answers.sos : lower.includes('ride') ? answers.ride : answers.join); setMessage('') }
   const speak = () => { if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(answer)) }

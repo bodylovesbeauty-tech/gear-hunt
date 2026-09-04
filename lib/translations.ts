@@ -13,7 +13,7 @@ export const translations: Partial<Record<LanguageCode, Record<string, string>>>
     'nav.login': 'Login',
     'nav.join': 'Join BBBT',
     'footer.privacy': 'Privacy',
-    'footer.terms': 'Terms',
+    'footer.terms': 'Terms & Conditions',
     'footer.contact': 'Contact',
     'footer.language': 'Language',
     'footer.currency': 'Currency',
@@ -22,6 +22,23 @@ export const translations: Partial<Record<LanguageCode, Record<string, string>>>
     'pricing.membership': 'BBBT Membership',
     'pricing.per-year': '/year',
     'common.prototype': 'PROTOTYPE',
+    'footer.description': 'Brand Biker Brotherhood Trust is being designed as a safety, emergency-support, community and rider-welfare layer for India\'s riding communities.',
+    'footer.public-prototype': 'Public prototype',
+    'footer.explore': 'Explore',
+    'footer.participate': 'Participate',
+    'footer.access': 'Access',
+    'footer.what-is': 'What is BBBT',
+    'footer.how-it-works': 'How it works',
+    'footer.rider-safety': 'Rider safety',
+    'footer.care-pits': 'Care Pit network',
+    'footer.rider-community': 'Rider community',
+    'footer.founding-council': 'Founding Council',
+    'footer.contact-bbbt': 'Contact BBBT',
+    'footer.faq': 'FAQ',
+    'footer.rider-signup': 'Rider signup',
+    'footer.universal-login': 'Universal login',
+    'footer.investor-access': 'Investor access',
+    'footer.administration': 'BBBT administration',
   },
   hi: {
     'nav.what-is': 'BBBT क्या है',
@@ -44,6 +61,23 @@ export const translations: Partial<Record<LanguageCode, Record<string, string>>>
     'pricing.membership': 'BBBT सदस्यता',
     'pricing.per-year': '/वर्ष',
     'common.prototype': 'प्रोटोटाइप',
+    'footer.description': 'ब्रांड बाइकर ब्रदरहुड ट्रस्ट भारत के राइडिंग समुदायों के लिए सुरक्षा, आपातकालीन सहायता, कम्युनिटी और राइडर कल्याण की एक परत के रूप में बनाया जा रहा है।',
+    'footer.public-prototype': 'सार्वजनिक प्रोटोटाइप',
+    'footer.explore': 'एक्सप्लोर करें',
+    'footer.participate': 'भाग लें',
+    'footer.access': 'एक्सेस',
+    'footer.what-is': 'BBBT क्या है',
+    'footer.how-it-works': 'यह कैसे काम करता है',
+    'footer.rider-safety': 'राइडर सुरक्षा',
+    'footer.care-pits': 'केयर पिट नेटवर्क',
+    'footer.rider-community': 'राइडर कम्युनिटी',
+    'footer.founding-council': 'फाउंडिंग काउंसिल',
+    'footer.contact-bbbt': 'BBBT से संपर्क करें',
+    'footer.faq': 'अक्सर पूछे जाने वाले सवाल',
+    'footer.rider-signup': 'राइडर साइनअप',
+    'footer.universal-login': 'यूनिवर्सल लॉगिन',
+    'footer.investor-access': 'निवेशक एक्सेस',
+    'footer.administration': 'BBBT प्रशासन',
   },
   bn: {
     'nav.what-is': 'BBBT কী',
@@ -246,7 +280,9 @@ export const translations: Partial<Record<LanguageCode, Record<string, string>>>
 }
 
 export function t(key: string, lang: LanguageCode = 'en', params?: Record<string, string | number>): string {
-  let value = translations[lang]?.[key] || translations['en']?.[key] || key
+  const fallbackLanguage: Partial<Record<LanguageCode, LanguageCode>> = { pa: 'hi', gu: 'hi', mr: 'hi', gom: 'mr', ks: 'ur', sd: 'ur', ne: 'hi', mai: 'hi', sa: 'hi', brx: 'hi', doi: 'hi', mni: 'bn', sat: 'hi' }
+  const fallback = fallbackLanguage[lang]
+  let value = translations[lang]?.[key] || (fallback ? translations[fallback]?.[key] : undefined) || translations['en']?.[key] || key
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       value = value.replace(`{${k}}`, String(v))

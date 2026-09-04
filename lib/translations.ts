@@ -13,7 +13,7 @@ export const translations: Partial<Record<LanguageCode, Record<string, string>>>
     'nav.login': 'Login',
     'nav.join': 'Join BBBT',
     'footer.privacy': 'Privacy',
-    'footer.terms': 'Terms',
+    'footer.terms': 'Terms & Conditions',
     'footer.contact': 'Contact',
     'footer.language': 'Language',
     'footer.currency': 'Currency',
@@ -246,7 +246,9 @@ export const translations: Partial<Record<LanguageCode, Record<string, string>>>
 }
 
 export function t(key: string, lang: LanguageCode = 'en', params?: Record<string, string | number>): string {
-  let value = translations[lang]?.[key] || translations['en']?.[key] || key
+  const fallbackLanguage: Partial<Record<LanguageCode, LanguageCode>> = { pa: 'hi', gu: 'hi', mr: 'hi', gom: 'mr', ks: 'ur', sd: 'ur', ne: 'hi', mai: 'hi', sa: 'hi', brx: 'hi', doi: 'hi', mni: 'bn', sat: 'hi' }
+  const fallback = fallbackLanguage[lang]
+  let value = translations[lang]?.[key] || (fallback ? translations[fallback]?.[key] : undefined) || translations['en']?.[key] || key
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       value = value.replace(`{${k}}`, String(v))

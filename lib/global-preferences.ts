@@ -9,5 +9,5 @@ export const defaultPreferences:Preferences={language:'en',currency:'INR'}
 export function languageFor(code:LanguageCode){return languages.find(x=>x.code===code)||languages[0]}
 const prototypeRates:Record<CurrencyCode,number>={INR:1,USD:0.012,EUR:0.011,GBP:0.0095,AED:0.044,SGD:0.016}
 export function formatMoney(sourceAmount:number,displayCurrency:CurrencyCode='INR',sourceCurrency:CurrencyCode='INR'){const converted=sourceAmount*(prototypeRates[displayCurrency]/prototypeRates[sourceCurrency]);return new Intl.NumberFormat(currencies[displayCurrency].locale,{style:'currency',currency:displayCurrency,maximumFractionDigits:0}).format(converted)}
-export function readPreferences():Preferences{if(typeof window==='undefined')return defaultPreferences;try{return {...defaultPreferences,...JSON.parse(sessionStorage.getItem(preferenceKey)||'{}')}}catch{return defaultPreferences}}
-export function savePreferences(p:Preferences){try{sessionStorage.setItem(preferenceKey,JSON.stringify(p))}catch{}}
+export function readPreferences():Preferences{if(typeof document==='undefined')return defaultPreferences;try{const stored=document.cookie.split('; ').find(cookie=>cookie.startsWith(`${preferenceKey}=`))?.split('=')[1];return {...defaultPreferences,...JSON.parse(stored?decodeURIComponent(stored):'{}')}}catch{return defaultPreferences}}
+export function savePreferences(p:Preferences){try{document.cookie=`${preferenceKey}=${encodeURIComponent(JSON.stringify(p))}; Path=/; Max-Age=31536000; SameSite=Lax`}catch{}}

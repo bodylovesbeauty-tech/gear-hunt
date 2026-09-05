@@ -6,7 +6,7 @@ import { applicationKey, dashboardFor, demoUsers, duplicateField, identityKey, i
 import { languages, readPreferences, savePreferences, type LanguageCode } from '@/lib/global-preferences'
 import './signup-flow.css'
 
-function VehiclePhoto({label,helper,photo,error,onChange,onRemove,inputId}:{label:string;helper:string;photo:{name:string;dataUrl:string}|null;error?:string;onChange:(file?:File)=>void;onRemove:()=>void;inputId:string}){return <div className="vehicle-photo"><b>{label}</b><small>{helper} JPG, JPEG, PNG or WEBP up to 5 MB.</small>{photo?<div className="vehicle-photo-preview"><img src={photo.dataUrl} alt={label}/><span>{photo.name}</span><button type="button" className="text-button" onClick={onRemove}>Remove</button></div>:<label className="btn btn-outline photo-picker" htmlFor={inputId}>CHOOSE FILE / CAMERA<input id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>onChange(e.target.files?.[0])} onInput={e=>onChange(e.currentTarget.files?.[0])}/></label>}{error&&<span className="field-error" role="alert">{error}</span>}</div>}
+function VehiclePhoto({label,helper,photo,error,onChange,onRemove,inputId}:{label:string;helper:string;photo:{name:string;dataUrl:string}|null;error?:string;onChange:(file?:File)=>void;onRemove:()=>void;inputId:string}){return <div className="vehicle-photo"><b>{label}</b><small>{helper} JPG, JPEG, PNG or WEBP up to 5 MB.</small>{photo?<div className="vehicle-photo-preview"><img src={photo.dataUrl} alt={label}/><span>{photo.name}</span><button type="button" className="text-button" onClick={onRemove}>Remove</button></div>:<label className="btn btn-outline photo-picker" htmlFor={inputId}>CHOOSE FILE / CAMERA<input id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>onChange(e.target.files?.[0])}/></label>}{error&&<span className="field-error" role="alert">{error}</span>}</div>}
 
 function AuthFrame({children, eyebrow='BBBT ACCESS'}:{children:React.ReactNode;eyebrow?:string}){return <main className="auth-shell"><aside className="auth-visual"><Link href="/" className="auth-brand"><img src="/bbbt-logo-red.png" alt="BBBT"/></Link><div className="auth-visual-copy"><span className="eyebrow cyan-text">RIDER WELFARE / TRUST INFRASTRUCTURE</span><h2>One account.<br/><em>Your role shapes the ride.</em></h2><p>A serious safety and community layer for India&apos;s riding communities.</p><div className="auth-visual-meta"><ShieldCheck aria-hidden="true"/><span>Prototype systems are clearly labelled before launch.</span></div></div></aside><section className="auth-panel"><div className="auth-card">{children}</div></section></main>}
 function StatePage({status,role}:{status:Status;role:Role}){const copy={Pending:['Application Under Review','Your application is with the BBBT review team. We will share the next step after verification.'],Rejected:['Application Not Approved','Your current application was not approved. You may contact BBBT support if you believe this needs review.'],Suspended:['Account Suspended','Access is paused while BBBT reviews the account. Contact support for the next step.']}[status]||['',''];let identity:PrototypeIdentity|null=null;try{identity=JSON.parse(sessionStorage.getItem(identityKey)||'null')}catch{}return <AuthFrame eyebrow={`APPLICATION STATUS / ${status.toUpperCase()}`}><span className={`eyebrow ${status==='Pending'?'orange-text':'red-text'}`}>{status==='Pending'?'REVIEW IN PROGRESS':'ACCESS STATUS'}</span><h1>{copy[0]}</h1><p className="auth-lede">{status==='Pending'?'This is a prototype review state. Approval shown here is simulated and does not represent production approval.':copy[1]}</p><div className="status-detail">{identity&&<><span>Application ID</span><strong>{identity.applicationId}</strong><span>Submitted</span><strong>{new Date(identity.createdAt).toLocaleString()}</strong></>}<span>Role applied for</span><strong>{role}</strong><span>Application status</span><strong>{status}{status==='Pending'&&' / Prototype'}</strong></div>{status==='Pending'&&<p className="su-help">Need help with this prototype application? <a href="mailto:connect@bbbt.in">connect@bbbt.in</a></p>}<Link className="btn btn-cyan" href="/login">BACK TO LOGIN <ArrowRight size={16}/></Link></AuthFrame>}
@@ -173,15 +173,23 @@ export function UnifiedSignup(){
   function removeVehicle(id:string){setVehicles(list=>list.filter(v=>v.id!==id).map((v,i)=>({...v,id:`VEHICLE-${String(i+1).padStart(2,'0')}`})))}
   function addVehicle(){if(vehicles.length<5)setVehicles(list=>[...list,emptyVehicle(list.length)])}
   useEffect(()=>{if(currentStep==='vehicle'&&showVehicleStep(role)&&vehicles.length===0)addVehicle()},[currentStep,role,vehicles.length])
-  function addVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto',file?:File){
+  async function addVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto',file?:File){
     const errorKey=`${id}-${key}`
     if(!file)return
-    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){setPhotoErrors(previous=>({...previous,[errorKey]:'Use a JPG, PNG or WEBP image up to 5 MB.'}));return}
+    const extension=file.name.toLowerCase().split('.').pop()||''
+    const allowedType=['image/jpeg','image/png','image/webp'].includes(file.type)
+    const allowedExtension=['jpg','jpeg','png','webp'].includes(extension)
+    if((!allowedType&&!allowedExtension)||file.size>5*1024*1024){setPhotoErrors(previous=>({...previous,[errorKey]:'Use a JPG, PNG or WEBP image up to 5 MB.'}));return}
     setPhotoErrors(previous=>{const next={...previous};delete next[errorKey];return next})
-    const reader=new FileReader()
-    reader.onload=()=>{const dataUrl=String(reader.result||'');if(!dataUrl.startsWith('data:image/')){setPhotoErrors(previous=>({...previous,[errorKey]:'This image could not be read. Please choose it again.'}));return}setVehicles(list=>list.map(vehicle=>vehicle.id===id?{...vehicle,[key]:{name:file.name,dataUrl}}:vehicle))}
-    reader.onerror=()=>setPhotoErrors(previous=>({...previous,[errorKey]:'This image could not be read. Please choose it again.'}))
-    reader.readAsDataURL(file)
+    try{
+      const bytes=new Uint8Array(await file.arrayBuffer())
+      let binary=''
+      const chunkSize=0x8000
+      for(let offset=0;offset<bytes.length;offset+=chunkSize)binary+=String.fromCharCode(...bytes.subarray(offset,offset+chunkSize))
+      const mime=file.type||({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'} as Record<string,string>)[extension]||'application/octet-stream'
+      const dataUrl=`data:${mime};base64,${btoa(binary)}`
+      setVehicles(list=>list.map(vehicle=>vehicle.id===id?{...vehicle,[key]:{name:file.name,dataUrl}}:vehicle))
+    }catch{setPhotoErrors(previous=>({...previous,[errorKey]:'This image could not be read. Please choose it again.'}))}
   }
   function removeVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto'){setVehicles(list=>list.map(vehicle=>vehicle.id===id?{...vehicle,[key]:null}:vehicle));setPhotoErrors(previous=>{const next={...previous};delete next[`${id}-${key}`];return next})}
   function normalizeRegistration(value:string){return value.toUpperCase().replace(/[^A-Z0-9]/g,'')}

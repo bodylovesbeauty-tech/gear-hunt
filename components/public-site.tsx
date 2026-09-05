@@ -1,5 +1,7 @@
 'use client'
 
+import './public-pages.css'
+import '../app/design-system/crystal.css'
 import Link from 'next/link'
 import { ArrowRight, ChevronDown, Menu, X } from 'lucide-react'
 import { useState } from 'react'

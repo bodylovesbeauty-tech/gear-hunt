@@ -1,39 +1,11 @@
-'use client'
+import type { Metadata } from 'next'
+import InvestorDeck from '@/components/investor-deck'
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { useState } from 'react'
-import { ArrowRight, Building2, ChartNoAxesCombined, ShieldCheck } from 'lucide-react'
-import { Cta, FAQList, Hero, SectionLabel, Shell, StatusBadge } from '@/components/public-site'
-import { ResponsibilityNotice } from '@/components/role-entry'
-
-const faq: [string, string][] = [
-  ['Is this an investment offer?', 'No. This is an intelligence and access pathway, not an offer, solicitation, financial advice or promise of returns.'],
-  ['What is live today?', 'BBBT has a public prototype, selected authenticated flows and product concepts. Coverage, response operations and partner verification are not nationwide live services.'],
-  ['What is the first geography?', 'The working pilot thesis begins with South India, with Bengaluru–Mysuru used as an illustrative first corridor. It is not a confirmed launch commitment.'],
-  ['How are Trust and Holding different?', 'BBBT Trust is the proposed non-profit layer for safety, community, governance and welfare. BBBT Holding is the proposed commercial layer for products, technology and partnerships.'],
-  ['What does access involve?', 'A request starts a controlled conversation. It does not create an account, collect payment, perform KYC or establish an investment relationship.'],
-]
+export const metadata: Metadata = {
+  title: 'Investor Intelligence Room | BBBT',
+  description: 'An honest interactive presentation of BBBT rider safety infrastructure, prototype evidence and the path ahead.',
+}
 
 export default function InvestorPage() {
-  const [submitted, setSubmitted] = useState(false)
-  return <Shell><main className="investor-brief-page">
-    <Hero label="Investor intelligence brief" title="Mission-aligned capital, responsibly considered." lede="Understand the problem, the architecture and the phase before requesting a controlled conversation. This page is information, not an investment offer." image={{ src: '/images/investor-brief.png', alt: 'Conceptual investor worktable with a motorcycle helmet, route map, safety checklist and laptop; not a BBBT operating site.' }}>
-      <StatusBadge>PRIVATE PATHWAY</StatusBadge><Cta href="#request-access">Request controlled access</Cta>
-    </Hero>
-
-    <section className="investor-brief-section"><SectionLabel>At a glance</SectionLabel><h2>A rider safety infrastructure thesis.</h2><p className="investor-brief-lede">BBBT is being designed as a connected layer for rider readiness, community participation, welfare and trusted support. The opportunity is not a claim that the network already exists at scale; it is a disciplined approach to building the conditions for it.</p><div className="investor-thesis-grid"><article><ShieldCheck aria-hidden="true" /><h3>Safety identity</h3><p>A clearer foundation for rider context, readiness and responsible participation.</p></article><article><Building2 aria-hidden="true" /><h3>Network layer</h3><p>Groups, Care Pits, contributors and partners connected through controlled pathways.</p></article><article><ChartNoAxesCombined aria-hidden="true" /><h3>Phased model</h3><p>Free base access first, with future products and verified services introduced carefully.</p></article></div></section>
-
-    <section className="investor-brief-section investor-brief-section--alt"><SectionLabel>The problem</SectionLabel><h2>Goodwill is fragmented across the road.</h2><div className="investor-problem-grid"><div><b>UNSTRUCTURED KNOWLEDGE</b><p>Riders carry local intelligence about corridors, weather, support and risk, but it rarely becomes shared infrastructure.</p></div><div><b>UNCLEAR SUPPORT</b><p>When a rider needs help, groups, chats and local contacts may exist without consistent readiness or accountability.</p></div><div><b>LOW TRUST SIGNALS</b><p>Future partners need a way to participate without overstating verification, coverage or emergency capability.</p></div></div></section>
-
-    <section className="investor-brief-section"><SectionLabel>Architecture</SectionLabel><h2>One ecosystem. Separate responsibilities.</h2><div className="investor-architecture"><div><span className="pp-card-kicker">BBBT TRUST</span><h3>Non-profit foundation</h3><p>Safety education, community representation, governance and welfare. The Trust is the accountability layer around rider purpose.</p><ul><li>Readiness and safety standards</li><li>Rider participation and council input</li><li>Transparent governance</li><li>Future welfare pathways</li></ul></div><div><span className="pp-card-kicker">BBBT HOLDING</span><h3>Commercial layer</h3><p>Products, technology, partnerships and the future BBBT Shop. Holding is distinct from the Trust by design.</p><ul><li>Rider technology</li><li>Product and research operations</li><li>Commercial partnerships</li><li>Future product revenue</li></ul></div></div></section>
-
-    <section className="investor-brief-section investor-brief-section--alt"><SectionLabel>Model and roadmap</SectionLabel><h2>Build trust before adding complexity.</h2><div className="investor-roadmap"><div><span>NOW</span><h3>Prototype foundation</h3><p>Public information architecture, controlled role pathways and selected product flows.</p></div><div><span>NEXT</span><h3>Controlled community</h3><p>Rider groups, Founding Rider Council participation and clearer operating standards.</p></div><div><span>LATER</span><h3>Verified support</h3><p>Care Pits, marshal pathways and partner operations introduced only with defined verification.</p></div><div><span>FUTURE</span><h3>Products and services</h3><p>Optional rider plans, group tools, technology and commercial products through Holding.</p></div></div><div className="investor-brief-note"><strong>Model boundary</strong><p>Pricing, token economics, returns, valuation, fundraising terms and financial projections are intentionally not presented as settled facts in this prototype.</p></div></section>
-
-    <section className="investor-brief-section"><SectionLabel>What access means</SectionLabel><h2>A conversation, not a commitment.</h2><p className="investor-brief-lede">Investor access is for people who want to understand the mission, operating thesis and controlled build sequence. A request does not promise allocation, returns, ownership, information rights or a future financing round.</p><div className="investor-access-list"><span>01 <b>Request</b> — Share your name, work email and reason for exploring BBBT.</span><span>02 <b>Review</b> — The team reviews fit and the appropriate level of information.</span><span>03 <b>Conversation</b> — If appropriate, continue through a controlled, human-led pathway.</span></div></section>
-
-    <section id="request-access" className="investor-brief-section investor-brief-section--alt"><SectionLabel>Request access</SectionLabel><h2>Start with context.</h2>{submitted ? <div className="investor-confirmation" role="status"><h3>Request received</h3><p>Thank you. This prototype records your intent locally for review; no investment commitment, payment or KYC process has been created.</p><Link className="button button-red" href="/about">Return to BBBT <ArrowRight aria-hidden="true" /></Link></div> : <form className="investor-request-form" onSubmit={(event) => { event.preventDefault(); setSubmitted(true) }}><label>Full name<input required name="name" autoComplete="name" /></label><label>Work email<input required type="email" name="email" autoComplete="email" /></label><label>Why are you exploring BBBT?<textarea required name="reason" rows={5} /></label><label className="investor-check"><input required type="checkbox" /> I understand this is an expression of interest, not an offer or financial advice.</label><button className="button button-red" type="submit">Request controlled access <ArrowRight aria-hidden="true" /></button></form>}<ResponsibilityNotice /></section>
-
-    <section className="investor-brief-section"><SectionLabel>Questions before contacting</SectionLabel><h2>Investor FAQ</h2><FAQList items={faq} /></section>
-  </main></Shell>
+  return <InvestorDeck />
 }

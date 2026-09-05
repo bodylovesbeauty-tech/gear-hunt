@@ -5,9 +5,10 @@ import { useState } from 'react'
 
 const roles = [
   { id: 'rider', title: 'Rider', subtitle: 'Safety network member', description: 'Join the verified rider network, set your safety preferences, and access SOS, Blood Mesh, and route support.', href: '/rider-signup', action: 'Join as rider' },
-  { id: 'marshal', title: 'Marshal', subtitle: 'Local response leader', description: 'Coordinate trusted riders and help the network respond responsibly when support is needed.', href: '/roles/marshal', action: 'Explore marshal role' },
-  { id: 'group-admin', title: 'Group Admin', subtitle: 'Community coordinator', description: 'Bring your riding group into the Trust Protocol with clear responsibilities and verified access.', href: '/roles/group-admin', action: 'Explore group admin' },
-  { id: 'council', title: 'Founding Council', subtitle: 'Trust and governance', description: 'Help shape standards, accountability, and the long-term direction of the ecosystem.', href: '/roles/council', action: 'Explore council role' },
+  { id: 'group-admin', title: 'Group Admin', subtitle: 'Community coordinator', description: 'Bring your riding group into the Trust Protocol with clear responsibilities and controlled access.', href: '/roles/group-admin', action: 'Explore group admin' },
+  { id: 'group-marshal', title: 'Group Marshal', subtitle: 'Group safety contributor', description: 'Support safer participation inside a defined riding community.', href: '/roles/group-marshal', action: 'Explore group marshal' },
+  { id: 'independent-marshal', title: 'Independent Marshal', subtitle: 'Cross-community contributor', description: 'Explore a future safety contribution role beyond one group.', href: '/roles/independent-marshal', action: 'Explore independent marshal' },
+  { id: 'council', title: 'Founding Rider Council', subtitle: 'Experience and governance', description: 'Help shape standards, accountability, and the long-term direction of the ecosystem.', href: '/roles/founding-rider-council', action: 'Explore council role' },
   { id: 'investor', title: 'Investor', subtitle: 'Mission-aligned partner', description: 'Request access to the private intelligence room and review the model when approved.', href: '/investor', action: 'Request investor access' },
 ]
 

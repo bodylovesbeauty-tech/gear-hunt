@@ -60,6 +60,19 @@
   letter-spacing: 0.06em; color: var(--bcx-ink-soft); background: rgba(255,255,255,0.015);
 }
 
+/* ============================================================ ROLE BRIEFS */
+.role-brief-page .hero { max-width: 1240px; margin-inline: auto; }
+.role-brief-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.role-brief-panel { padding: clamp(1.35rem, 3vw, 2rem); border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); background: var(--bcx-crystal-solid); }
+.role-brief-panel h2 { margin: .7rem 0 1rem; color: var(--bcx-ink); font-size: clamp(1.35rem, 2vw, 1.8rem); letter-spacing: -.03em; }
+.role-brief-panel ul { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.role-brief-panel li { position: relative; padding-left: 1.25rem; color: var(--bcx-ink-soft); line-height: 1.55; }
+.role-brief-panel li::before { content: ''; position: absolute; left: 0; top: .65em; width: 5px; height: 5px; border-radius: 50%; background: var(--bcx-blue); }
+.role-brief-boundary { margin-top: 1rem; padding: 1.15rem 1.35rem; border: 1px solid color-mix(in srgb, var(--bcx-orange) 45%, var(--bcx-line)); border-radius: var(--bcx-r-md); background: color-mix(in srgb, var(--bcx-orange) 6%, var(--bcx-crystal-solid)); }
+.role-brief-boundary strong { display: block; color: var(--bcx-orange); font: 700 .68rem/1 var(--font-geist-mono), monospace; letter-spacing: .1em; text-transform: uppercase; }
+.role-brief-boundary p { margin: .55rem 0 0; color: var(--bcx-ink-soft); line-height: 1.55; }
+.role-brief-links { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin-top: 1.4rem; }
+
 /* ============================================================ ABOUT */
 .pp-reality { display: grid; gap: 1px; background: var(--bcx-line-soft); border: 1px solid var(--bcx-line-soft); border-radius: var(--bcx-r-lg); overflow: hidden; grid-template-columns: repeat(3, 1fr); }
 .pp-reality > div { background: var(--bcx-env); padding: 1.5rem; }
@@ -182,6 +195,7 @@
   .pp-faq__nav button { white-space: nowrap; }
   .pp-reality { grid-template-columns: 1fr; }
   .pp-stages { grid-template-columns: repeat(2, 1fr); }
+  .role-brief-grid { grid-template-columns: 1fr; }
   .pp-head--split { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
   /* workflow rail becomes vertical on small screens */
   .pp-flow { grid-auto-flow: row; grid-auto-columns: auto; }

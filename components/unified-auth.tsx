@@ -286,7 +286,7 @@ export function UnifiedSignup(){
     <h1>What are you joining<br/><em>BBBT as?</em></h1>
     <p className="auth-lede">Choose how you want to participate in the BBBT ecosystem.</p>
     <div className="signup-role-grid" role="radiogroup" aria-label="Choose your BBBT signup role">{roleList.map(option=><button key={option} type="button" className={`signup-role-card ${role===option?'is-selected':''}`} role="radio" aria-checked={role===option} onClick={()=>setRole(option)}><span className="signup-role-name">{option}</span><span className="signup-role-description">{descriptions[option]}</span><span className="signup-role-check" aria-hidden="true">{role===option?'SELECTED':'SELECT'}</span></button>)}</div>
-    <button type="button" className="btn btn-cyan" onClick={()=>{try{sessionStorage.setItem(roleSelectionKey,role)}catch{};setRoleChosen(true)}}>CONTINUE <ArrowRight size={16}/></button>
+    <button type="button" className="btn btn-cyan signup-role-continue" onClick={()=>{try{sessionStorage.setItem(roleSelectionKey,role)}catch{};setRoleChosen(true)}}>CONTINUE <ArrowRight size={16}/></button>
   </AuthFrame>
 
   if(roleChosen&&!languageChosen)return <AuthFrame>

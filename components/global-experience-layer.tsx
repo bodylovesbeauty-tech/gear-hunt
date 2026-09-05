@@ -14,7 +14,7 @@ export function GlobalExperienceLayer() {
   const [rideActive, setRideActive] = useState(false)
 
   return <>
-    <aside className="global-quick-access" aria-label="Global quick access">
+    <aside className="global-quick-access is-hidden" aria-label="Global quick access">
       <span className="global-quick-label">BBBT / ACCESS</span>
       {quickLinks.map(([label, href]) => <Link key={label} href={href}>{label}</Link>)}
       <button type="button" onClick={() => setRideActive((active) => !active)}>{rideActive ? 'Stop Ride' : 'Start Ride'}</button>

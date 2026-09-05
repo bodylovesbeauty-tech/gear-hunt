@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import { applicationKey, dashboardFor, demoUsers, duplicateField, identityKey, isAutoApproved, normEmail, normHandle, normMobile, prototypeApplicationId, readRegistry, saveIdentityToRegistry, sessionKey, type DemoUser, type PrototypeIdentity, type PrototypeVehicle, type Role, type Status } from '@/lib/prototype-session'
+import { languages, readPreferences, savePreferences, type LanguageCode } from '@/lib/global-preferences'
 import './signup-flow.css'
 
 function VehiclePhoto({label,helper,photo,onChange,onRemove,inputId}:{label:string;helper:string;photo:{name:string;dataUrl:string}|null;onChange:(file?:File)=>void;onRemove:()=>void;inputId:string}){return <div className="vehicle-photo"><b>{label}</b><small>{helper} JPG, JPEG, PNG or WEBP up to 5 MB.</small>{photo?<div className="vehicle-photo-preview"><img src={photo.dataUrl} alt={label}/><span>{photo.name}</span><button type="button" className="text-button" onClick={onRemove}>Remove</button></div>:<label className="btn btn-outline photo-picker" htmlFor={inputId}>CHOOSE FILE / CAMERA<input id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={e=>onChange(e.target.files?.[0])}/></label>}</div>}
@@ -23,6 +24,9 @@ export function UnifiedSignup(){
   }
   const roleSelectionKey='bbbt-signup-role'
   const [roleChosen,setRoleChosen]=useState(false)
+  const [languageChosen,setLanguageChosen]=useState(false)
+  const [languageSearch,setLanguageSearch]=useState('')
+  const languageOptions=languages.filter(option=>`${option.label} ${option.nativeLabel} ${option.code}`.toLowerCase().includes(languageSearch.toLowerCase()))
   const responsibilities:Partial<Record<Role,string[]>>={
     Rider:[
       'Ride responsibly and follow traffic rules at all times.',
@@ -49,10 +53,11 @@ export function UnifiedSignup(){
       'Support fair, transparent and accountable community governance.',
     ],
   }
-  const steps=['01 YOU','02 LANGUAGES','03 WHERE YOU RIDE','04 YOUR BIKE','05 YOUR SAFETY','06 YOUR ROLE','07 BBBT INTEREST','08 REVIEW']
+  const steps=['01 YOU','03 WHERE YOU RIDE','04 YOUR BIKE','05 YOUR SAFETY','06 YOUR ROLE','07 BBBT INTEREST','08 REVIEW']
 
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
+  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primary){setF(previous=>({...previous,language:saved.primary,additionalLanguages:saved.additional||[]}))}}catch{}},[])
   useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;let stored:Role|null=null;try{stored=sessionStorage.getItem(roleSelectionKey) as Role|null}catch{};const selected=requested&&roleList.includes(requested)?requested:stored&&roleList.includes(stored)?stored:null;if(selected)setRole(selected)},[])
   const [checked,setChecked]=useState(false)
   const [showResp,setShowResp]=useState(false)
@@ -229,6 +234,19 @@ export function UnifiedSignup(){
     <button type="button" className="btn btn-cyan" onClick={()=>{try{sessionStorage.setItem(roleSelectionKey,role)}catch{};setRoleChosen(true)}}>CONTINUE <ArrowRight size={16}/></button>
   </AuthFrame>
 
+  if(roleChosen&&!languageChosen)return <AuthFrame>
+    <Link className="auth-brand mobile-brand" href="/"><img src="/bbbt-logo-red.png" alt="BBBT"/></Link>
+    <span className="eyebrow cyan-text">UNIVERSAL SIGNUP / STEP 2</span>
+    <h1>LANGUAGE<br/><em>PREFERENCES</em></h1>
+    <p className="auth-lede">Choose your preferred language for the BBBT ecosystem and Voice Assistant.</p>
+    <div className="language-step-card">
+      <label>PRIMARY LANGUAGE <span className="field-hint">Required</span><select value={f.language} onChange={event=>setF(previous=>({...previous,language:event.target.value,additionalLanguages:previous.additionalLanguages.filter(item=>item!==event.target.value)}))} aria-label="Primary language">{languages.map(option=><option key={option.code} value={option.label}>{option.label} — {option.nativeLabel}</option>)}</select></label>
+      <fieldset className="language-options"><legend>ADDITIONAL LANGUAGES <span className="eyebrow">UP TO 2</span></legend><p className="auth-lede language-helper">Choose up to 2 additional languages.</p><label className="language-search"><span className="sr-only">Search languages</span><input value={languageSearch} onChange={event=>setLanguageSearch(event.target.value)} placeholder="Search by English name, native name or code" type="search"/></label><div className="language-checks searchable-language-list">{languageOptions.filter(option=>option.label!==f.language).map(option=><label key={option.code} className="language-check"><input type="checkbox" checked={f.additionalLanguages.includes(option.label)} onChange={()=>toggleLanguage(option.label)} disabled={!f.additionalLanguages.includes(option.label)&&f.additionalLanguages.length>=2}/><span><strong>{option.label}</strong><small>{option.nativeLabel} · {option.code}</small></span></label>)}{languageOptions.length===0&&<p className="auth-lede">No languages match your search.</p>}</div></fieldset>
+    </div>
+    <div className="selected-language-summary" aria-live="polite"><span>SELECTED {1+f.additionalLanguages.length} / 3</span><strong>{[f.language,...f.additionalLanguages].join(' · ')}</strong></div>
+    <button type="button" className="btn btn-cyan" onClick={()=>{const primary=languages.find(option=>option.label===f.language);try{sessionStorage.setItem('bbbt-signup-languages',JSON.stringify({primary:f.language,primaryCode:primary?.code||'en',additional:f.additionalLanguages}));savePreferences({...readPreferences(),language:(primary?.code||'en') as LanguageCode})}catch{};setLanguageChosen(true)}}>CONTINUE <ArrowRight size={16}/></button>
+  </AuthFrame>
+
   return <AuthFrame>
 <Link className="auth-brand mobile-brand" href="/"><img src="/bbbt-logo-red.png" alt="BBBT"/></Link>
     <span className="eyebrow cyan-text">CREATE ACCOUNT / JOIN THE NETWORK</span>
@@ -277,23 +295,8 @@ export function UnifiedSignup(){
         </div>
       </div>}
 
-      {step===1&&<div className="su-step">
-        <p className="auth-lede">We use language to keep safety and community information clear for you.</p>
-        <label>PRIMARY LANGUAGE (Required)<select value={f.language} onChange={set('language')}>
-{['English','Hinglish','Hindi','Bengali','Bodo','Dogri','Gujarati','Kannada','Kashmiri','Konkani','Malayalam','Manipuri / Meitei','Marathi','Maithili','Nepali','Odia','Punjabi','Sanskrit','Santali','Sindhi','Tamil','Telugu','Urdu','Arabic'].map(language=><option key={language}>{language}</option>)}
-  </select></label>
-        <fieldset className="language-options">
-          <legend>ADDITIONAL REGIONAL LANGUAGES <span className="eyebrow">UP TO 2</span></legend>
-          <p className="auth-lede" style={{margin:0}}>English is primary. Choose up to two additional languages. Translations are not yet live.</p>
-          <div className="language-checks">
-            {['Hinglish','Hindi','Bengali','Bodo','Dogri','Gujarati','Kannada','Kashmiri','Konkani','Malayalam','Manipuri / Meitei','Marathi','Maithili','Nepali','Odia','Punjabi','Sanskrit','Santali','Sindhi','Tamil','Telugu','Urdu','Arabic'].map(language=><label key={language} className="language-check">
-              <input type="checkbox" checked={f.additionalLanguages.includes(language)} onChange={()=>toggleLanguage(language)} disabled={!f.additionalLanguages.includes(language)&&f.additionalLanguages.length>=2}/><span>{language}</span>
-            </label>)}
-          </div>
-        </fieldset>
-      </div>}
 
-      {step===2&&<div className="su-step">
+      {step===1&&<div className="su-step">
         <label className={errors.baseLocation?'invalid':''}>BASE LOCATION (Required) {err('baseLocation','Required')}<input value={f.baseLocation} onChange={set('baseLocation')} placeholder="City / state you mostly ride from"/></label>
         <div className="form-grid">
           <label>ADDRESS (Optional)<input value={f.address} onChange={set('address')} placeholder="Street or locality"/></label>
@@ -309,11 +312,11 @@ export function UnifiedSignup(){
         </div>
       </div>}
 
-      {step===3&&<div className="su-step">
+      {step===2&&<div className="su-step">
         <p className="auth-lede">YOUR VEHICLES (Optional). Add up to 5 vehicles. You can continue with zero.</p>
         {vehicles.map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend><div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{vehicles.length<5?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
 
-      {step===4&&<div className="su-step">
+      {step===3&&<div className="su-step">
         <fieldset className="form-section">
           <legend>PRIVATE / SAFETY INFORMATION</legend>
           <p className="auth-lede" style={{margin:0}}>This stays private. It is never shown on your public rider identity.</p>
@@ -334,7 +337,7 @@ export function UnifiedSignup(){
         </fieldset>
       </div>}
 
-      {step===5&&<div className="su-step">
+      {step===4&&<div className="su-step">
         <fieldset className="role-fieldset">
           <legend>Choose your BBBT role</legend>
           <div className="role-checks">{roleList.map(r=>
@@ -374,7 +377,7 @@ export function UnifiedSignup(){
         </fieldset>}
       </div>}
 
-      {step===6&&<div className="su-step">
+      {step===5&&<div className="su-step">
         <label>ANNUAL SAFETY BUDGET RESEARCH (Optional)<select value={f.budget} onChange={set('budget')}>
           <option value="" disabled>Select a range</option>
           <option>Under ₹1,000</option>
@@ -387,7 +390,7 @@ export function UnifiedSignup(){
         <div className="su-note"><strong>Research only</strong> — this is not a payment or purchase commitment.</div>
       </div>}
 
-      {step===7&&<div className="su-step su-review">
+      {step===6&&<div className="su-step su-review">
         <div className="su-review-grid">
           <div><small>Name</small><p>{f.fullName.trim()||'—'}</p></div>
           <div><small>Handle</small><p>{f.handle.trim()||'—'}</p></div>
@@ -428,7 +431,7 @@ export function UnifiedSignup(){
         <h2>Your responsibilities as {role}</h2>
         <p className="auth-lede">Joining BBBT begins with responsibility. Please read these before you continue.</p>
         <p className="su-resp-lang">ENGLISH</p>
-        <ul className="su-resp-list">{responsibilities[role].map((r,i)=><li key={i}>{r}</li>)}</ul>
+        <ul className="su-resp-list">{(responsibilities[role]||['Follow BBBT responsibilities, safety guidance and applicable review requirements.']).map((r,i)=><li key={i}>{r}</li>)}</ul>
         {f.language!=='English'&&<p className="su-note" style={{marginTop:'1.25rem'}}>A {f.language} version of these responsibilities will be provided before launch. The English version above is authoritative for this prototype.</p>}
         <label className="consent-row">
           <input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/>

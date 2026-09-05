@@ -3,7 +3,9 @@
 import Link from 'next/link'
 import ContactRequestForm from '@/components/contact-request-form'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { readRegistry } from '@/lib/prototype-session'
+import { readPublicGroups, sortPublicGroups, type PublicGroup } from '@/lib/public-groups'
 import { Cta, Hero, Shell, StatusBadge } from '@/components/public-site'
 import { CrystalAlert, CrystalBadge, CrystalTabs, type BadgeStatus } from '@/components/ui/crystal'
 import {
@@ -350,6 +352,25 @@ function CarePitsPage() {
 }
 
 /* ============================================================ COMMUNITY */
+function CommunityGroupNetwork() {
+  const [groups, setGroups] = useState<PublicGroup[]>([])
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<'newest' | 'members' | 'name'>('newest')
+  const [page, setPage] = useState(1)
+  useEffect(() => setGroups(readPublicGroups()), [])
+  const filtered = useMemo(() => sortPublicGroups(groups.filter(group => `${group.name} ${group.description || ''}`.toLowerCase().includes(query.toLowerCase())), sort), [groups, query, sort])
+  const visible = filtered.slice(0, page * 6)
+  const membershipTotal = groups.reduce((total, group) => total + group.memberCount, 0)
+  const registeredRiders = readRegistry().filter(identity => identity.requestedRole === 'Rider').length
+  return <section className="pp-section pp-section--alt community-group-network">
+    <Head eyebrow="The BBBT Rider Network" title="Discover real BBBT Groups created by riders and Group Admins." lede="Public group information only. Private member details and contact information stay protected." />
+    <div className="community-network-metrics" aria-label="Community aggregate metrics"><div><strong>{groups.length}</strong><span>PUBLIC GROUPS</span></div><div><strong>{membershipTotal}</strong><span>GROUP MEMBERSHIPS</span></div><div><strong>{registeredRiders}</strong><span>REGISTERED RIDERS</span></div></div>
+    <div className="community-network-toolbar" aria-label="Group directory controls"><label><span className="sr-only">Search groups</span><input value={query} onChange={event => { setQuery(event.target.value); setPage(1) }} placeholder="Search group name" /></label><label><span className="sr-only">Sort groups</span><select value={sort} onChange={event => { setSort(event.target.value as typeof sort); setPage(1) }}><option value="newest">Newest</option><option value="members">Most Members</option><option value="name">Name A–Z</option></select></label></div>
+    {visible.length ? <><div className="community-network-grid">{visible.map(group => <Link key={group.identifier} href={`/community/groups/${encodeURIComponent(group.identifier)}`} className="community-network-card">{group.image?.dataUrl ? <img src={group.image.dataUrl} alt={group.name} /> : <span className="community-network-fallback">BBBT</span>}<span><strong>{group.name}</strong><small>{group.memberCount} members · {new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(group.createdAt))}</small>{group.location && <small>{group.location}</small>}</span></Link>)}</div>{visible.length < filtered.length && <button type="button" className="button button-outline community-network-load" onClick={() => setPage(value => value + 1)}>Load more groups</button>}</> : <div className="community-network-empty"><strong>NO PUBLIC GROUPS YET</strong><span>BBBT Groups will appear here as riders and Group Admins create them.</span></div>}
+    <Link className="button button-outline" href="/community/groups">Open full group directory <ArrowRight size={16} aria-hidden="true" /></Link>
+  </section>
+}
+
 function CommunityPage() {
   return (
     <PageFrame
@@ -367,6 +388,8 @@ function CommunityPage() {
           <InfoCard icon={Landmark} title="Council" body="Experienced riders contributing intelligence and feedback." status="PROPOSED" accent="green" />
         </div>
       </section>
+
+      <CommunityGroupNetwork />
 
       <section className="pp-section pp-section--alt">
         <Head

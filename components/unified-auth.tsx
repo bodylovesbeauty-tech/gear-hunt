@@ -182,13 +182,20 @@ export function UnifiedSignup(){
     if((!allowedType&&!allowedExtension)||file.size>5*1024*1024){setPhotoErrors(previous=>({...previous,[errorKey]:'Use a JPG, PNG or WEBP image up to 5 MB.'}));return}
     setPhotoErrors(previous=>{const next={...previous};delete next[errorKey];return next})
     try{
-      const bytes=new Uint8Array(await file.arrayBuffer())
-      let binary=''
-      const chunkSize=0x8000
-      for(let offset=0;offset<bytes.length;offset+=chunkSize)binary+=String.fromCharCode(...bytes.subarray(offset,offset+chunkSize))
-      const mime=file.type||({jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp'} as Record<string,string>)[extension]||'application/octet-stream'
-      const dataUrl=`data:${mime};base64,${btoa(binary)}`
-      setVehicles(list=>list.map(vehicle=>vehicle.id===id?{...vehicle,[key]:{name:file.name,dataUrl}}:vehicle))
+      const mime=file.type||({'jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png','webp':'image/webp'} as Record<string,string>)[extension]||'application/octet-stream'
+  if(typeof file.arrayBuffer==='function'){
+    const bytes=new Uint8Array(await file.arrayBuffer())
+    let binary=''
+    const chunkSize=0x8000
+    for(let offset=0;offset<bytes.length;offset+=chunkSize)binary+=String.fromCharCode(...bytes.subarray(offset,offset+chunkSize))
+    const dataUrl=`data:${mime};base64,${btoa(binary)}`
+    setVehicles(list=>list.map(vehicle=>vehicle.id===id?{...vehicle,[key]:{name:file.name,dataUrl}}:vehicle))
+    return
+  }
+  const reader=new FileReader()
+  reader.onload=()=>{const dataUrl=String(reader.result||'');if(!dataUrl.startsWith('data:image/')){setPhotoErrors(previous=>({...previous,[errorKey]:'This image could not be read. Please choose it again.'}));return}setVehicles(list=>list.map(vehicle=>vehicle.id===id?{...vehicle,[key]:{name:file.name,dataUrl}}:vehicle))}
+  reader.onerror=()=>setPhotoErrors(previous=>({...previous,[errorKey]:'This image could not be read. Please choose it again.'}))
+  reader.readAsDataURL(file)
     }catch{setPhotoErrors(previous=>({...previous,[errorKey]:'This image could not be read. Please choose it again.'}))}
   }
   function removeVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto'){setVehicles(list=>list.map(vehicle=>vehicle.id===id?{...vehicle,[key]:null}:vehicle));setPhotoErrors(previous=>{const next={...previous};delete next[`${id}-${key}`];return next})}

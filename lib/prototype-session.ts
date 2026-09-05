@@ -14,6 +14,7 @@ export const demoUsers: DemoUser[] = [
 export const sessionKey='bbbt-prototype-session'
 export const applicationKey='bbbt-prototype-application'
 export const identityKey='bbbt-prototype-identity'
+export const returnContextKey='bbbt-prototype-return-context'
 export type PrototypeVehicle={id:string;make:string;model:string;modelYear:string;currentKm:string;registration:string;fullBikePhoto:{name:string;dataUrl:string}|null;meterPhoto:{name:string;dataUrl:string}|null}
 export type PrototypeSafetyKit={status:'NOT ACTIVATED'|'ACTIVE';linkedVehicleId:string|null;activatedAt:string|null;kitId:string}
 export type GovernanceMember={id:string;name:string;handle:string;role:Role;joinedAt:string;office?:'GROUP ADMIN'|'GROUP MARSHAL'}

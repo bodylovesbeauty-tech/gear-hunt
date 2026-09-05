@@ -32,7 +32,7 @@ function toPublicGroup(group: PrototypeGroup): PublicGroup | null {
     createdAt: group.createdAt,
     memberCount: Array.isArray(group.members) ? group.members.length : 0,
     image: group.image || null,
-    description: null,
+    description: group.description || null,
     location: null,
     status: 'ACTIVE',
   }

@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
-import { applicationKey, dashboardFor, demoUsers, duplicateField, identityKey, isAutoApproved, normEmail, normHandle, normMobile, prototypeApplicationId, readRegistry, saveIdentityToRegistry, sessionKey, type DemoUser, type PrototypeIdentity, type PrototypeVehicle, type Role, type Status } from '@/lib/prototype-session'
+import { applicationKey, dashboardFor, demoUsers, duplicateField, groupKey, identityKey, isAutoApproved, normEmail, normHandle, normMobile, prototypeApplicationId, readRegistry, saveIdentityToRegistry, sessionKey, type DemoUser, type PrototypeIdentity, type PrototypeVehicle, type Role, type Status } from '@/lib/prototype-session'
 import { languages, readPreferences, savePreferences, type LanguageCode } from '@/lib/global-preferences'
 import './signup-flow.css'
 
@@ -243,6 +243,10 @@ export function UnifiedSignup(){
       if(!f.ec2Relationship.trim())e.ec2Relationship='Relationship is required'
       if(!checked)e.consent='You must acknowledge the Rider Terms before submitting'
     }
+    if(currentStep==='branch'&&role==='Group Admin'){
+      if(!f.groupName.trim())e.groupName='Community name is required'
+      if(!f.groupProfile.trim())e.groupProfile='Public profile is required'
+    }
     if(currentStep==='role'){
       if(role==='Group Admin'){
         if(!f.groupName.trim())e.groupName='Required'
@@ -282,10 +286,14 @@ export function UnifiedSignup(){
     if(typeof window!=='undefined'&&role==='Rider')window.dispatchEvent(new CustomEvent('bbbt:safety-spending-preference',{detail:safetyPreference}))
     const application={...f,safetySpendingPreference:safetyPreference,vehicles,role,status,submittedAt,responsibilityAcknowledged:true,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider' as const}:undefined}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),emergencyName:role==='Rider'?f.ec1Name.trim():undefined,emergencyNumber:role==='Rider'?f.ec1Number.trim():undefined,emergencyContacts:role==='Rider'?[{fullName:f.ec1Name.trim(),mobile:f.ec1Number.trim(),relationship:f.ec1Relationship.trim()},{fullName:f.ec2Name.trim(),mobile:f.ec2Number.trim(),relationship:f.ec2Relationship.trim()}]:undefined,bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider'}:undefined,safetySpendingPreference:safetyPreference,createdAt:submittedAt}
+          const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,groupName:role==='Group Admin'?f.groupName.trim():undefined,groupProfile:role==='Group Admin'?f.groupProfile.trim():undefined,groupSize:role==='Group Admin'?f.groupSize.trim():undefined,groupHandle:role==='Group Admin'?f.groupHandle.trim():undefined,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),emergencyName:role==='Rider'?f.ec1Name.trim():undefined,emergencyNumber:role==='Rider'?f.ec1Number.trim():undefined,emergencyContacts:role==='Rider'?[{fullName:f.ec1Name.trim(),mobile:f.ec1Number.trim(),relationship:f.ec1Relationship.trim()},{fullName:f.ec2Name.trim(),mobile:f.ec2Number.trim(),relationship:f.ec2Relationship.trim()}]:undefined,bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider'}:undefined,safetySpendingPreference:safetyPreference,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     saveIdentityToRegistry(identity)
+    if(role==='Group Admin'){
+      const groupHandle=normalizeHandle(f.groupHandle)||normalizeHandle(f.handle)
+      sessionStorage.setItem(groupKey,JSON.stringify({id:`BBBT-GRP-${applicationId.slice(-8)}`,name:f.groupName.trim(),createdAt:submittedAt,cycleStart:submittedAt,cycleEnd:new Date(Date.now()+90*24*60*60*1000).toISOString(),adminId:identity.id,members:[{id:identity.id,name:identity.fullName,handle:identity.handle,role:'Group Admin',joinedAt:submittedAt}],elections:[],rides:[],notifications:[],shareToken:groupHandle.toUpperCase(),image:null,status:'ACTIVE',permanent:true,capabilities:[{role:'Group Admin',scope:'DISTRICT',actions:['CREATE_GROUP','MANAGE_GROUP','CREATE_RIDE'],approval:'APPROVED'}],description:f.groupProfile.trim(),groupSize:f.groupSize.trim(),groupHandle:f.groupHandle.trim()}))
+    }
     setDone(true)
   }
   function toggleLanguage(language:string){
@@ -462,7 +470,7 @@ export function UnifiedSignup(){
         <span className="eyebrow cyan-text">{activeSignupBranch.eyebrow}</span>
         <h2>{activeSignupBranch.title}</h2>
         <p className="auth-lede">{activeSignupBranch.description}</p>
-        <div className="signup-branch-panel"><strong>{role}</strong><span>Role-specific onboarding begins here.</span><small>Additional {activeSignupBranch.key === 'rider' ? 'rider safety' : 'application'} fields will be added in the next dedicated phase.</small></div>
+        {role==='Group Admin'?<fieldset className="form-section"><legend>GROUP ADMIN INFORMATION</legend><label className={errors.groupName?'invalid':''}>GROUP / COMMUNITY NAME <span className="field-hint">Required</span><input value={f.groupName} onChange={set('groupName')} placeholder="BBBT QA GROUP — DO NOT RETAIN" aria-required="true"/>{errors.groupName&&<span className="field-error" role="alert">{errors.groupName}</span>}</label><label className={errors.groupProfile?'invalid':''}>PUBLIC COMMUNITY PROFILE <span className="field-hint">Required</span><textarea rows={4} value={f.groupProfile} onChange={set('groupProfile')} placeholder="Public description or community profile URL" aria-required="true"/>{errors.groupProfile&&<span className="field-error" role="alert">{errors.groupProfile}</span>}</label><div className="form-grid"><label>COMMUNITY SIZE <span className="field-hint">Optional</span><input value={f.groupSize} onChange={set('groupSize')} inputMode="numeric" placeholder="Approximate riders"/></label><label>COMMUNITY HANDLE <span className="field-hint">Optional</span><input value={f.groupHandle} onChange={set('groupHandle')} placeholder="@bbbt-qa-group"/></label></div></fieldset>:<div className="signup-branch-panel"><strong>{role}</strong><span>Role-specific onboarding begins here.</span><small>Additional {activeSignupBranch.key === 'rider' ? 'rider safety' : 'application'} fields will be added in the next dedicated phase.</small></div>}
       </div>}
 
       {currentStep==='safety'&&<div className="su-step">
@@ -486,16 +494,6 @@ export function UnifiedSignup(){
             </label>)}</div>
         </fieldset>
         <p className="auth-lede" style={{marginTop:0}}>Role selection is a request. It does not automatically grant approval.</p>
-
-        {role==='Group Admin'&&<fieldset className="form-section">
-          <legend>GROUP ADMIN INFORMATION</legend>
-          <label className={errors.groupName?'invalid':''}>RIDING GROUP / COMMUNITY NAME (Required) {err('groupName','Required')}<input value={f.groupName} onChange={set('groupName')} placeholder="Community name"/></label>
-          <label className={errors.groupProfile?'invalid':''}>PUBLIC COMMUNITY PROFILE (Required) {err('groupProfile','Required')}<input value={f.groupProfile} onChange={set('groupProfile')} placeholder="Instagram, Facebook or URL"/></label>
-          <div className="form-grid">
-            <label>COMMUNITY SIZE (Optional)<input value={f.groupSize} onChange={set('groupSize')} inputMode="numeric" placeholder="Approximate riders"/></label>
-            <label>COMMUNITY HANDLE (Optional)<input value={f.groupHandle} onChange={set('groupHandle')} placeholder="@communityhandle"/></label>
-          </div>
-        </fieldset>}
 
         {role==='Marshal'&&<fieldset className="form-section">
           <legend>MARSHAL EXPERIENCE</legend>
@@ -549,6 +547,8 @@ export function UnifiedSignup(){
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
           <div><small>Vehicles</small><p className={vehicles.length?'':'muted'}>{vehicles.length?`${vehicles.length} vehicle${vehicles.length===1?'':'s'} added`:'Not added'}</p></div>
           <div><small>Role requested</small><p>{role}</p></div>
+          {role==='Group Admin'&&<div className="su-review-section-title"><strong>GROUP ADMIN INFORMATION</strong><button type="button" className="text-button" onClick={()=>editStep('branch')}>EDIT</button></div>}
+          {role==='Group Admin'&&<><div><small>Group / community name</small><p>{f.groupName.trim()||'—'}</p></div><div><small>Public community profile</small><p>{f.groupProfile.trim()||'—'}</p></div><div><small>Community size</small><p>{f.groupSize.trim()||'Not provided'}</p></div><div><small>Community handle</small><p>{f.groupHandle.trim()||'Not provided'}</p></div></>}
           {role==='Rider'&&<>
             <div className="su-review-section-title"><strong>RIDER SAFETY & VEHICLE</strong><button type="button" className="text-button" onClick={()=>editStep('vehicle')}>EDIT</button></div>
             <div><small>Primary vehicle</small><p className={vehicles.length?'':'muted'}>{vehicles[0]?[vehicles[0].make,vehicles[0].model,vehicles[0].modelYear,vehicles[0].currentKm,vehicles[0].registration].filter(Boolean).join(' · ')||'Vehicle added':'Not added'}</p></div>

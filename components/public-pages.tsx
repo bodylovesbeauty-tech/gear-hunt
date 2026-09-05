@@ -39,7 +39,7 @@ const pageImages: Record<string,{src:string;alt:string}> = {
   'Care Pit Network': {src:'/images/care-pit-support.png',alt:'Riders taking a supported rest stop beside parked motorcycles.'},
   'Founding Rider Council': {src:'/images/council-discussion.png',alt:'Experienced riders discussing a map and safety ideas around an outdoor table.'},
   'Investor Brief': {src:'/images/investor-technology.png',alt:'Motorcycle rider silhouette on a highway with subtle technology and data atmosphere.'},
-  'Contact BBBT': {src:'/images/care-pit-support.png',alt:'Two riders speaking and helping one another beside motorcycles.'},
+  'Contact BBBT': {src:'/images/partner-network.png',alt:'Riders speaking with a roadside service partner beside parked motorcycles.'},
 }
 
 function PageFrame({

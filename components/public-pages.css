@@ -178,6 +178,7 @@
 @media (max-width: 560px) {
   .pp-stages { grid-template-columns: 1fr; }
   .pp-timeline > div { grid-template-columns: 1fr; gap: 0.35rem; }
+  .hero--with-image { padding-bottom: 5rem; }
 }
 
 /* ---------- reduced motion ---------- */

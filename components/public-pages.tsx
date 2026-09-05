@@ -39,7 +39,7 @@ const pageImages: Record<string,{src:string;alt:string}> = {
   'Care Pit Network': {src:'/images/care-pit-support.png',alt:'Riders taking a supported rest stop beside parked motorcycles.'},
   'Founding Rider Council': {src:'/images/council-discussion.png',alt:'Experienced riders discussing a map and safety ideas around an outdoor table.'},
   'Investor Brief': {src:'/images/investor-technology.png',alt:'Motorcycle rider silhouette on a highway with subtle technology and data atmosphere.'},
-  'Contact BBBT': {src:'/images/care-pit-support.png',alt:'Two riders speaking and helping one another beside motorcycles.'},
+  'Contact BBBT': {src:'/images/partner-network.png',alt:'Conceptual scene of riders speaking with a roadside service partner beside parked motorcycles; not a verified BBBT location.'},
 }
 
 function PageFrame({
@@ -642,7 +642,7 @@ export function ContactPage() {
       className="legal-page"
       label="Contact BBBT"
       title="Start with the right conversation."
-      lede="This is the official BBBT contact pathway. Choose the route closest to your work; submitted details may be used for manual review and routing. This prototype does not create live emergency support."
+      lede="This is the official BBBT contact pathway. Choose the route closest to your work; submitted details may be used for manual review and routing. The partner image is a photorealistic concept, not proof of a verified BBBT location. This prototype does not create live emergency support."
       ctaHref="mailto:connect@bbbt.in"
       ctaLabel="Email BBBT"
     >

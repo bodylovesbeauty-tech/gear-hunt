@@ -66,19 +66,19 @@ export function UnifiedSignup(){
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities']:[]),'branch',...(isInvestor||role==='Rider'?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
-  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',responsibilities:'09 RIDER RESPONSIBILITIES & TERMS',branch:'10 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),'branch',...(isInvestor||role==='Rider'?[]:['safety']),'role','review'] as const
+  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',responsibilities:'09 RIDER RESPONSIBILITIES & TERMS',safetySpending:'10 SAFETY-SPENDING PREFERENCE',branch:'11 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',review:'11 REVIEW'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
   const languageOption=(code:string)=>languages.find(option=>option.code===code)
   useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode){setF(previous=>({...previous,language:saved.primaryCode,additionalLanguages:saved.additionalCodes||[]}))}}catch{}},[])
-  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;let stored:Role|null=null;try{stored=sessionStorage.getItem(roleSelectionKey) as Role|null}catch{};const selected=requested&&roleList.includes(requested)?requested:stored&&roleList.includes(stored)?stored:null;if(selected)setRole(selected)},[])
+  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;let stored:Role|null=null;try{stored=sessionStorage.getItem(roleSelectionKey) as Role|null}catch{};const selected=requested&&roleList.includes(requested)?requested:stored&&roleList.includes(stored)?stored:null;if(selected){setRole(selected);if(requested&&roleList.includes(requested)){setRoleChosen(true);try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode)setLanguageChosen(true)}catch{}}}},[])
   const [checked,setChecked]=useState(false)
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
   const currentStep=signupStepKeys[step]
-  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport','emergencyContacts','responsibilities']:[]),'branch',...(selectedRole==='Investor'||selectedRole==='Rider'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf(selectedRole==='Rider'?'responsibilities':'role')}
+  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),'branch',...(selectedRole==='Investor'||selectedRole==='Rider'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf(selectedRole==='Rider'?'safetySpending':'role')}
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
   const [photoPreview,setPhotoPreview]=useState('')
@@ -97,7 +97,7 @@ export function UnifiedSignup(){
     groupName:'',groupProfile:'',groupSize:'',groupHandle:'',
     marshalExp:'',
     councilEmail:'',councilYears:'',councilRides:'',councilProfile:'',councilWhy:'',councilConflict:'',
-    budget:'',
+    budget:'',safetySpendingPreference:'',otherSafetyAmount:'',
   })
   const set=(k:keyof typeof f)=>(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>)=>setF(p=>({...p,[k]:e.target.value}))
   const bbbtZones={
@@ -193,6 +193,7 @@ export function UnifiedSignup(){
       contacts.forEach((contact,index)=>{const prefix=`ec${index+1}`;if(!contact.name.trim())e[`${prefix}Name`]='Full name is required';if(!contact.number.trim())e[`${prefix}Number`]='Mobile number is required';else if(!/^\\+?[0-9][0-9\\s-]{7,14}$/.test(contact.number.trim()))e[`${prefix}Number`]='Invalid mobile';if(!contact.relationship.trim())e[`${prefix}Relationship`]='Relationship is required'})
     }
     if(currentStep==='responsibilities'&&role==='Rider'&&!checked)e.consent='You must agree before continuing'
+    if(currentStep==='safetySpending'&&role==='Rider'&&f.safetySpendingPreference==='Other Amount'&&f.otherSafetyAmount&&!/^\d+$/.test(f.otherSafetyAmount.trim()))e.otherSafetyAmount='Enter a numeric amount'
     if(currentStep==='bloodReport'&&role==='Rider'){
       if(!f.bloodReportDate)e.bloodReportDate='Report date is required'
       else {const reportDate=new Date(`${f.bloodReportDate}T00:00:00`);const now=new Date();const oldest=new Date(now);oldest.setMonth(now.getMonth()-1);if(Number.isNaN(reportDate.getTime())||reportDate>now)e.bloodReportDate='Report date cannot be in the future';else if(reportDate<oldest)e.bloodReportDate='Report must be from within the last 1 month'}
@@ -230,9 +231,11 @@ export function UnifiedSignup(){
     if(Object.keys(dupes).length){setErrors(dupes);setStep(0);return}
     const submittedAt=new Date().toISOString()
     const status:Status=isAutoApproved(role)?'Approved':'Pending'
-    const application={...f,vehicles,role,status,submittedAt,responsibilityAcknowledged:true,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider' as const}:undefined}
+    const safetyPreference=role==='Rider'?{selectedRange:f.safetySpendingPreference&&f.safetySpendingPreference!=='Other Amount'?f.safetySpendingPreference:null,otherAmount:f.safetySpendingPreference==='Other Amount'&&f.otherSafetyAmount?Number(f.otherSafetyAmount):null,skipped:!f.safetySpendingPreference,role:'Rider' as const,recordedAt:submittedAt}:null
+    if(typeof window!=='undefined'&&role==='Rider')window.dispatchEvent(new CustomEvent('bbbt:safety-spending-preference',{detail:safetyPreference}))
+    const application={...f,safetySpendingPreference:safetyPreference,vehicles,role,status,submittedAt,responsibilityAcknowledged:true,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider' as const}:undefined}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),emergencyName:role==='Rider'?f.ec1Name.trim():undefined,emergencyNumber:role==='Rider'?f.ec1Number.trim():undefined,emergencyContacts:role==='Rider'?[{fullName:f.ec1Name.trim(),mobile:f.ec1Number.trim(),relationship:f.ec1Relationship.trim()},{fullName:f.ec2Name.trim(),mobile:f.ec2Number.trim(),relationship:f.ec2Relationship.trim()}]:undefined,bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider'}:undefined,createdAt:submittedAt}
+    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),emergencyName:role==='Rider'?f.ec1Name.trim():undefined,emergencyNumber:role==='Rider'?f.ec1Number.trim():undefined,emergencyContacts:role==='Rider'?[{fullName:f.ec1Name.trim(),mobile:f.ec1Number.trim(),relationship:f.ec1Relationship.trim()},{fullName:f.ec2Name.trim(),mobile:f.ec2Number.trim(),relationship:f.ec2Relationship.trim()}]:undefined,bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider'}:undefined,safetySpendingPreference:safetyPreference,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     saveIdentityToRegistry(identity)
@@ -395,6 +398,17 @@ export function UnifiedSignup(){
         <Link href="/terms" className="su-terms-link">READ FULL TERMS &amp; CONDITIONS <ArrowRight size={15} aria-hidden="true" /></Link>
         <label className="consent-row su-terms-consent"><input type="checkbox" checked={checked} onChange={event=>setChecked(event.target.checked)} aria-describedby="rider-terms-consent-note"/><span>I agree to the BBBT Rider Responsibilities, Terms &amp; Conditions.</span></label>
         {errors.consent&&<div id="rider-terms-consent-note" className="su-step-error" role="alert">{errors.consent}</div>}
+      </div>}
+
+      {currentStep==='safetySpending'&&role==='Rider'&&<div className="su-step su-safety-spending-step">
+        <span className="eyebrow cyan-text">RIDER RESEARCH</span>
+        <h2>YOUR SAFETY SPENDING PREFERENCE</h2>
+        <p className="auth-lede">This helps BBBT understand what riders are comfortable investing in their safety each year.</p>
+        <p className="su-question">How much would you be comfortable spending on your safety in a year?</p>
+        <p className="su-question-hindi" lang="hi">Aap apni safety ke liye ek saal mein kitna kharch karna comfortable samajhte hain?</p>
+        <label>SAFETY-SPENDING PREFERENCE <span className="field-hint">Optional</span><select value={f.safetySpendingPreference} onChange={set('safetySpendingPreference')}><option value="">Not provided</option><option value="₹1,499">₹1,499</option><option value="₹2,499">₹2,499</option><option value="₹3,499">₹3,499</option><option value="₹4,499">₹4,499</option><option value="₹5,499">₹5,499</option><option value="Other Amount">Other Amount</option></select></label>
+        {f.safetySpendingPreference==='Other Amount'&&<label className={errors.otherSafetyAmount?'invalid':''}>OTHER AMOUNT <span className="field-hint">Numbers only · Optional</span><input value={f.otherSafetyAmount} onChange={event=>setF(previous=>({...previous,otherSafetyAmount:event.target.value.replace(/[^0-9]/g,'')}))} inputMode="numeric" pattern="[0-9]*" placeholder="Enter amount in rupees" aria-describedby="safety-spending-note"/>{errors.otherSafetyAmount&&<span className="field-error" role="alert">{errors.otherSafetyAmount}</span>}</label>}
+        <p id="safety-spending-note" className="su-note"><strong>Research only.</strong> Your response is a self-declared preference and does not determine BBBT&apos;s final membership price.</p>
       </div>}
 
       {currentStep==='branch'&&<div className="su-step signup-branch-step" data-branch={activeSignupBranch.key}>

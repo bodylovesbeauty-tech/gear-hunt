@@ -6,8 +6,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { usePreferences } from '@/components/preference-provider'
 import { t } from '@/lib/translations'
-import { GlobalPreferences as GlobalPreferencesControl } from '@/components/global-preferences'
 import { BBBTAssistant } from '@/components/bbbt-assistant'
+import { GlobalPreferences as GlobalPreferencesControl } from '@/components/global-preferences'
 
 const nav = [['What is BBBT','/about'],['For Riders','/signup'],['Safety','/safety'],['Community','/community'],['Care Pit','/care-pits'],['Partners','/contact'],['Investor Brief','/investor']]
 

@@ -164,7 +164,7 @@ export function UnifiedSignup(){
     setPhotoPreview(URL.createObjectURL(file));setPhotoName(file.name)
   }
   function removePhoto(){if(photoPreview)URL.revokeObjectURL(photoPreview);setPhotoPreview('');setPhotoName('')}
-  function addBloodReport(file?:File){if(!file)return;const allowed=['application/pdf','image/jpeg','image/png'];if(!allowed.includes(file.type)||file.size>5*1024*1024){setBloodReportPreview('');setBloodReportName('');return}const reader=new FileReader();reader.onload=()=>{setBloodReportPreview(String(reader.result));setBloodReportName(file.name)};reader.readAsDataURL(file)}
+  function addBloodReport(file?:File){if(!file)return;const extension=file.name.toLowerCase().split('.').pop()||'';const allowed=['application/pdf','image/jpeg','image/png'];const allowedExtension=['pdf','jpg','jpeg','png'].includes(extension);if((!allowed.includes(file.type)&&!allowedExtension)||file.size>5*1024*1024){setBloodReportPreview('');setBloodReportName('');return}const reader=new FileReader();reader.onload=()=>{setBloodReportPreview(String(reader.result));setBloodReportName(file.name)};reader.readAsDataURL(file)}
   function removeBloodReport(){setBloodReportPreview('');setBloodReportName('')}
   function emptyVehicle(index:number):PrototypeVehicle{return{id:`VEHICLE-${String(index+1).padStart(2,'0')}`,make:'',model:'',modelYear:'',currentKm:'',registration:'',fullBikePhoto:null,meterPhoto:null}}
   function updateVehicle(id:string,key:keyof PrototypeVehicle,value:string){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:value}:v))}

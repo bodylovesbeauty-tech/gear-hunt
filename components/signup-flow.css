@@ -65,7 +65,7 @@
 .su-modal-actions{display:flex;gap:.75rem;margin-top:1.25rem}
 .su-modal-actions .btn{flex:1}
 
-.language-options{border:1px solid var(--line);padding:1rem;background:var(--surface)}
+.language-step-card{display:flex;flex-direction:column;gap:1rem}.language-step-card label>select{margin-top:.45rem}.field-hint{margin-left:.35rem;color:var(--muted);font:600 .58rem var(--font-mono);letter-spacing:.05em}.language-helper{margin:0;font-size:.78rem}.language-search{display:block;margin-top:.8rem}.language-search input{width:100%}.searchable-language-list{max-height:18rem;overflow:auto;padding-right:.2rem}.language-check{align-items:flex-start}.language-check span{display:flex;flex-direction:column;gap:.1rem}.language-check span small{color:var(--muted);font:600 .62rem var(--font-mono)}.selected-language-summary{display:flex;flex-direction:column;gap:.35rem;padding:.8rem 1rem;border:1px solid var(--line);background:var(--surface)}.selected-language-summary span{color:var(--blue);font:700 .6rem var(--font-mono);letter-spacing:.08em}.selected-language-summary strong{font-size:.82rem;line-height:1.5}.language-options{border:1px solid var(--line);padding:1rem;background:var(--surface)}
 .language-options legend{color:var(--muted);font:700 .62rem var(--font-mono);letter-spacing:.08em}
 .language-options legend .eyebrow{margin-left:.4rem;color:var(--blue)}
 .language-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;margin-top:.9rem}

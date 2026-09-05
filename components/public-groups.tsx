@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, Users } from 'lucide-react'
 import { StatusBadge } from '@/components/public-site'
 import { findPublicGroup, readPublicGroups, sortPublicGroups, type PublicGroup } from '@/lib/public-groups'
+import { groupKey, identityKey, type PrototypeGroup, type PrototypeIdentity } from '@/lib/prototype-session'
+import { createReferral, syncLegacyGroupMembership } from '@/lib/prototype-network'
 
 const PAGE_SIZE = 12
 const fallbackImage = '/bbbt-logo-red.png'
@@ -39,6 +41,16 @@ export function PublicGroupDirectory() {
 
 export function PublicGroupDetail({ identifier }: { identifier: string }) {
   const [group, setGroup] = useState<PublicGroup | null>(null)
+  const [notice, setNotice] = useState('')
   useEffect(() => setGroup(findPublicGroup(identifier)), [identifier])
-  return <main className="public-group-page">{group ? <><Link className="public-group-back" href="/community/groups"><ArrowLeft size={16} aria-hidden="true" /> Back to groups</Link><section className="public-group-detail"><GroupImage group={group} priority /><div className="public-group-detail-copy"><StatusBadge tone="prototype">ACTIVE GROUP</StatusBadge><h1>{group.name}</h1><div className="public-group-detail-stats"><span><strong>{group.memberCount}</strong> MEMBERS</span><span><strong>{formatDate(group.createdAt)}</strong> CREATED</span>{group.location && <span><strong>{group.location}</strong> LOCATION</span>}</div><h2>ABOUT</h2><p>{group.description || 'This group has not published a public description yet.'}</p><Link className="button button-red" href={`/signup?role=Rider&group=${encodeURIComponent(group.identifier)}`}>JOIN / SIGN UP <ArrowRight size={16} aria-hidden="true" /></Link><p className="public-group-note">Sign in or sign up to request access. This page does not show private member information.</p></div></section></> : <section className="public-group-empty"><h1>GROUP NOT FOUND</h1><p>This public group is unavailable, private, or has not been created in the current prototype session.</p><Link className="button button-outline" href="/community/groups">Back to groups</Link></section>}</main>
+  const joinGroup = () => {
+    if (!group) return
+    const identity = (() => { try { return JSON.parse(sessionStorage.getItem(identityKey) || 'null') as PrototypeIdentity | null } catch { return null } })()
+    const stored = (() => { try { return JSON.parse(sessionStorage.getItem(groupKey) || 'null') as PrototypeGroup | null } catch { return null } })()
+    if (!identity || !stored || stored.id !== group.targetId) { window.location.href = `/signup?role=Rider&group=${encodeURIComponent(group.identifier)}&returnTo=${encodeURIComponent(`/community/groups/${group.identifier}`)}`; return }
+    const next = syncLegacyGroupMembership(stored, identity)
+    sessionStorage.setItem(groupKey, JSON.stringify(next))
+    setNotice(next.members.some(member => member.id === identity.id) ? 'Already a member or membership saved.' : 'Membership saved.')
+  }
+  return <main className="public-group-page">{group ? <><Link className="public-group-back" href="/community/groups"><ArrowLeft size={16} aria-hidden="true" /> Back to groups</Link><section className="public-group-detail"><GroupImage group={group} priority /><div className="public-group-detail-copy"><StatusBadge tone="prototype">ACTIVE GROUP</StatusBadge><h1>{group.name}</h1><div className="public-group-detail-stats"><span><strong>{group.memberCount}</strong> MEMBERS</span><span><strong>{formatDate(group.createdAt)}</strong> CREATED</span>{group.location && <span><strong>{group.location}</strong> LOCATION</span>}</div><h2>ABOUT</h2><p>{group.description || 'This group has not published a public description yet.'}</p><button className="button button-red" type="button" onClick={joinGroup}>JOIN / SIGN UP <ArrowRight size={16} aria-hidden="true" /></button><button className="button button-outline" type="button" onClick={() => { const identity = (() => { try { return JSON.parse(sessionStorage.getItem(identityKey) || 'null') as PrototypeIdentity | null } catch { return null } })(); const referral = createReferral(identity?.id || 'anonymous', 'GROUP', group.targetId); navigator.clipboard?.writeText(`${window.location.origin}/community/groups/${encodeURIComponent(group.identifier)}?ref=${referral.publicToken}`); setNotice('Group referral link copied.') }}>SHARE GROUP</button>{notice && <p role="status">{notice}</p>}<p className="public-group-note">Sign in or sign up to request access. This page does not show private member information.</p></div></section></> : <section className="public-group-empty"><h1>GROUP NOT FOUND</h1><p>This public group is unavailable, private, or has not been created in the current prototype session.</p><Link className="button button-outline" href="/community/groups">Back to groups</Link></section>}</main>
 }

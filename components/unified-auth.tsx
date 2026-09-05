@@ -61,10 +61,14 @@ export function UnifiedSignup(){
     'Founding Rider Council Member':{key:'frc',title:'FOUNDING RIDER COUNCIL APPLICATION',eyebrow:'FRC BRANCH',description:'Your council application details will continue here.'},
     Investor:{key:'investor',title:'INVESTOR APPLICATION',eyebrow:'INVESTOR BRANCH',description:'Your controlled investor access request will continue here.'},
   }
-  const steps=['01 YOU','04 YOUR RIDE','05 WHERE YOU RIDE','06 ROLE BRANCH','07 YOUR SAFETY','08 YOUR ROLE','09 BBBT INTEREST','10 REVIEW']
+  const showVehicleStep=(selectedRole:Role)=>selectedRole==='Rider'
 
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
+  const isInvestor=role==='Investor'
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location','branch',...(isInvestor?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
+  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',branch:'06 ROLE BRANCH',safety:'07 YOUR SAFETY',role:'08 YOUR ROLE',budget:'09 BBBT INTEREST',review:'10 REVIEW'}
+  const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
   const languageOption=(code:string)=>languages.find(option=>option.code===code)
@@ -73,6 +77,8 @@ export function UnifiedSignup(){
   const [checked,setChecked]=useState(false)
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
+  const currentStep=signupStepKeys[step]
+  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location','branch',...(selectedRole==='Investor'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
   const [photoPreview,setPhotoPreview]=useState('')
@@ -154,7 +160,7 @@ export function UnifiedSignup(){
   function updateVehicle(id:string,key:keyof PrototypeVehicle,value:string){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:value}:v))}
   function removeVehicle(id:string){setVehicles(list=>list.filter(v=>v.id!==id).map((v,i)=>({...v,id:`VEHICLE-${String(i+1).padStart(2,'0')}`})))}
   function addVehicle(){if(vehicles.length<5)setVehicles(list=>[...list,emptyVehicle(list.length)])}
-  useEffect(()=>{if(step===1&&vehicles.length===0)addVehicle()},[step,vehicles.length])
+  useEffect(()=>{if(currentStep==='vehicle'&&showVehicleStep(role)&&vehicles.length===0)addVehicle()},[currentStep,role,vehicles.length])
   function addVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto',file?:File){if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)return;const reader=new FileReader();reader.onload=()=>setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:{name:file.name,dataUrl:String(reader.result)}}:v));reader.readAsDataURL(file)}
   function removeVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto'){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:null}:v))}
   function normalizeRegistration(value:string){return value.toUpperCase().replace(/[^A-Z0-9]/g,'')}
@@ -172,12 +178,12 @@ export function UnifiedSignup(){
       if(availability.email==='Already in use ✕')e.email='This email is already registered'
       if(availability.mobile==='Already in use ✕')e.mobile='This mobile number is already registered'
     }
-    if(i===1){const registrations=vehicles.map(v=>normalizeRegistration(v.registration)).filter(Boolean);if(new Set(registrations).size!==registrations.length)e.vehicleRegistration='This registration number is already used for another vehicle in this application.'}
-    if(i===2){
+    if(currentStep==='vehicle'&&showVehicleStep(role)){const registrations=vehicles.map(v=>normalizeRegistration(v.registration)).filter(Boolean);if(new Set(registrations).size!==registrations.length)e.vehicleRegistration='This registration number is already used for another vehicle in this application.'}
+    if(currentStep==='location'){
       if(!f.baseLocation.trim())e.baseLocation='Required'
       if(f.pin.trim()&&!/^[0-9]{6}$/.test(f.pin.trim()))e.pin='Invalid PIN'
     }
-    if(i===5){
+    if(currentStep==='role'){
       if(role==='Group Admin'){
         if(!f.groupName.trim())e.groupName='Required'
         if(!f.groupProfile.trim())e.groupProfile='Required'
@@ -289,7 +295,7 @@ export function UnifiedSignup(){
     </div>}
 
     <form className="auth-form" onSubmit={submit}>
-      {step===0&&<div className="su-step">
+      {currentStep==='identity'&&<div className="su-step">
         <div className="form-grid">
           <label className={errors.fullName?'invalid':''}>FULL NAME (Required){errors.fullName&&<span className="field-error" role="alert">{errors.fullName}</span>}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name" aria-required="true"/></label>
           <label className={errors.handle?'invalid':''}>HANDLE / USERNAME (Required) {availability.handle&&<span className={availability.handle.includes('✕')?'field-error':'eyebrow'}>{availability.handle}</span>}<input value={f.handle} onChange={set('handle')} onBlur={()=>checkAvailability('handle',f.handle)} placeholder="@yourriderhandle" aria-required="true"/>{errors.handle&&<span className="field-error" role="alert">{errors.handle}</span>}</label>
@@ -309,7 +315,7 @@ export function UnifiedSignup(){
       </div>}
 
 
-      {step===2&&<div className="su-step">
+      {currentStep==='location'&&<div className="su-step">
         <label className={errors.baseLocation?'invalid':''}>BASE LOCATION (Required) {err('baseLocation','Required')}<input value={f.baseLocation} onChange={set('baseLocation')} placeholder="City / state you mostly ride from"/></label>
         <div className="form-grid">
           <label>ADDRESS (Optional)<input value={f.address} onChange={set('address')} placeholder="Street or locality"/></label>
@@ -325,18 +331,18 @@ export function UnifiedSignup(){
         </div>
       </div>}
 
-      {step===1&&<div className="su-step">
+      {currentStep==='vehicle'&&<div className="su-step">
         <p className="auth-lede">YOUR RIDE</p><p className="su-note">Add the vehicle you currently ride with BBBT. You can manage additional vehicles after login.</p>
         {vehicles.slice(0,1).map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend><div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{false?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
 
-      {step===3&&<div className="su-step signup-branch-step" data-branch={activeSignupBranch.key}>
+      {currentStep==='branch'&&<div className="su-step signup-branch-step" data-branch={activeSignupBranch.key}>
         <span className="eyebrow cyan-text">{activeSignupBranch.eyebrow}</span>
         <h2>{activeSignupBranch.title}</h2>
         <p className="auth-lede">{activeSignupBranch.description}</p>
         <div className="signup-branch-panel"><strong>{role}</strong><span>Role-specific onboarding begins here.</span><small>Additional {activeSignupBranch.key === 'rider' ? 'rider safety' : 'application'} fields will be added in the next dedicated phase.</small></div>
       </div>}
 
-      {step===4&&<div className="su-step">
+      {currentStep==='safety'&&<div className="su-step">
         <fieldset className="form-section">
           <legend>PRIVATE / SAFETY INFORMATION</legend>
           <p className="auth-lede" style={{margin:0}}>This stays private. It is never shown on your public rider identity.</p>
@@ -357,12 +363,12 @@ export function UnifiedSignup(){
         </fieldset>
       </div>}
 
-      {step===5&&<div className="su-step">
+      {currentStep==='role'&&<div className="su-step">
         <fieldset className="role-fieldset">
           <legend>Choose your BBBT role</legend>
           <div className="role-checks">{roleList.map(r=>
             <label className="role-check" key={r}>
-              <input type="radio" name="role" checked={role===r} onChange={()=>{setRole(r);setChecked(false)}}/>
+              <input type="radio" name="role" checked={role===r} onChange={()=>{setRole(r);setStep(roleStepIndex(r));setChecked(false)}}/>
               <span><strong>{r}</strong><small>{descriptions[r]}</small></span>
             </label>)}</div>
         </fieldset>
@@ -397,7 +403,7 @@ export function UnifiedSignup(){
         </fieldset>}
       </div>}
 
-      {step===6&&<div className="su-step">
+      {currentStep==='budget'&&<div className="su-step">
         <label>ANNUAL SAFETY BUDGET RESEARCH (Optional)<select value={f.budget} onChange={set('budget')}>
           <option value="" disabled>Select a range</option>
           <option>Under ₹1,000</option>
@@ -410,7 +416,7 @@ export function UnifiedSignup(){
         <div className="su-note"><strong>Research only</strong> — this is not a payment or purchase commitment.</div>
       </div>}
 
-      {step===7&&<div className="su-step su-review">
+      {currentStep==='review'&&<div className="su-step su-review">
         <div className="su-review-grid">
           <div><small>Name</small><p>{f.fullName.trim()||'—'}</p></div>
           <div><small>Handle</small><p>{f.handle.trim()||'—'}</p></div>

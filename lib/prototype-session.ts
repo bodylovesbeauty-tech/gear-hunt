@@ -1,4 +1,4 @@
-export type Role = 'Rider' | 'Group Admin' | 'Marshal' | 'Founding Rider Council Member'
+export type Role = 'Rider' | 'Group Admin' | 'Group Marshal' | 'Independent Marshal' | 'Marshal' | 'Founding Rider Council Member' | 'Investor'
 export type Status = 'Approved' | 'Pending' | 'Rejected' | 'Suspended'
 export type DemoUser = { id:string; name:string; handle:string; primaryRole:Role; approvedRoles:Role[]; status:Status; referral:string }
 

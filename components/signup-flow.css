@@ -2,6 +2,8 @@
    Scoped to .su-* and reuses existing auth tokens/classes.
    No new design system; only guided-flow presentation. */
 
+.signup-role-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin:1.5rem 0}.signup-role-card{display:flex;flex-direction:column;align-items:flex-start;gap:.55rem;min-height:8.25rem;padding:1rem;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--foreground);cursor:pointer;transition:border-color .2s,background .2s,transform .2s}.signup-role-card:hover,.signup-role-card:focus-visible{border-color:var(--cyan);transform:translateY(-1px);outline:none}.signup-role-card.is-selected{border-color:var(--cyan);background:rgba(86,200,226,.1);box-shadow:inset 3px 0 var(--cyan)}.signup-role-name{font:700 .82rem var(--font-mono);letter-spacing:.06em}.signup-role-description{color:var(--muted);font-size:.78rem;line-height:1.45}.signup-role-check{margin-top:auto;color:var(--cyan);font:700 .58rem var(--font-mono);letter-spacing:.1em}@media(max-width:620px){.signup-role-grid{grid-template-columns:1fr}.signup-role-card{min-height:6.5rem}}
+
 .su-top{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.5rem}
 .su-steprow{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
 .su-steplabel{color:var(--foreground);font:700 .72rem var(--font-mono);letter-spacing:.08em}

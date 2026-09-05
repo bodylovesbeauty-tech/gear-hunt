@@ -66,6 +66,20 @@
 .pp-reality b { display: block; font: 700 0.66rem/1 var(--font-geist-mono), monospace; letter-spacing: 0.1em; color: var(--bcx-red); margin-bottom: 0.75rem; }
 .pp-reality p { margin: 0; color: var(--bcx-ink-soft); font-size: 0.92rem; line-height: 1.55; }
 
+/* About discovery, role and founder modules */
+.pp-discovery-grid, .pp-role-grid { display: grid; gap: 1rem; grid-template-columns: repeat(4, 1fr); }
+.pp-discovery-card, .pp-role-card { display: flex; flex-direction: column; justify-content: space-between; gap: 1.5rem; min-height: 13rem; padding: 1.35rem; border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); background: var(--bcx-crystal-solid); }
+.pp-discovery-card h3, .pp-role-card h3 { margin: .55rem 0 .4rem; color: var(--bcx-ink); font-size: 1.05rem; letter-spacing: -.02em; }
+.pp-discovery-card p, .pp-role-card p { margin: 0; color: var(--bcx-ink-soft); font-size: .88rem; line-height: 1.55; }
+.pp-card-kicker { color: var(--bcx-blue); font: 700 .62rem/1.2 var(--font-geist-mono), monospace; letter-spacing: .08em; text-transform: uppercase; }
+.pp-founder { display: grid; grid-template-columns: 11rem 1fr; gap: 2.5rem; align-items: start; padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); background: var(--bcx-crystal-solid); }
+.pp-founder-mark { display: grid; place-items: center; align-content: center; aspect-ratio: 1; border: 1px solid var(--bcx-red); color: var(--bcx-red); font: 700 3rem/1 var(--font-geist-mono), monospace; letter-spacing: -.08em; }
+.pp-founder-mark span { margin-top: .75rem; color: var(--bcx-ink-mute); font-size: .58rem; line-height: 1.35; letter-spacing: .12em; text-align: center; }
+.pp-founder-quote { margin: 0 0 1.1rem; color: var(--bcx-ink); font-size: clamp(1.35rem, 2.5vw, 2rem); line-height: 1.12; letter-spacing: -.03em; max-width: 30ch; }
+.pp-founder p:not(.pp-founder-quote):not(.pp-founder-note) { color: var(--bcx-ink-soft); line-height: 1.65; max-width: 66ch; }
+.pp-founder-note { margin: 1.2rem 0 0; padding-top: 1rem; border-top: 1px solid var(--bcx-line-soft); color: var(--bcx-ink-mute); font-size: .82rem; line-height: 1.55; }
+.pp-about-links { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 1.25rem; }
+
 /* trust / holding institutional split */
 .pp-th { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .pp-th__panel { padding: 1.75rem; border-radius: var(--bcx-r-lg); border: 1px solid var(--bcx-line); background: var(--bcx-crystal-solid); position: relative; overflow: hidden; }
@@ -162,7 +176,7 @@
 
 /* ============================================================ RESPONSIVE */
 @media (max-width: 900px) {
-  .hero--with-image{grid-template-columns:1fr}.hero-image{min-height:16rem;order:-1}.pp-th, .pp-map, .pp-grid--2, .pp-grid--3, .pp-grid--4 { grid-template-columns: 1fr; }
+  .hero--with-image{grid-template-columns:1fr}.hero-image{min-height:16rem;order:-1}  .pp-th, .pp-map, .pp-grid--2, .pp-grid--3, .pp-grid--4, .pp-discovery-grid, .pp-role-grid { grid-template-columns: repeat(2, 1fr); }
   .pp-faq { grid-template-columns: 1fr; }
   .pp-faq__nav { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 0.5rem; }
   .pp-faq__nav button { white-space: nowrap; }
@@ -177,6 +191,9 @@
 }
 @media (max-width: 560px) {
   .pp-stages { grid-template-columns: 1fr; }
+  .pp-discovery-grid, .pp-role-grid { grid-template-columns: 1fr; }
+  .pp-founder { grid-template-columns: 1fr; gap: 1.5rem; }
+  .pp-founder-mark { max-width: 8rem; }
   .pp-timeline > div { grid-template-columns: 1fr; gap: 0.35rem; }
   .hero--with-image { padding-bottom: 5rem; }
 }

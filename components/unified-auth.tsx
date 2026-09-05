@@ -24,6 +24,7 @@ export function UnifiedSignup(){
   }
   const roleSelectionKey='bbbt-signup-role'
   const signupDraftKey='bbbt-signup-draft'
+  const readDraftVehicles=():PrototypeVehicle[]=>{try{if(typeof window==='undefined')return [];const saved=JSON.parse(sessionStorage.getItem(signupDraftKey)||'null');return Array.isArray(saved?.vehicles)?saved.vehicles:[]}catch{return []}}
   const [roleChosen,setRoleChosen]=useState(false)
   const [languageChosen,setLanguageChosen]=useState(false)
   const [languageSearch,setLanguageSearch]=useState('')
@@ -88,7 +89,7 @@ export function UnifiedSignup(){
   const [bloodReportPreview,setBloodReportPreview]=useState('')
   const [bloodReportName,setBloodReportName]=useState('')
   const [availability,setAvailability]=useState<Record<string,string>>({})
-  const [vehicles,setVehicles]=useState<PrototypeVehicle[]>([])
+  const [vehicles,setVehicles]=useState<PrototypeVehicle[]>(readDraftVehicles)
   const [f,setF]=useState({
     fullName:'',handle:'',mobile:'',email:'',
     language:'en',

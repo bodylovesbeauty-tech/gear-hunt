@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import { applicationKey, dashboardFor, demoUsers, duplicateField, identityKey, isAutoApproved, normEmail, normHandle, normMobile, prototypeApplicationId, readRegistry, saveIdentityToRegistry, sessionKey, type DemoUser, type PrototypeIdentity, type PrototypeVehicle, type Role, type Status } from '@/lib/prototype-session'
 import { languages, readPreferences, savePreferences, type LanguageCode } from '@/lib/global-preferences'
@@ -65,7 +65,7 @@ export function UnifiedSignup(){
   const showVehicleStep=(selectedRole:Role)=>selectedRole==='Rider'
 
   const [done,setDone]=useState(false)
-  const draftHydrated=useRef(false)
+  const [draftReady,setDraftReady]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
   const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(role==='Rider'?[]:['branch']),...(isInvestor||role==='Rider'?[]:['safety']),'role','review'] as const
@@ -74,7 +74,7 @@ export function UnifiedSignup(){
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
   const languageOption=(code:string)=>languages.find(option=>option.code===code)
-  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode){setF(previous=>({...previous,language:saved.primaryCode,additionalLanguages:saved.additionalCodes||[]}))}}catch{}},[])
+  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode){setF(previous=>({...previous,language:saved.primaryCode,additionalLanguages:saved.additionalCodes||[]}));if(!sessionStorage.getItem(signupDraftKey))setLanguageChosen(true)}}catch{}},[])
   useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;let stored:Role|null=null;try{stored=sessionStorage.getItem(roleSelectionKey) as Role|null}catch{};const selected=requested&&roleList.includes(requested)?requested:stored&&roleList.includes(stored)?stored:null;if(selected){setRole(selected);try{if(sessionStorage.getItem(roleSelectionKey)||requested)setRoleChosen(true);const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode)setLanguageChosen(true)}catch{}}},[])
   const [checked,setChecked]=useState(false)
   const [showResp,setShowResp]=useState(false)
@@ -102,8 +102,8 @@ export function UnifiedSignup(){
     budget:'',safetySpendingPreference:'',otherSafetyAmount:'',
   })
   const set=(k:keyof typeof f)=>(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>)=>setF(p=>({...p,[k]:e.target.value}))
-  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem(signupDraftKey)||'null');if(saved&&typeof saved==='object'){if(saved.f&&typeof saved.f==='object')setF(previous=>({...previous,...saved.f,additionalLanguages:Array.isArray(saved.f.additionalLanguages)?saved.f.additionalLanguages:previous.additionalLanguages}));if(Array.isArray(saved.vehicles))setVehicles(saved.vehicles);if(typeof saved.role==='string'&&roleList.includes(saved.role))setRole(saved.role);if(typeof saved.roleChosen==='boolean')setRoleChosen(saved.roleChosen);if(typeof saved.languageChosen==='boolean')setLanguageChosen(saved.languageChosen);if(typeof saved.step==='number')setStep(saved.step);if(typeof saved.checked==='boolean')setChecked(saved.checked);if(typeof saved.photoPreview==='string')setPhotoPreview(saved.photoPreview);if(typeof saved.photoName==='string')setPhotoName(saved.photoName);if(typeof saved.bloodReportPreview==='string')setBloodReportPreview(saved.bloodReportPreview);if(typeof saved.bloodReportName==='string')setBloodReportName(saved.bloodReportName)}}catch{}finally{draftHydrated.current=true}},[])
-  useEffect(()=>{if(!draftHydrated.current)return;try{sessionStorage.setItem(signupDraftKey,JSON.stringify({f,vehicles,role,roleChosen,languageChosen,step,checked,photoPreview,photoName,bloodReportPreview,bloodReportName}))}catch{}},[f,vehicles,role,roleChosen,languageChosen,step,checked,photoPreview,photoName,bloodReportPreview,bloodReportName])
+  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem(signupDraftKey)||'null');if(saved&&typeof saved==='object'){if(saved.f&&typeof saved.f==='object')setF(previous=>({...previous,...saved.f,additionalLanguages:Array.isArray(saved.f.additionalLanguages)?saved.f.additionalLanguages:previous.additionalLanguages}));if(Array.isArray(saved.vehicles))setVehicles(saved.vehicles);if(typeof saved.role==='string'&&roleList.includes(saved.role))setRole(saved.role);if(typeof saved.roleChosen==='boolean')setRoleChosen(saved.roleChosen);if(typeof saved.languageChosen==='boolean')setLanguageChosen(saved.languageChosen);if(typeof saved.step==='number')setStep(saved.step);if(typeof saved.checked==='boolean')setChecked(saved.checked);if(typeof saved.photoPreview==='string')setPhotoPreview(saved.photoPreview);if(typeof saved.photoName==='string')setPhotoName(saved.photoName);if(typeof saved.bloodReportPreview==='string')setBloodReportPreview(saved.bloodReportPreview);if(typeof saved.bloodReportName==='string')setBloodReportName(saved.bloodReportName)}}catch{}finally{setDraftReady(true)}},[])
+  useEffect(()=>{if(!draftReady)return;try{sessionStorage.setItem(signupDraftKey,JSON.stringify({f,vehicles,role,roleChosen,languageChosen,step,checked,photoPreview,photoName,bloodReportPreview,bloodReportName}))}catch{}},[draftReady,f,vehicles,role,roleChosen,languageChosen,step,checked,photoPreview,photoName,bloodReportPreview,bloodReportName])
   const bbbtZones={
     north:['Jammu and Kashmir','Ladakh','Himachal Pradesh','Punjab','Haryana','Chandigarh','Delhi','Uttarakhand'],
     northCentral:['Uttar Pradesh','Rajasthan'],

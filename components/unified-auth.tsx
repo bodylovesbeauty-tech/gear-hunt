@@ -70,7 +70,7 @@ export function UnifiedSignup(){
   const [draftReady,setDraftReady]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(role==='Rider'?[]:['branch']),...(isInvestor||role==='Rider'||role==='Group Marshal'?[]:['safety']),'role','review','submit'] as const
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(role==='Rider'?[]:['branch']),...(isInvestor||role==='Rider'||role==='Group Marshal'||role==='Independent Marshal'?[]:['safety']),'role','review','submit'] as const
   const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',responsibilities:'09 RIDER RESPONSIBILITIES & TERMS',safetySpending:'10 SAFETY-SPENDING PREFERENCE',branch:'11 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',review:'11 REVIEW YOUR APPLICATION',submit:'12 SUBMIT APPLICATION'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]

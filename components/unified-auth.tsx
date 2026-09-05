@@ -201,7 +201,7 @@ export function UnifiedSignup(){
     const status:Status=isAutoApproved(role)?'Approved':'Pending'
     const application={...f,vehicles,role,status,submittedAt,responsibilityAcknowledged:true}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,createdAt:submittedAt}
+    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     saveIdentityToRegistry(identity)
@@ -281,20 +281,21 @@ export function UnifiedSignup(){
     <form className="auth-form" onSubmit={submit}>
       {step===0&&<div className="su-step">
         <div className="form-grid">
-          <label className={errors.fullName?'invalid':''}>FULL NAME (Required){errors.fullName&&<span className="field-error">{errors.fullName}</span>}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name"/></label>
-          <label className={errors.handle?'invalid':''}>HANDLE (Required) {availability.handle&&<span className={availability.handle.includes('✕')?'field-error':'eyebrow'}>{availability.handle}</span>}<input value={f.handle} onChange={set('handle')} onBlur={()=>checkAvailability('handle',f.handle)} placeholder="@yourriderhandle"/></label>
+          <label className={errors.fullName?'invalid':''}>FULL NAME (Required){errors.fullName&&<span className="field-error" role="alert">{errors.fullName}</span>}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name" aria-required="true"/></label>
+          <label className={errors.handle?'invalid':''}>HANDLE / USERNAME (Required) {availability.handle&&<span className={availability.handle.includes('✕')?'field-error':'eyebrow'}>{availability.handle}</span>}<input value={f.handle} onChange={set('handle')} onBlur={()=>checkAvailability('handle',f.handle)} placeholder="@yourriderhandle" aria-required="true"/>{errors.handle&&<span className="field-error" role="alert">{errors.handle}</span>}</label>
+        </div>
+        <div className="form-grid">
+          <label className={errors.mobile?'invalid':''}>MOBILE NUMBER (Required) {availability.mobile&&<span className={availability.mobile.includes('✕')?'field-error':'eyebrow'}>{availability.mobile}</span>}<input value={f.mobile} onChange={set('mobile')} onBlur={()=>checkAvailability('mobile',f.mobile)} inputMode="tel" placeholder="+91 mobile number" aria-required="true"/>{errors.mobile&&<span className="field-error" role="alert">{errors.mobile}</span>}</label>
+          <label className={errors.email?'invalid':''}>EMAIL (Optional) {availability.email&&<span className={availability.email.includes('✕')?'field-error':'eyebrow'}>{availability.email}</span>}<input value={f.email} onChange={set('email')} onBlur={()=>checkAvailability('email',f.email)} type="email" placeholder="you@example.com" aria-required="false"/>{errors.email&&<span className="field-error" role="alert">{errors.email}</span>}</label>
         </div>
         <div className="profile-photo-control">
-          <span className="profile-photo-label">Profile Picture (Optional)</span>
+          <span className="profile-photo-label">PROFILE PHOTO <span className="field-hint">Optional</span></span>
           {photoPreview?<div className="profile-photo-selected"><img src={photoPreview} alt="Profile preview"/><div><span className="su-file-row">{photoName}</span><button type="button" onClick={()=>document.getElementById('profile-photo-input')?.click()}>Change photo</button><button type="button" onClick={removePhoto}>Remove</button></div></div>:<div className="profile-photo-actions"><label className="btn btn-outline" htmlFor="profile-photo-input">Choose from Gallery / Files</label><label className="btn btn-outline" htmlFor="profile-camera-input">Open Camera</label></div>}
           <input id="profile-photo-input" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>addPhoto(e.target.files?.[0])}/>
           <input id="profile-camera-input" className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" capture="user" onChange={e=>addPhoto(e.target.files?.[0])}/>
-          <small>JPG, JPEG, PNG or WEBP up to 5 MB. Preview-only in this prototype.</small>
+          <small>JPG, JPEG, PNG or WEBP up to 5 MB. Optional; preview-only in this prototype.</small>
         </div>
-        <div className="form-grid">
-          <label className={errors.mobile?'invalid':''}>MOBILE NUMBER (Required) {availability.mobile&&<span className={availability.mobile.includes('✕')?'field-error':'eyebrow'}>{availability.mobile}</span>}<input value={f.mobile} onChange={set('mobile')} onBlur={()=>checkAvailability('mobile',f.mobile)} inputMode="tel" placeholder="+91 mobile number"/></label>
-          <label className={errors.email?'invalid':''}>EMAIL (Optional) {availability.email&&<span className={availability.email.includes('✕')?'field-error':'eyebrow'}>{availability.email}</span>}<input value={f.email} onChange={set('email')} onBlur={()=>checkAvailability('email',f.email)} type="email" placeholder="you@example.com"/></label>
-        </div>
+        <p className="su-note identity-privacy-note">Your account information is used to create your BBBT identity and support authorized ecosystem services. <Link href="/privacy">Privacy</Link></p>
       </div>}
 
 

@@ -70,8 +70,8 @@ export function UnifiedSignup(){
   const [draftReady,setDraftReady]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(role==='Rider'?[]:['branch']),...(isInvestor||role==='Rider'?[]:['safety']),'role','review'] as const
-  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',responsibilities:'09 RIDER RESPONSIBILITIES & TERMS',safetySpending:'10 SAFETY-SPENDING PREFERENCE',branch:'11 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',review:'11 REVIEW'}
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(role==='Rider'?[]:['branch']),...(isInvestor||role==='Rider'?[]:['safety']),'role','review','submit'] as const
+  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',responsibilities:'09 RIDER RESPONSIBILITIES & TERMS',safetySpending:'10 SAFETY-SPENDING PREFERENCE',branch:'11 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',review:'11 REVIEW YOUR APPLICATION',submit:'12 SUBMIT APPLICATION'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
@@ -239,11 +239,12 @@ export function UnifiedSignup(){
     setStep(s=>Math.min(s+1,steps.length-1))
   }
   function back(){setErrors({});setStep(s=>Math.max(s-1,0))}
+  function editStep(key:string){const target=signupStepKeys.indexOf(key as (typeof signupStepKeys)[number]);if(target>=0){setErrors({});setStep(target)}}
   function acknowledge(){setChecked(true);setShowResp(false)}
   function submit(ev:React.FormEvent){
     ev.preventDefault()
-    if(step!==steps.length-1||role==='Rider'&&!checked)return
-    const reviewErrors=validateStep(step)
+    if(currentStep!=='submit'||role==='Rider'&&!checked)return
+    const reviewErrors=validateStep(signupStepKeys.indexOf('review'))
     if(Object.keys(reviewErrors).length){setErrors(reviewErrors);return}
     const dupes:Record<string,string>={}
     if(duplicateField('handle',f.handle))dupes.handle='This handle is already taken.'
@@ -337,7 +338,7 @@ export function UnifiedSignup(){
       {currentStep==='identity'&&<div className="su-step">
         <div className="form-grid">
           <label className={errors.fullName?'invalid':''}>FULL NAME (Required){errors.fullName&&<span className="field-error" role="alert">{errors.fullName}</span>}<input value={f.fullName} onChange={set('fullName')} placeholder="Your full name" aria-required="true"/></label>
-          <label className={errors.handle?'invalid':''}>HANDLE / USERNAME (Required) {availability.handle&&<span className={availability.handle.includes('✕')?'field-error':'eyebrow'}>{availability.handle}</span>}<input value={f.handle} onChange={set('handle')} onBlur={()=>checkAvailability('handle',f.handle)} placeholder="@yourriderhandle" aria-required="true"/>{errors.handle&&<span className="field-error" role="alert">{errors.handle}</span>}</label>
+          <label className={errors.handle?'invalid':''}>HANDLE / USERNAME (Required) {availability.handle&&<span className={availability.handle.includes('��')?'field-error':'eyebrow'}>{availability.handle}</span>}<input value={f.handle} onChange={set('handle')} onBlur={()=>checkAvailability('handle',f.handle)} placeholder="@yourriderhandle" aria-required="true"/>{errors.handle&&<span className="field-error" role="alert">{errors.handle}</span>}</label>
         </div>
         <div className="form-grid">
           <label className={errors.mobile?'invalid':''}>MOBILE NUMBER (Required) {availability.mobile&&<span className={availability.mobile.includes('✕')?'field-error':'eyebrow'}>{availability.mobile}</span>}<input value={f.mobile} onChange={set('mobile')} onBlur={()=>checkAvailability('mobile',f.mobile)} inputMode="tel" placeholder="+91 mobile number" aria-required="true"/>{errors.mobile&&<span className="field-error" role="alert">{errors.mobile}</span>}</label>
@@ -503,25 +504,39 @@ export function UnifiedSignup(){
         <div className="su-note"><strong>Research only</strong> — this is not a payment or purchase commitment.</div>
       </div>}
 
+      {currentStep==='submit'&&<div className="su-step su-submit-step">
+        <span className="eyebrow cyan-text">FINAL APPLICATION ACTION</span>
+        <h2>SUBMIT APPLICATION</h2>
+        <p className="auth-lede">Your application has been reviewed. Submit the same canonical BBBT signup draft to the existing prototype submission mechanism.</p>
+        <div className="su-note"><strong>Prototype only.</strong> No production account is created, no payment is taken, and the result below is a simulated application status.</div>
+      </div>}
+
       {currentStep==='review'&&<div className="su-step su-review">
         <div className="su-review-grid">
-          <div><small>Name</small><p>{f.fullName.trim()||'—'}</p></div>
+          <div className="su-review-section-title"><strong>IDENTITY & LANGUAGE</strong><button type="button" className="text-button" onClick={()=>editStep('identity')}>EDIT</button></div>
+          <div><small>Full name</small><p>{f.fullName.trim()||'—'}</p></div>
           <div><small>Handle</small><p>{f.handle.trim()||'—'}</p></div>
           <div><small>Mobile</small><p>{f.mobile.trim()||'—'}</p></div>
           <div><small>Email</small><p>{f.email.trim()||'Not added'}</p></div>
-          <div><small>Profile Picture</small><p className={photoPreview?'':'muted'}>{photoPreview?'Added':'Not added'}</p></div>
-          <div><small>Languages</small><p>{[f.language,...f.additionalLanguages].map(languageLabel).join(', ')}</p></div>
+          <div><small>Profile photo</small><p className={photoPreview?'':'muted'}>{photoPreview?'UPLOADED':'Not added'}</p></div>
+          <div><small>Primary language</small><p>{languageLabel(f.language)}</p></div>
+          <div><small>Additional languages</small><p>{f.additionalLanguages.length?f.additionalLanguages.map(languageLabel).join(', '):'None added'}</p></div>
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
           <div><small>Vehicles</small><p className={vehicles.length?'':'muted'}>{vehicles.length?`${vehicles.length} vehicle${vehicles.length===1?'':'s'} added`:'Not added'}</p></div>
           <div><small>Role requested</small><p>{role}</p></div>
           {role==='Rider'&&<>
-            <div><small>Vehicle summary</small><p className={vehicles.length?'':'muted'}>{vehicles[0]?[vehicles[0].make,vehicles[0].model,vehicles[0].modelYear].filter(Boolean).join(' · ')||'Vehicle added':'Not added'}</p></div>
+            <div className="su-review-section-title"><strong>RIDER SAFETY & VEHICLE</strong><button type="button" className="text-button" onClick={()=>editStep('vehicle')}>EDIT</button></div>
+            <div><small>Primary vehicle</small><p className={vehicles.length?'':'muted'}>{vehicles[0]?[vehicles[0].make,vehicles[0].model,vehicles[0].modelYear,vehicles[0].currentKm,vehicles[0].registration].filter(Boolean).join(' · ')||'Vehicle added':'Not added'}</p></div>
+            <div><small>Vehicle image 1 — full vehicle + plate</small><p>{vehicles[0]?.fullBikePhoto?'UPLOADED':'Not uploaded'}</p>{vehicles[0]?.fullBikePhoto&&<img className="su-review-thumbnail" src={vehicles[0].fullBikePhoto.dataUrl} alt="Private full vehicle preview"/>}</div>
+            <div><small>Vehicle image 2 — meter / console</small><p>{vehicles[0]?.meterPhoto?'UPLOADED':'Not uploaded'}</p>{vehicles[0]?.meterPhoto&&<img className="su-review-thumbnail" src={vehicles[0].meterPhoto.dataUrl} alt="Private meter console preview"/>}</div>
             <div><small>Privacy-safe location</small><p>{[f.city.trim(),f.state.trim(),f.zone.trim()].filter(Boolean).join(' · ')||f.baseLocation.trim()||'Not added'}</p></div>
-            <div><small>Blood group</small><p>{f.blood||'Not added'}</p></div>
-            <div><small>Lab report</small><p>{bloodReportName?`REPORT UPLOADED · ${f.bloodReportDate||'Date recorded'}`:'Not uploaded'}</p></div>
-            <div><small>Emergency contacts</small><p>{f.ec1Name.trim()&&f.ec1Number.trim()?`${f.ec1Name.trim()} · ${maskContact(f.ec1Number)}${f.ec2Name.trim()&&f.ec2Number.trim()?` · ${f.ec2Name.trim()} · ${maskContact(f.ec2Number)}`:''}`:'Not added'}</p></div>
-            <div><small>Terms consent</small><p>{checked?'Accepted · BBBT-RIDER-RESPONSIBILITIES-2026-09-05':'Not accepted'}</p></div>
-            <div><small>Safety spending</small><p>{f.safetySpendingPreference==='Other Amount'&&f.otherSafetyAmount?`₹${f.otherSafetyAmount}`:f.safetySpendingPreference||'Not provided'}</p></div>
+            <div><small>Blood group</small><p>{f.blood?`${f.blood} · SELF-REPORTED`:'Not added'}</p></div>
+            <div><small>Latest blood group / lab report</small><p>{bloodReportName?`REPORT UPLOADED · ${f.bloodReportDate||'Date recorded'}`:'Not uploaded'}</p></div>
+            <div><small>Emergency contact 1</small><p>{f.ec1Name.trim()&&f.ec1Number.trim()?`${f.ec1Name.trim()} · ${f.ec1Relationship.trim()||'Relationship not added'} · ${maskContact(f.ec1Number)}`:'Not added'}</p></div>
+            <div><small>Emergency contact 2</small><p>{f.ec2Name.trim()&&f.ec2Number.trim()?`${f.ec2Name.trim()} · ${f.ec2Relationship.trim()||'Relationship not added'} · ${maskContact(f.ec2Number)}`:'Not added'}</p></div>
+            <div><small>Rider responsibilities & terms</small><p>{checked?'✓ Accepted · BBBT-RIDER-RESPONSIBILITIES-2026-09-05':'Not accepted'}</p></div>
+            <div><small>Safety-spending preference</small><p>{f.safetySpendingPreference==='Other Amount'&&f.otherSafetyAmount?`₹${f.otherSafetyAmount}`:f.safetySpendingPreference||'Not provided'}</p></div>
+            <div className="su-review-section-title"><strong>LOCATION, REPORT & CONTACTS</strong><button type="button" className="text-button" onClick={()=>editStep('location')}>EDIT</button></div>
           </>}
           <div><small>Safety details</small><p className="muted">Kept private</p></div>
         </div>

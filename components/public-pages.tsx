@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { readRegistry } from '@/lib/prototype-session'
 import { readPublicGroups, sortPublicGroups, type PublicGroup } from '@/lib/public-groups'
-import { Cta, Hero, StatusBadge } from '@/components/public-site'
+import { Cta, FAQList, Hero, StatusBadge } from '@/components/public-site'
 import { CrystalAlert, CrystalBadge, CrystalTabs, type BadgeStatus } from '@/components/ui/crystal'
 import {
   ArrowRight, ChevronDown, ChevronRight, ShieldCheck, Siren, Network, Wrench, Route, MapPin,
@@ -91,73 +91,50 @@ function Band({ title, text, href = '/contact', label = 'Start a conversation' }
 
 /* ============================================================ ABOUT */
 function AboutPage() {
+  const features = [
+    { title: 'Rider Safety', body: 'Readiness, education and safer habits organised around the ride timeline.', status: 'PROTOTYPE', href: '/safety' },
+    { title: 'SOS & Emergency', body: 'A structured escalation concept, not live emergency dispatch or guaranteed response.', status: 'CONCEPT', href: '/emergency' },
+    { title: 'Community, Groups & Rides', body: 'Riders can discover community pathways, groups and shared ride participation.', status: 'SHARED PROTOTYPE', href: '/community' },
+    { title: 'Care Pits', body: 'A proposed network of rider-support locations such as cafes, service points and petrol pumps.', status: 'PROPOSED', href: '/care-pits' },
+    { title: 'Voice Assistant', body: 'A conversational prototype for exploring BBBT information and rider context.', status: 'PROTOTYPE', href: '/assistant' },
+    { title: 'Founding Rider Council', body: 'An experienced-rider contribution layer for testing, feedback and future safety systems.', status: 'PARTIAL', href: '/founding-rider-council' },
+    { title: 'Partner Network', body: 'A controlled conversation pathway for organisations that may support riders.', status: 'PROPOSED', href: '/contact' },
+    { title: 'Investor Access', body: 'A controlled request pathway, not an investment sale, payment or financial product.', status: 'PROTOTYPE', href: '/investor' },
+  ]
+  const roles = [
+    ['Rider', 'For people who want to learn, prepare and participate in a rider-centred safety ecosystem.', '/signup?role=Rider'],
+    ['Group Admin', 'For people who organise a rider group and want to connect its community pathway.', '/signup?role=Group%20Admin'],
+    ['Group Marshal', 'For riders interested in supporting safer group participation where that role is defined.', '/signup?role=Group%20Marshal'],
+    ['Independent Marshal', 'For experienced riders exploring a future contribution role outside one group.', '/signup?role=Independent%20Marshal'],
+    ['Founding Rider Council Member', 'For experienced riders contributing testing, feedback and road intelligence.', '/signup?role=Founding%20Rider%20Council%20Member'],
+    ['Investor', 'For people who want to understand the controlled access pathway around BBBT.', '/investor'],
+  ]
+  const aboutFaq: [string, string][] = [
+    ['What is working today?', 'The public site, role pathways, shared identity foundation, and prototype Group/Ride experiences are available for controlled exploration. They are not a claim of nationwide coverage.'],
+    ['What is prototype or future?', 'SOS, dispatch, Care Pit verification, live navigation, medical support and broad partner coverage remain concepts, proposals or future phases unless a page says otherwise.'],
+    ['Who is BBBT for?', 'BBBT is being designed around riders, rider groups, experienced contributors, support partners and carefully controlled stakeholder conversations.'],
+    ['Is SOS live?', 'No. BBBT does not currently provide live emergency dispatch, guaranteed response or safety coverage.'],
+    ['How does Investor access work?', 'Investor access is a controlled request pathway. This page does not offer investment, returns, payment or KYC collection.'],
+  ]
   return (
-    <PageFrame
-      label="About BBBT Trust"
-      title="Why BBBT exists."
-      lede="BBBT Trust is being designed as the non-profit safety, community and governance layer for India's riding communities — a structure that turns rider goodwill into accountable support."
-    >
+    <PageFrame label="About BBBT Trust" title="What is BBBT?" lede="BBBT Trust is being designed as a rider-led safety, community and welfare layer for India's riding communities — a public foundation that explains the direction before asking anyone to join.">
       <section className="pp-section">
-        <Head eyebrow="The rider reality" title="The road already tests every rider." lede="Long-distance riding in India carries real, repeated gaps. BBBT starts by naming them honestly." />
-        <div className="pp-reality">
-          <div><b>UNCERTAINTY</b><p>Long corridors with little reliable information about what lies ahead — weather, road quality or safe stops.</p></div>
-          <div><b>FRAGMENTED SUPPORT</b><p>Help exists, but it is scattered across groups, chats and memory instead of a trusted, structured layer.</p></div>
-          <div><b>SAFETY GAPS</b><p>Preparation, readiness and response are left to individual habit rather than shared, teachable practice.</p></div>
-        </div>
+        <Head eyebrow="Discover → understand → trust" title="One rider started the idea. The community builds the ecosystem." lede="BBBT exists because too much rider knowledge, preparation and support remains fragmented across roads, groups and conversations. The aim is to turn that goodwill into a more accountable, teachable layer — without pretending the future is already live." />
+        <div className="pp-reality"><div><b>WHAT IT IS</b><p>A proposed safety, community, welfare and governance layer for riders.</p></div><div><b>WHO IT SERVES</b><p>Riders, groups, experienced contributors and organisations that may support them.</p></div><div><b>WHAT IT IS NOT</b><p>Not a live nationwide emergency service, verified medical network or guaranteed response system.</p></div></div>
       </section>
 
-      <section className="pp-section pp-section--alt">
-        <Head eyebrow="What BBBT adds" title="Four foundations, built around riders." />
-        <div className="pp-grid pp-grid--4">
-          <InfoCard icon={ShieldCheck} title="Safety" body="Build readiness and education into everyday riding." status="PLANNED" accent="green" />
-          <InfoCard icon={Users} title="Community" body="Make rider experience part of how decisions are made." status="PLANNED" accent="blue" />
-          <InfoCard icon={Landmark} title="Governance" body="Keep future administration transparent and accountable." status="PROPOSED" accent="white" />
-          <InfoCard icon={HeartPulse} title="Welfare" body="A clearer path to trusted, human support when it matters." status="PROPOSED" accent="red" />
-        </div>
-      </section>
+      <section className="pp-section pp-section--alt"><Head eyebrow="Explore the ecosystem" title="A connected direction, labelled honestly." lede="Each card points to an existing public destination. Status labels distinguish what can be explored now from what remains proposed or future." /><div className="pp-discovery-grid">{features.map((feature) => <article className="pp-discovery-card" key={feature.title}><div><span className="pp-card-kicker">{feature.status}</span><h3>{feature.title}</h3><p>{feature.body}</p></div><Link className="pp-route__go" href={feature.href}>Explore now <ChevronRight size={15} /></Link></article>)}</div></section>
 
-      <section className="pp-section">
-        <Head eyebrow="Two structures, one ecosystem" title="Trust and Holding stay distinct — on purpose." />
-        <div className="pp-th">
-          <div className="pp-th__panel" style={{ ['--bcx-accent' as string]: 'var(--bcx-green)' }}>
-            <p className="pp-role">BBBT Trust · Non-profit layer</p>
-            <h3>Safety, community, governance, welfare</h3>
-            <ul>
-              <li>Rider safety education and readiness</li>
-              <li>Community participation and representation</li>
-              <li>Transparent governance and accountability</li>
-              <li>Rider welfare and support</li>
-            </ul>
-          </div>
-          <div className="pp-th__panel" style={{ ['--bcx-accent' as string]: 'var(--bcx-blue)' }}>
-            <p className="pp-role">BBBT Holding · Commercial layer</p>
-            <h3>Commercial, products, technology, BBBT Shop</h3>
-            <ul>
-              <li>Products and rider technology</li>
-              <li>Research and development</li>
-              <li>Partnerships and commercial operations</li>
-              <li>The future BBBT Shop</li>
-            </ul>
-          </div>
-        </div>
-      </section>
+      <section className="pp-section"><Head eyebrow="The rider behind the vision" title="Origin, vision and accountability — not founder dependency." lede="BBBT began with a rider looking at familiar safety and support gaps and asking what a more connected approach could look like. The founder provides the origin and remains accountable to the idea; the ecosystem is intended to be shaped by riders and serve every rider." /><div className="pp-founder"><div className="pp-founder-mark" aria-hidden="true">01<span>RIDER<br/>ORIGIN</span></div><div><p className="pp-founder-quote">“The road gives riders experience. BBBT should give that experience a structure that can be shared, tested and improved.”</p><p>That starting point connects riding context with technology and product thinking, while keeping the central question practical: how can riders prepare better, find clearer support and contribute to safer shared practice?</p><p className="pp-founder-note">No unsupported biography, mileage, title or achievement claims are being presented here. The accountability is simple: listen to riders, label the prototype honestly and build in controlled phases.</p></div></div></section>
 
-      <section className="pp-section pp-section--alt">
-        <Head eyebrow="Contribution" title="Experience from the road shapes what comes next." lede="Experienced riders and local communities are intended to contribute knowledge, testing and honest feedback through the Founding Rider Council — a contribution layer, not an ownership claim." />
-        <Link className="pp-route__go" href="/signup?role=Founding%20Rider%20Council%20Member" style={{ color: 'var(--bcx-blue)' }}>Explore the Founding Rider Council <ChevronRight size={15} /></Link>
-      </section>
+      <section className="pp-section pp-section--alt"><Head eyebrow="Find your place in BBBT" title="Understand the role before you join." /><div className="pp-role-grid">{roles.map(([title, body, href]) => <article className="pp-role-card" key={title}><span className="pp-card-kicker">ROLE PATH</span><h3>{title}</h3><p>{body}</p><Link className="pp-route__go" href={href}>{title === 'Investor' ? 'View access pathway' : 'Join as this role'} <ChevronRight size={15} /></Link></article>)}</div></section>
 
-      <section className="pp-section">
-        <Head eyebrow="Long-term vision" title="Built in controlled, honest phases." />
-        <div className="pp-timeline">
-          <div><span className="pp-phase">PHASE · NOW</span><div><h4>Prototype foundation</h4><p>A public prototype that explains the intended direction without simulating live services.</p></div></div>
-          <div><span className="pp-phase">PHASE · NEXT</span><div><h4>Controlled community</h4><p>Structured rider participation, group admins and the Founding Rider Council.</p></div></div>
-          <div><span className="pp-phase">PHASE · LATER</span><div><h4>Verified support network</h4><p>Care Pits, marshals and readiness tooling introduced in careful, verified stages.</p></div></div>
-          <div><span className="pp-phase">FUTURE</span><div><h4>Products and BBBT Shop</h4><p>Rider technology and commercial products delivered through BBBT Holding.</p></div></div>
-        </div>
-      </section>
+      <section className="pp-section"><Head eyebrow="Trust and structure" title="BBBT Trust and BBBT Holding stay distinct — on purpose." /><div className="pp-th"><div className="pp-th__panel" style={{ ['--bcx-accent' as string]: 'var(--bcx-green)' }}><p className="pp-role">BBBT Trust · Non-profit layer</p><h3>Safety, community, governance, welfare</h3><ul><li>Rider safety education and readiness</li><li>Community participation and representation</li><li>Transparent governance and accountability</li><li>Rider welfare and support</li></ul></div><div className="pp-th__panel" style={{ ['--bcx-accent' as string]: 'var(--bcx-blue)' }}><p className="pp-role">BBBT Holding · Commercial layer</p><h3>Commercial, products, technology, BBBT Shop</h3><ul><li>Products and rider technology</li><li>Research and development</li><li>Partnerships and commercial operations</li><li>The future BBBT Shop</li></ul></div></div></section>
 
-      <Band title="Want to shape a safer riding culture?" text="Start a controlled conversation with BBBT. This prototype does not create an account or collect payment." />
+      <section className="pp-section pp-section--alt"><Head eyebrow="Questions before joining" title="A short visitor FAQ." /><FAQList items={aboutFaq} /><div className="pp-about-links"><Link className="pp-route__go" href="/faq">View all FAQ <ChevronRight size={15} /></Link><Link className="pp-route__go" href="/contact">Connect with BBBT <ChevronRight size={15} /></Link></div></section>
+
+      <section className="pp-section"><Head eyebrow="Long-term vision" title="Built in controlled, honest phases." /><div className="pp-timeline"><div><span className="pp-phase">PHASE · NOW</span><div><h4>Prototype foundation</h4><p>Public explanations and controlled flows without simulating live services.</p></div></div><div><span className="pp-phase">PHASE · NEXT</span><div><h4>Controlled community</h4><p>Structured rider participation, groups and the Founding Rider Council.</p></div></div><div><span className="pp-phase">PHASE · LATER</span><div><h4>Verified support network</h4><p>Care Pits, marshals and readiness tooling introduced in careful stages.</p></div></div><div><span className="pp-phase">FUTURE</span><div><h4>Products and BBBT Shop</h4><p>Rider technology and commercial products delivered through BBBT Holding.</p></div></div></div></section>
+      <Band title="Ready to choose your next step?" text="Join if you want to participate as a defined role. Connect if you represent a partner or want a controlled conversation." href="/signup" label="Choose your role" />
     </PageFrame>
   )
 }

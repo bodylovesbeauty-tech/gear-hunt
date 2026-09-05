@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { readRegistry } from '@/lib/prototype-session'
 import { readPublicGroups, sortPublicGroups, type PublicGroup } from '@/lib/public-groups'
-import { Cta, Hero, Shell, StatusBadge } from '@/components/public-site'
+import { Cta, Hero, StatusBadge } from '@/components/public-site'
 import { CrystalAlert, CrystalBadge, CrystalTabs, type BadgeStatus } from '@/components/ui/crystal'
 import {
   ArrowRight, ChevronDown, ChevronRight, ShieldCheck, Siren, Network, Wrench, Route, MapPin,
@@ -48,12 +48,10 @@ function PageFrame({
   label: string; title: string; lede: string; ctaHref?: string; ctaLabel?: string; className?: string; children: React.ReactNode
 }) {
   return (
-    <Shell>
       <main className={`pp ${className}`}>
         <Hero label={label} title={title} lede={lede} image={pageImages[label]}><Cta href={ctaHref}>{ctaLabel}</Cta></Hero>
         <div className="bcx pp-body">{children}</div>
       </main>
-    </Shell>
   )
 }
 

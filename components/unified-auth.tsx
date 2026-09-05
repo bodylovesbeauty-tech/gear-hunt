@@ -66,8 +66,8 @@ export function UnifiedSignup(){
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood']:[]),'branch',...(isInvestor?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
-  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',branch:'07 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport']:[]),'branch',...(isInvestor?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
+  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',branch:'08 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
@@ -78,11 +78,13 @@ export function UnifiedSignup(){
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
   const currentStep=signupStepKeys[step]
-  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood']:[]),'branch',...(selectedRole==='Investor'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
+  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport']:[]),'branch',...(selectedRole==='Investor'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
   const [photoPreview,setPhotoPreview]=useState('')
   const [photoName,setPhotoName]=useState('')
+  const [bloodReportPreview,setBloodReportPreview]=useState('')
+  const [bloodReportName,setBloodReportName]=useState('')
   const [availability,setAvailability]=useState<Record<string,string>>({})
   const [vehicles,setVehicles]=useState<PrototypeVehicle[]>([])
   const [f,setF]=useState({
@@ -91,7 +93,7 @@ export function UnifiedSignup(){
     additionalLanguages:[] as string[],
     baseLocation:'',address:'',city:'',district:'',state:'',pin:'',zone: '',
     bikeMake:'',bikeModel:'',bikeYear:'',bikeKm:'',bikeReg:'',
-    ecName:'',ecNumber:'',blood:'',bloodReport:'',
+    ecName:'',ecNumber:'',blood:'',bloodReport:'',bloodReportDate:'',
     groupName:'',groupProfile:'',groupSize:'',groupHandle:'',
     marshalExp:'',
     councilEmail:'',councilYears:'',councilRides:'',councilProfile:'',councilWhy:'',councilConflict:'',
@@ -156,6 +158,8 @@ export function UnifiedSignup(){
     setPhotoPreview(URL.createObjectURL(file));setPhotoName(file.name)
   }
   function removePhoto(){if(photoPreview)URL.revokeObjectURL(photoPreview);setPhotoPreview('');setPhotoName('')}
+  function addBloodReport(file?:File){if(!file)return;const allowed=['application/pdf','image/jpeg','image/png'];if(!allowed.includes(file.type)||file.size>5*1024*1024){setBloodReportPreview('');setBloodReportName('');return}const reader=new FileReader();reader.onload=()=>{setBloodReportPreview(String(reader.result));setBloodReportName(file.name)};reader.readAsDataURL(file)}
+  function removeBloodReport(){setBloodReportPreview('');setBloodReportName('')}
   function emptyVehicle(index:number):PrototypeVehicle{return{id:`VEHICLE-${String(index+1).padStart(2,'0')}`,make:'',model:'',modelYear:'',currentKm:'',registration:'',fullBikePhoto:null,meterPhoto:null}}
   function updateVehicle(id:string,key:keyof PrototypeVehicle,value:string){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:value}:v))}
   function removeVehicle(id:string){setVehicles(list=>list.filter(v=>v.id!==id).map((v,i)=>({...v,id:`VEHICLE-${String(i+1).padStart(2,'0')}`})))}
@@ -184,6 +188,11 @@ export function UnifiedSignup(){
       if(f.pin.trim()&&!/^[0-9]{6}$/.test(f.pin.trim()))e.pin='Invalid PIN'
     }
     if(currentStep==='blood'&&role==='Rider'&&!f.blood)e.blood='Select your blood group'
+    if(currentStep==='bloodReport'&&role==='Rider'){
+      if(!f.bloodReportDate)e.bloodReportDate='Report date is required'
+      else {const reportDate=new Date(`${f.bloodReportDate}T00:00:00`);const now=new Date();const oldest=new Date(now);oldest.setMonth(now.getMonth()-1);if(Number.isNaN(reportDate.getTime())||reportDate>now)e.bloodReportDate='Report date cannot be in the future';else if(reportDate<oldest)e.bloodReportDate='Report must be from within the last 1 month'}
+      if(!bloodReportPreview)e.bloodReport='Upload your latest report'
+    }
     if(currentStep==='role'){
       if(role==='Group Admin'){
         if(!f.groupName.trim())e.groupName='Required'
@@ -218,7 +227,7 @@ export function UnifiedSignup(){
     const status:Status=isAutoApproved(role)?'Approved':'Pending'
     const application={...f,vehicles,role,status,submittedAt,responsibilityAcknowledged:true}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),bloodGroup:role==='Rider'?f.blood.trim():undefined,createdAt:submittedAt}
+    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     saveIdentityToRegistry(identity)
@@ -342,6 +351,16 @@ export function UnifiedSignup(){
         <p className="auth-lede">Your blood group helps BBBT prepare authorized safety and emergency support information.</p>
         <label className={errors.blood?'invalid':''}>BLOOD GROUP <span className="field-hint">Required</span><select value={f.blood} onChange={set('blood')} aria-required="true" aria-describedby="blood-group-note"><option value="">Select blood group</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>{errors.blood&&<span className="field-error" role="alert">{errors.blood}</span>}</label>
         <p id="blood-group-note" className="su-note"><strong>Self-reported blood group.</strong> Do not treat this as a substitute for hospital blood typing/cross-match.</p>
+      </div>}
+
+      {currentStep==='bloodReport'&&role==='Rider'&&<div className="su-step">
+        <span className="eyebrow cyan-text">RIDER SAFETY PROFILE</span>
+        <h2>LATEST BLOOD GROUP / LAB REPORT</h2>
+        <p className="auth-lede">Upload your latest blood-group/lab report from within the last 1 month.</p>
+        <label className={errors.bloodReportDate?'invalid':''}>REPORT DATE <span className="field-hint">Required</span><input type="date" value={f.bloodReportDate} max={new Date().toISOString().slice(0,10)} onChange={set('bloodReportDate')} aria-required="true" />{errors.bloodReportDate&&<span className="field-error" role="alert">{errors.bloodReportDate}</span>}</label>
+        <label className={errors.bloodReport?'invalid':''}>UPLOAD REPORT <span className="field-hint">Required · PDF, JPG, JPEG or PNG · Max 5 MB</span><input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={e=>addBloodReport(e.target.files?.[0])} aria-required="true" />{bloodReportName&&<span className="su-file-row">{bloodReportName}<button type="button" onClick={removeBloodReport}>Remove</button></span>}{errors.bloodReport&&<span className="field-error" role="alert">{errors.bloodReport}</span>}</label>
+        {bloodReportPreview&&bloodReportName.match(/\.(jpg|jpeg|png)$/i)&&<img className="su-report-preview" src={bloodReportPreview} alt="Blood group report preview" />}
+        <p className="su-note"><strong>REPORT UPLOADED</strong> status will be stored with your profile. Uploading a report does not mean BBBT has medically verified your blood group. Do not treat this as a substitute for hospital blood typing/cross-match.</p>
       </div>}
 
       {currentStep==='branch'&&<div className="su-step signup-branch-step" data-branch={activeSignupBranch.key}>

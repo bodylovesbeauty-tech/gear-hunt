@@ -3,6 +3,7 @@
 import { groupKey, type PrototypeGroup } from '@/lib/prototype-session'
 
 export type PublicGroup = {
+  targetId: string
   identifier: string
   name: string
   createdAt: string
@@ -27,6 +28,7 @@ function toPublicGroup(group: PrototypeGroup): PublicGroup | null {
   if (group.status && group.status !== 'ACTIVE') return null
   if (!group.shareToken || !group.name || !group.createdAt) return null
   return {
+    targetId: group.id,
     identifier: group.shareToken,
     name: group.name,
     createdAt: group.createdAt,

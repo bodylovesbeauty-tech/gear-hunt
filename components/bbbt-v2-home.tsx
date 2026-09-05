@@ -8,7 +8,7 @@ import { t } from '@/lib/translations'
 import './bbbt-v2-crystal.css'
 
 const gateways = [
-  ['RIDER', 'Your safety identity', 'Build readiness around the ride.', '/signup'],
+  ['RIDER', 'Your safety identity', 'Build readiness around the ride.', '/signup?role=Rider'],
   ['GROUP ADMIN', 'Your community', 'Give your group a safer rhythm.', '/signup?role=Group%20Admin'],
   ['GROUP MARSHAL', 'Your responsibility', 'Support the people riding with you.', '/signup?role=Group%20Marshal'],
   ['INDEPENDENT MARSHAL', 'Your responsibility', 'Support riders beyond one group.', '/signup?role=Independent%20Marshal'],

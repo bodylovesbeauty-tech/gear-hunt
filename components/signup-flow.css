@@ -36,7 +36,7 @@
 .su-step-error{margin:.25rem 0 0;padding:.6rem .8rem;border:1px solid var(--red);border-left:2px solid var(--red);background:rgba(237,63,53,.08);color:var(--foreground);font-size:.76rem}
 
 /* step body enters gently */
-.su-step{display:flex;flex-direction:column;gap:1rem;animation:su-fade .3s ease}
+.su-step{display:flex;flex-direction:column;gap:1rem;animation:su-fade .3s ease}.signup-branch-step h2{margin:0;font-size:clamp(1.45rem,4vw,2rem);letter-spacing:-.03em}.signup-branch-panel{display:flex;flex-direction:column;gap:.55rem;padding:1rem;border:1px solid var(--blue);background:linear-gradient(135deg,rgba(86,200,226,.08),transparent 70%),var(--surface)}.signup-branch-panel strong{font:700 .82rem var(--font-mono);letter-spacing:.08em}.signup-branch-panel span{color:var(--foreground);font-size:.9rem}.signup-branch-panel small{color:var(--muted);font-size:.72rem;line-height:1.5}
 @keyframes su-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* navigation */

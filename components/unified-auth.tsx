@@ -57,7 +57,9 @@ export function UnifiedSignup(){
 
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
-  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primary){setF(previous=>({...previous,language:saved.primary,additionalLanguages:saved.additional||[]}))}}catch{}},[])
+  const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
+  const languageOption=(code:string)=>languages.find(option=>option.code===code)
+  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode){setF(previous=>({...previous,language:saved.primaryCode,additionalLanguages:saved.additionalCodes||[]}))}}catch{}},[])
   useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;let stored:Role|null=null;try{stored=sessionStorage.getItem(roleSelectionKey) as Role|null}catch{};const selected=requested&&roleList.includes(requested)?requested:stored&&roleList.includes(stored)?stored:null;if(selected)setRole(selected)},[])
   const [checked,setChecked]=useState(false)
   const [showResp,setShowResp]=useState(false)
@@ -70,7 +72,7 @@ export function UnifiedSignup(){
   const [vehicles,setVehicles]=useState<PrototypeVehicle[]>([])
   const [f,setF]=useState({
     fullName:'',handle:'',mobile:'',email:'',
-    language:'English',
+    language:'en',
     additionalLanguages:[] as string[],
     baseLocation:'',address:'',city:'',district:'',state:'',pin:'',zone: '',
     bikeMake:'',bikeModel:'',bikeYear:'',bikeKm:'',bikeReg:'',
@@ -240,11 +242,11 @@ export function UnifiedSignup(){
     <h1>LANGUAGE<br/><em>PREFERENCES</em></h1>
     <p className="auth-lede">Choose your preferred language for the BBBT ecosystem and Voice Assistant.</p>
     <div className="language-step-card">
-      <label>PRIMARY LANGUAGE <span className="field-hint">Required</span><select value={f.language} onChange={event=>setF(previous=>({...previous,language:event.target.value,additionalLanguages:previous.additionalLanguages.filter(item=>item!==event.target.value)}))} aria-label="Primary language">{languages.map(option=><option key={option.code} value={option.label}>{option.label} — {option.nativeLabel}</option>)}</select></label>
-      <fieldset className="language-options"><legend>ADDITIONAL LANGUAGES <span className="eyebrow">UP TO 2</span></legend><p className="auth-lede language-helper">Choose up to 2 additional languages.</p><label className="language-search"><span className="sr-only">Search languages</span><input value={languageSearch} onChange={event=>setLanguageSearch(event.target.value)} placeholder="Search by English name, native name or code" type="search"/></label><div className="language-checks searchable-language-list">{languageOptions.filter(option=>option.label!==f.language).map(option=><label key={option.code} className="language-check"><input type="checkbox" checked={f.additionalLanguages.includes(option.label)} onChange={()=>toggleLanguage(option.label)} disabled={!f.additionalLanguages.includes(option.label)&&f.additionalLanguages.length>=2}/><span><strong>{option.label}</strong><small>{option.nativeLabel} · {option.code}</small></span></label>)}{languageOptions.length===0&&<p className="auth-lede">No languages match your search.</p>}</div></fieldset>
+      <label>PRIMARY LANGUAGE <span className="field-hint">Required</span><select value={f.language} onChange={event=>setF(previous=>({...previous,language:event.target.value,additionalLanguages:previous.additionalLanguages.filter(item=>item!==event.target.value)}))} aria-label="Primary language">{languages.map(option=><option key={option.code} value={option.code}>{option.label} — {option.nativeLabel} · {option.code}</option>)}</select></label>
+      <fieldset className="language-options"><legend><span>ADDITIONAL LANGUAGES</span><strong>{f.additionalLanguages.length} / 2 SELECTED</strong></legend><p className="auth-lede language-helper">Choose up to 2 additional languages.</p><label className="language-search"><span className="sr-only">Search languages</span><input value={languageSearch} onChange={event=>setLanguageSearch(event.target.value)} placeholder="Search by English name, native name or code" type="search"/></label><div className="language-checks searchable-language-list">{languageOptions.filter(option=>option.code!==f.language).map(option=><label key={option.code} className="language-check"><input type="checkbox" checked={f.additionalLanguages.includes(option.code)} onChange={()=>toggleLanguage(option.code)} disabled={!f.additionalLanguages.includes(option.code)&&f.additionalLanguages.length>=2}/><span><strong>{option.label}</strong><small>{option.nativeLabel} · {option.code}</small></span></label>)}{languageOptions.length===0&&<p className="auth-lede">No languages match your search.</p>}</div></fieldset>
     </div>
-    <div className="selected-language-summary" aria-live="polite"><span>SELECTED {1+f.additionalLanguages.length} / 3</span><strong>{[f.language,...f.additionalLanguages].join(' · ')}</strong></div>
-    <button type="button" className="btn btn-cyan" onClick={()=>{const primary=languages.find(option=>option.label===f.language);try{sessionStorage.setItem('bbbt-signup-languages',JSON.stringify({primary:f.language,primaryCode:primary?.code||'en',additional:f.additionalLanguages}));savePreferences({...readPreferences(),language:(primary?.code||'en') as LanguageCode})}catch{};setLanguageChosen(true)}}>CONTINUE <ArrowRight size={16}/></button>
+    <div className="selected-language-summary" aria-live="polite"><span>LANGUAGES SELECTED</span><strong>{1+f.additionalLanguages.length} / 3</strong><small>{[f.language,...f.additionalLanguages].map(languageLabel).join(' · ')}</small></div>
+    <button type="button" className="btn btn-cyan" onClick={()=>{try{sessionStorage.setItem('bbbt-signup-languages',JSON.stringify({primaryCode:f.language,additionalCodes:f.additionalLanguages}));savePreferences({...readPreferences(),language:f.language as LanguageCode})}catch{};setLanguageChosen(true)}}>CONTINUE <ArrowRight size={16}/></button>
   </AuthFrame>
 
   return <AuthFrame>
@@ -397,7 +399,7 @@ export function UnifiedSignup(){
           <div><small>Mobile</small><p>{f.mobile.trim()||'—'}</p></div>
           <div><small>Email</small><p>{f.email.trim()||'Not added'}</p></div>
           <div><small>Profile Picture</small><p className={photoPreview?'':'muted'}>{photoPreview?'Added':'Not added'}</p></div>
-          <div><small>Languages</small><p>{[f.language,...f.additionalLanguages].join(', ')}</p></div>
+          <div><small>Languages</small><p>{[f.language,...f.additionalLanguages].map(languageLabel).join(', ')}</p></div>
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
           <div><small>Vehicles</small><p className={vehicles.length?'':'muted'}>{vehicles.length?`${vehicles.length} vehicle${vehicles.length===1?'':'s'} added`:'Not added'}</p></div>
           <div><small>Role requested</small><p>{role}</p></div>
@@ -432,7 +434,7 @@ export function UnifiedSignup(){
         <p className="auth-lede">Joining BBBT begins with responsibility. Please read these before you continue.</p>
         <p className="su-resp-lang">ENGLISH</p>
         <ul className="su-resp-list">{(responsibilities[role]||['Follow BBBT responsibilities, safety guidance and applicable review requirements.']).map((r,i)=><li key={i}>{r}</li>)}</ul>
-        {f.language!=='English'&&<p className="su-note" style={{marginTop:'1.25rem'}}>A {f.language} version of these responsibilities will be provided before launch. The English version above is authoritative for this prototype.</p>}
+        {f.language!=='en'&&<p className="su-note" style={{marginTop:'1.25rem'}}>A {languageLabel(f.language)} version of these responsibilities will be provided before launch. The English version above is authoritative for this prototype.</p>}
         <label className="consent-row">
           <input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/>
           <span>I have read and understood my BBBT role responsibilities.</span>

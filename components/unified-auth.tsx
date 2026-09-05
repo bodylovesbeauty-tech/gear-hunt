@@ -197,7 +197,7 @@ export function UnifiedSignup(){
     if(currentStep==='blood'&&role==='Rider'&&!f.blood)e.blood='Select your blood group'
     if(currentStep==='emergencyContacts'&&role==='Rider'){
       const contacts=[{name:f.ec1Name,number:f.ec1Number,relationship:f.ec1Relationship},{name:f.ec2Name,number:f.ec2Number,relationship:f.ec2Relationship}]
-      contacts.forEach((contact,index)=>{const prefix=`ec${index+1}`;if(!contact.name.trim())e[`${prefix}Name`]='Full name is required';if(!contact.number.trim())e[`${prefix}Number`]='Mobile number is required';else if(!/^\\+?[0-9][0-9\\s-]{7,14}$/.test(contact.number.trim()))e[`${prefix}Number`]='Invalid mobile';if(!contact.relationship.trim())e[`${prefix}Relationship`]='Relationship is required'})
+      contacts.forEach((contact,index)=>{const prefix=`ec${index+1}`;if(!contact.name.trim())e[`${prefix}Name`]='Full name is required';if(!contact.number.trim())e[`${prefix}Number`]='Mobile number is required';else if(!/^\+?[0-9][0-9\s-]{7,14}$/.test(contact.number.trim()))e[`${prefix}Number`]='Invalid mobile';if(!contact.relationship.trim())e[`${prefix}Relationship`]='Relationship is required'})
     }
     if(currentStep==='responsibilities'&&role==='Rider'&&!checked)e.consent='You must agree before continuing'
     if(currentStep==='safetySpending'&&role==='Rider'&&f.safetySpendingPreference==='Other Amount'&&f.otherSafetyAmount&&!/^\d+$/.test(f.otherSafetyAmount.trim()))e.otherSafetyAmount='Enter a numeric amount'

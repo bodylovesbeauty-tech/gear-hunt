@@ -66,8 +66,8 @@ export function UnifiedSignup(){
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts']:[]),'branch',...(isInvestor||role==='Rider'?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
-  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',branch:'09 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities']:[]),'branch',...(isInvestor||role==='Rider'?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
+  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',responsibilities:'09 RIDER RESPONSIBILITIES & TERMS',branch:'10 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
@@ -78,7 +78,7 @@ export function UnifiedSignup(){
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
   const currentStep=signupStepKeys[step]
-  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport','emergencyContacts']:[]),'branch',...(selectedRole==='Investor'||selectedRole==='Rider'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
+  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport','emergencyContacts','responsibilities']:[]),'branch',...(selectedRole==='Investor'||selectedRole==='Rider'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf(selectedRole==='Rider'?'responsibilities':'role')}
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
   const [photoPreview,setPhotoPreview]=useState('')
@@ -192,6 +192,7 @@ export function UnifiedSignup(){
       const contacts=[{name:f.ec1Name,number:f.ec1Number,relationship:f.ec1Relationship},{name:f.ec2Name,number:f.ec2Number,relationship:f.ec2Relationship}]
       contacts.forEach((contact,index)=>{const prefix=`ec${index+1}`;if(!contact.name.trim())e[`${prefix}Name`]='Full name is required';if(!contact.number.trim())e[`${prefix}Number`]='Mobile number is required';else if(!/^\\+?[0-9][0-9\\s-]{7,14}$/.test(contact.number.trim()))e[`${prefix}Number`]='Invalid mobile';if(!contact.relationship.trim())e[`${prefix}Relationship`]='Relationship is required'})
     }
+    if(currentStep==='responsibilities'&&role==='Rider'&&!checked)e.consent='You must agree before continuing'
     if(currentStep==='bloodReport'&&role==='Rider'){
       if(!f.bloodReportDate)e.bloodReportDate='Report date is required'
       else {const reportDate=new Date(`${f.bloodReportDate}T00:00:00`);const now=new Date();const oldest=new Date(now);oldest.setMonth(now.getMonth()-1);if(Number.isNaN(reportDate.getTime())||reportDate>now)e.bloodReportDate='Report date cannot be in the future';else if(reportDate<oldest)e.bloodReportDate='Report must be from within the last 1 month'}
@@ -229,9 +230,9 @@ export function UnifiedSignup(){
     if(Object.keys(dupes).length){setErrors(dupes);setStep(0);return}
     const submittedAt=new Date().toISOString()
     const status:Status=isAutoApproved(role)?'Approved':'Pending'
-    const application={...f,vehicles,role,status,submittedAt,responsibilityAcknowledged:true}
+    const application={...f,vehicles,role,status,submittedAt,responsibilityAcknowledged:true,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider' as const}:undefined}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),emergencyName:role==='Rider'?f.ec1Name.trim():undefined,emergencyNumber:role==='Rider'?f.ec1Number.trim():undefined,emergencyContacts:role==='Rider'?[{fullName:f.ec1Name.trim(),mobile:f.ec1Number.trim(),relationship:f.ec1Relationship.trim()},{fullName:f.ec2Name.trim(),mobile:f.ec2Number.trim(),relationship:f.ec2Relationship.trim()}]:undefined,bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,createdAt:submittedAt}
+    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),emergencyName:role==='Rider'?f.ec1Name.trim():undefined,emergencyNumber:role==='Rider'?f.ec1Number.trim():undefined,emergencyContacts:role==='Rider'?[{fullName:f.ec1Name.trim(),mobile:f.ec1Number.trim(),relationship:f.ec1Relationship.trim()},{fullName:f.ec2Name.trim(),mobile:f.ec2Number.trim(),relationship:f.ec2Relationship.trim()}]:undefined,bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,termsConsent:role==='Rider'?{accepted:true,version:'BBBT-RIDER-RESPONSIBILITIES-2026-09-05',acceptedAt:submittedAt,role:'Rider'}:undefined,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     saveIdentityToRegistry(identity)
@@ -374,6 +375,26 @@ export function UnifiedSignup(){
         <fieldset className="form-section"><legend>EMERGENCY CONTACT 1</legend><div className="form-grid"><label className={errors.ec1Name?'invalid':''}>FULL NAME <span className="field-hint">Required</span><input value={f.ec1Name} onChange={set('ec1Name')} autoComplete="off" />{errors.ec1Name&&<span className="field-error" role="alert">{errors.ec1Name}</span>}</label><label className={errors.ec1Number?'invalid':''}>MOBILE NUMBER <span className="field-hint">Required</span><input value={f.ec1Number} onChange={set('ec1Number')} inputMode="tel" placeholder="+91 mobile number" autoComplete="off" />{errors.ec1Number&&<span className="field-error" role="alert">{errors.ec1Number}</span>}</label></div><label className={errors.ec1Relationship?'invalid':''}>RELATIONSHIP <span className="field-hint">Required</span><input value={f.ec1Relationship} onChange={set('ec1Relationship')} placeholder="Parent, partner, sibling or trusted contact" autoComplete="off" />{errors.ec1Relationship&&<span className="field-error" role="alert">{errors.ec1Relationship}</span>}</label></fieldset>
         <fieldset className="form-section"><legend>EMERGENCY CONTACT 2</legend><div className="form-grid"><label className={errors.ec2Name?'invalid':''}>FULL NAME <span className="field-hint">Required</span><input value={f.ec2Name} onChange={set('ec2Name')} autoComplete="off" />{errors.ec2Name&&<span className="field-error" role="alert">{errors.ec2Name}</span>}</label><label className={errors.ec2Number?'invalid':''}>MOBILE NUMBER <span className="field-hint">Required</span><input value={f.ec2Number} onChange={set('ec2Number')} inputMode="tel" placeholder="+91 mobile number" autoComplete="off" />{errors.ec2Number&&<span className="field-error" role="alert">{errors.ec2Number}</span>}</label></div><label className={errors.ec2Relationship?'invalid':''}>RELATIONSHIP <span className="field-hint">Required</span><input value={f.ec2Relationship} onChange={set('ec2Relationship')} placeholder="Parent, partner, sibling or trusted contact" autoComplete="off" />{errors.ec2Relationship&&<span className="field-error" role="alert">{errors.ec2Relationship}</span>}</label></fieldset>
         <p className="su-note"><strong>PRIVATE</strong> Emergency contacts are used for authorized safety and emergency communication purposes.</p>
+      </div>}
+
+      {currentStep==='responsibilities'&&role==='Rider'&&<div className="su-step su-terms-step">
+        <span className="eyebrow cyan-text">RIDER ACCOUNT TERMS</span>
+        <h2>RIDER RESPONSIBILITIES &amp; TERMS</h2>
+        <p className="auth-lede">Please review the responsibilities that apply to your BBBT account.</p>
+        <ul className="su-terms-summary">
+          <li>Provide accurate account information.</li>
+          <li>Use BBBT responsibly and follow applicable riding and safety laws.</li>
+          <li>Respect riders and community members.</li>
+          <li>Do not misuse SOS or emergency systems.</li>
+          <li>Do not misuse another user&apos;s information.</li>
+          <li>Understand prototype and future-feature limitations.</li>
+          <li>Emergency services remain authoritative.</li>
+          <li>Do not misuse BBBT groups, rides or governance.</li>
+          <li>Use the platform in accordance with BBBT rules.</li>
+        </ul>
+        <Link href="/terms" className="su-terms-link">READ FULL TERMS &amp; CONDITIONS <ArrowRight size={15} aria-hidden="true" /></Link>
+        <label className="consent-row su-terms-consent"><input type="checkbox" checked={checked} onChange={event=>setChecked(event.target.checked)} aria-describedby="rider-terms-consent-note"/><span>I agree to the BBBT Rider Responsibilities, Terms &amp; Conditions.</span></label>
+        {errors.consent&&<div id="rider-terms-consent-note" className="su-step-error" role="alert">{errors.consent}</div>}
       </div>}
 
       {currentStep==='branch'&&<div className="su-step signup-branch-step" data-branch={activeSignupBranch.key}>

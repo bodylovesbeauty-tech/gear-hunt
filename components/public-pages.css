@@ -205,12 +205,49 @@
 }
 @media (max-width: 560px) {
   .pp-stages { grid-template-columns: 1fr; }
+  .investor-thesis-grid, .investor-problem-grid, .investor-roadmap, .investor-architecture { grid-template-columns: 1fr; }
   .pp-discovery-grid, .pp-role-grid { grid-template-columns: 1fr; }
   .pp-founder { grid-template-columns: 1fr; gap: 1.5rem; }
   .pp-founder-mark { max-width: 8rem; }
   .pp-timeline > div { grid-template-columns: 1fr; gap: 0.35rem; }
   .hero--with-image { padding-bottom: 5rem; }
+  .investor-brief-page .hero { padding-bottom: 8rem; }
 }
+
+/* ============================================================ INVESTOR BRIEF */
+.investor-brief-page { color: var(--bcx-ink); }
+.investor-brief-page .hero, .investor-brief-section { max-width: 1240px; margin-inline: auto; }
+.investor-brief-page .hero { padding-top: clamp(3rem, 7vw, 6rem); }
+.investor-brief-section { padding: clamp(3.5rem, 7vw, 6.5rem) 1.25rem; }
+.investor-brief-section--alt { max-width: none; background: var(--bcx-crystal); }
+.investor-brief-section h2 { max-width: 17ch; margin: .65rem 0 1rem; color: var(--bcx-ink); font-size: clamp(2rem, 5vw, 4.7rem); line-height: .96; letter-spacing: -.065em; }
+.investor-brief-lede { max-width: 62ch; color: var(--bcx-ink-soft); font-size: 1.05rem; line-height: 1.65; }
+.investor-thesis-grid, .investor-problem-grid, .investor-roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem; }
+.investor-thesis-grid article, .investor-problem-grid > div, .investor-roadmap > div, .investor-architecture > div { padding: 1.35rem; border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); background: var(--bcx-crystal-solid); }
+.investor-thesis-grid svg { color: var(--bcx-blue); }
+.investor-thesis-grid h3, .investor-architecture h3, .investor-roadmap h3 { margin: 1.1rem 0 .45rem; font-size: 1.15rem; }
+.investor-thesis-grid p, .investor-problem-grid p, .investor-architecture p, .investor-roadmap p { margin: 0; color: var(--bcx-ink-soft); line-height: 1.6; }
+.investor-problem-grid { grid-template-columns: repeat(3, 1fr); }
+.investor-problem-grid b, .investor-roadmap span { color: var(--bcx-red); font: 700 .65rem/1.2 var(--font-geist-mono), monospace; letter-spacing: .1em; }
+.investor-architecture { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; }
+.investor-architecture ul { display: grid; gap: .55rem; margin: 1rem 0 0; padding-left: 1.15rem; color: var(--bcx-ink-soft); line-height: 1.5; }
+.investor-roadmap { grid-template-columns: repeat(4, 1fr); }
+.investor-roadmap h3 { margin-top: .8rem; }
+.investor-brief-note, .investor-confirmation { margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-md); background: var(--bcx-crystal-solid); }
+.investor-brief-note strong { color: var(--bcx-orange); font: 700 .65rem/1.2 var(--font-geist-mono), monospace; letter-spacing: .1em; text-transform: uppercase; }
+.investor-brief-note p, .investor-confirmation p { margin: .55rem 0 0; color: var(--bcx-ink-soft); line-height: 1.55; }
+.investor-access-list { display: grid; gap: .8rem; max-width: 62rem; margin-top: 2rem; }
+.investor-access-list span { padding: 1rem 0; border-bottom: 1px solid var(--bcx-line-soft); color: var(--bcx-ink-soft); line-height: 1.5; }
+.investor-access-list span:first-letter { color: var(--bcx-red); }
+.investor-request-form { display: grid; gap: 1rem; max-width: 42rem; margin-top: 1.5rem; padding: clamp(1.25rem, 4vw, 2rem); border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-lg); background: var(--bcx-crystal-solid); }
+.investor-request-form label { display: grid; gap: .45rem; color: var(--bcx-ink); font-weight: 600; }
+.investor-request-form input:not([type=checkbox]), .investor-request-form textarea { width: 100%; padding: .8rem; border: 1px solid var(--bcx-line); border-radius: var(--bcx-r-sm); background: var(--bcx-crystal); color: var(--bcx-ink); font: inherit; }
+.investor-request-form input:focus, .investor-request-form textarea:focus { outline: 2px solid var(--bcx-blue); outline-offset: 2px; }
+.investor-check { display: flex !important; grid-template-columns: auto 1fr; align-items: start; gap: .65rem !important; color: var(--bcx-ink-soft) !important; font-size: .85rem; line-height: 1.45; }
+.investor-check input { margin-top: .2rem; accent-color: var(--bcx-red); }
+.investor-confirmation { max-width: 42rem; }
+.investor-confirmation h3 { margin: 0; font-size: 1.5rem; }
+.investor-confirmation .button { display: inline-flex; margin-top: 1.25rem; }
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {

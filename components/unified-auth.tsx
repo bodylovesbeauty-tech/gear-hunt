@@ -53,7 +53,7 @@ export function UnifiedSignup(){
       'Support fair, transparent and accountable community governance.',
     ],
   }
-  const steps=['01 YOU','03 WHERE YOU RIDE','04 YOUR BIKE','05 YOUR SAFETY','06 YOUR ROLE','07 BBBT INTEREST','08 REVIEW']
+  const steps=['01 YOU','04 YOUR RIDE','05 WHERE YOU RIDE','06 YOUR SAFETY','07 YOUR ROLE','08 BBBT INTEREST','09 REVIEW']
 
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
@@ -145,6 +145,7 @@ export function UnifiedSignup(){
   function updateVehicle(id:string,key:keyof PrototypeVehicle,value:string){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:value}:v))}
   function removeVehicle(id:string){setVehicles(list=>list.filter(v=>v.id!==id).map((v,i)=>({...v,id:`VEHICLE-${String(i+1).padStart(2,'0')}`})))}
   function addVehicle(){if(vehicles.length<5)setVehicles(list=>[...list,emptyVehicle(list.length)])}
+  useEffect(()=>{if(step===1&&vehicles.length===0)addVehicle()},[step,vehicles.length])
   function addVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto',file?:File){if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)return;const reader=new FileReader();reader.onload=()=>setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:{name:file.name,dataUrl:String(reader.result)}}:v));reader.readAsDataURL(file)}
   function removeVehiclePhoto(id:string,key:'fullBikePhoto'|'meterPhoto'){setVehicles(list=>list.map(v=>v.id===id?{...v,[key]:null}:v))}
   function normalizeRegistration(value:string){return value.toUpperCase().replace(/[^A-Z0-9]/g,'')}
@@ -162,7 +163,7 @@ export function UnifiedSignup(){
       if(availability.email==='Already in use ✕')e.email='This email is already registered'
       if(availability.mobile==='Already in use ✕')e.mobile='This mobile number is already registered'
     }
-    if(i===3){const registrations=vehicles.map(v=>normalizeRegistration(v.registration)).filter(Boolean);if(new Set(registrations).size!==registrations.length)e.vehicleRegistration='This registration number is already used for another vehicle in this application.'}
+    if(i===1){const registrations=vehicles.map(v=>normalizeRegistration(v.registration)).filter(Boolean);if(new Set(registrations).size!==registrations.length)e.vehicleRegistration='This registration number is already used for another vehicle in this application.'}
     if(i===2){
       if(!f.baseLocation.trim())e.baseLocation='Required'
       if(f.pin.trim()&&!/^[0-9]{6}$/.test(f.pin.trim()))e.pin='Invalid PIN'
@@ -299,7 +300,7 @@ export function UnifiedSignup(){
       </div>}
 
 
-      {step===1&&<div className="su-step">
+      {step===2&&<div className="su-step">
         <label className={errors.baseLocation?'invalid':''}>BASE LOCATION (Required) {err('baseLocation','Required')}<input value={f.baseLocation} onChange={set('baseLocation')} placeholder="City / state you mostly ride from"/></label>
         <div className="form-grid">
           <label>ADDRESS (Optional)<input value={f.address} onChange={set('address')} placeholder="Street or locality"/></label>
@@ -315,9 +316,9 @@ export function UnifiedSignup(){
         </div>
       </div>}
 
-      {step===2&&<div className="su-step">
-        <p className="auth-lede">YOUR VEHICLES (Optional). Add up to 5 vehicles. You can continue with zero.</p>
-        {vehicles.map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend><div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{vehicles.length<5?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
+      {step===1&&<div className="su-step">
+        <p className="auth-lede">YOUR RIDE</p><p className="su-note">Add the vehicle you currently ride with BBBT. You can manage additional vehicles after login.</p>
+        {vehicles.slice(0,1).map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend><div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{false?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
 
       {step===3&&<div className="su-step">
         <fieldset className="form-section">

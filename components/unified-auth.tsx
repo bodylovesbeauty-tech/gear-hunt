@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import { applicationKey, dashboardFor, demoUsers, duplicateField, identityKey, isAutoApproved, normEmail, normHandle, normMobile, prototypeApplicationId, readRegistry, saveIdentityToRegistry, sessionKey, type DemoUser, type PrototypeIdentity, type PrototypeVehicle, type Role, type Status } from '@/lib/prototype-session'
 import { languages, readPreferences, savePreferences, type LanguageCode } from '@/lib/global-preferences'
@@ -23,6 +23,7 @@ export function UnifiedSignup(){
     Investor:'Register for controlled investor information and access.',
   }
   const roleSelectionKey='bbbt-signup-role'
+  const signupDraftKey='bbbt-signup-draft'
   const [roleChosen,setRoleChosen]=useState(false)
   const [languageChosen,setLanguageChosen]=useState(false)
   const [languageSearch,setLanguageSearch]=useState('')
@@ -64,6 +65,7 @@ export function UnifiedSignup(){
   const showVehicleStep=(selectedRole:Role)=>selectedRole==='Rider'
 
   const [done,setDone]=useState(false)
+  const draftHydrated=useRef(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
   const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(role==='Rider'?[]:['branch']),...(isInvestor||role==='Rider'?[]:['safety']),'role','review'] as const
@@ -73,7 +75,7 @@ export function UnifiedSignup(){
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
   const languageOption=(code:string)=>languages.find(option=>option.code===code)
   useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode){setF(previous=>({...previous,language:saved.primaryCode,additionalLanguages:saved.additionalCodes||[]}))}}catch{}},[])
-  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;let stored:Role|null=null;try{stored=sessionStorage.getItem(roleSelectionKey) as Role|null}catch{};const selected=requested&&roleList.includes(requested)?requested:stored&&roleList.includes(stored)?stored:null;if(selected){setRole(selected);if(requested&&roleList.includes(requested)){setRoleChosen(true);try{const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode)setLanguageChosen(true)}catch{}}}},[])
+  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get('role') as Role|null;let stored:Role|null=null;try{stored=sessionStorage.getItem(roleSelectionKey) as Role|null}catch{};const selected=requested&&roleList.includes(requested)?requested:stored&&roleList.includes(stored)?stored:null;if(selected){setRole(selected);try{if(sessionStorage.getItem(roleSelectionKey)||requested)setRoleChosen(true);const saved=JSON.parse(sessionStorage.getItem('bbbt-signup-languages')||'null');if(saved?.primaryCode)setLanguageChosen(true)}catch{}}},[])
   const [checked,setChecked]=useState(false)
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
@@ -100,6 +102,8 @@ export function UnifiedSignup(){
     budget:'',safetySpendingPreference:'',otherSafetyAmount:'',
   })
   const set=(k:keyof typeof f)=>(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>)=>setF(p=>({...p,[k]:e.target.value}))
+  useEffect(()=>{try{const saved=JSON.parse(sessionStorage.getItem(signupDraftKey)||'null');if(saved&&typeof saved==='object'){if(saved.f&&typeof saved.f==='object')setF(previous=>({...previous,...saved.f,additionalLanguages:Array.isArray(saved.f.additionalLanguages)?saved.f.additionalLanguages:previous.additionalLanguages}));if(Array.isArray(saved.vehicles))setVehicles(saved.vehicles);if(typeof saved.role==='string'&&roleList.includes(saved.role))setRole(saved.role);if(typeof saved.roleChosen==='boolean')setRoleChosen(saved.roleChosen);if(typeof saved.languageChosen==='boolean')setLanguageChosen(saved.languageChosen);if(typeof saved.step==='number')setStep(saved.step);if(typeof saved.checked==='boolean')setChecked(saved.checked);if(typeof saved.photoPreview==='string')setPhotoPreview(saved.photoPreview);if(typeof saved.photoName==='string')setPhotoName(saved.photoName);if(typeof saved.bloodReportPreview==='string')setBloodReportPreview(saved.bloodReportPreview);if(typeof saved.bloodReportName==='string')setBloodReportName(saved.bloodReportName)}}catch{}finally{draftHydrated.current=true}},[])
+  useEffect(()=>{if(!draftHydrated.current)return;try{sessionStorage.setItem(signupDraftKey,JSON.stringify({f,vehicles,role,roleChosen,languageChosen,step,checked,photoPreview,photoName,bloodReportPreview,bloodReportName}))}catch{}},[f,vehicles,role,roleChosen,languageChosen,step,checked,photoPreview,photoName,bloodReportPreview,bloodReportName])
   const bbbtZones={
     north:['Jammu and Kashmir','Ladakh','Himachal Pradesh','Punjab','Haryana','Chandigarh','Delhi','Uttarakhand'],
     northCentral:['Uttar Pradesh','Rajasthan'],
@@ -236,7 +240,7 @@ export function UnifiedSignup(){
   function acknowledge(){setChecked(true);setShowResp(false)}
   function submit(ev:React.FormEvent){
     ev.preventDefault()
-    if(step!==steps.length-1||!checked)return
+    if(step!==steps.length-1||role==='Rider'&&!checked)return
     const reviewErrors=validateStep(step)
     if(Object.keys(reviewErrors).length){setErrors(reviewErrors);return}
     const dupes:Record<string,string>={}
@@ -366,7 +370,7 @@ export function UnifiedSignup(){
 
       {currentStep==='vehicle'&&<div className="su-step">
         <p className="auth-lede">YOUR RIDE</p><p className="su-note">Add the vehicle you currently ride with BBBT. You can manage additional vehicles after login.</p>
-        {vehicles.slice(0,1).map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend><div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{false?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
+        {vehicles.slice(0,1).map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend>{[vehicle.make,vehicle.model,vehicle.modelYear,vehicle.currentKm,vehicle.registration].some(value=>value.trim())&&<span className="vehicle-primary-badge">PRIMARY VEHICLE ADDED</span>}<div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{false?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
 
       {currentStep==='blood'&&role==='Rider'&&<div className="su-step">
         <span className="eyebrow cyan-text">RIDER SAFETY PROFILE</span>
@@ -382,7 +386,7 @@ export function UnifiedSignup(){
         <p className="auth-lede">Upload your latest blood-group/lab report from within the last 1 month.</p>
         <label className={errors.bloodReportDate?'invalid':''}>REPORT DATE <span className="field-hint">Required</span><input type="date" value={f.bloodReportDate} max={new Date().toISOString().slice(0,10)} onChange={set('bloodReportDate')} aria-required="true" />{errors.bloodReportDate&&<span className="field-error" role="alert">{errors.bloodReportDate}</span>}</label>
         <label className={errors.bloodReport?'invalid':''}>UPLOAD REPORT <span className="field-hint">Required · PDF, JPG, JPEG or PNG · Max 5 MB</span><input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onChange={e=>addBloodReport(e.target.files?.[0])} aria-required="true" />{bloodReportName&&<span className="su-file-row">{bloodReportName}<button type="button" onClick={removeBloodReport}>Remove</button></span>}{errors.bloodReport&&<span className="field-error" role="alert">{errors.bloodReport}</span>}</label>
-        {bloodReportPreview&&bloodReportName.match(/\.(jpg|jpeg|png)$/i)&&<img className="su-report-preview" src={bloodReportPreview} alt="Blood group report preview" />}
+        {bloodReportName&&<div className="su-report-status"><strong>REPORT UPLOADED</strong><span>{bloodReportName} · {f.bloodReportDate||'Date pending'}</span></div>}{bloodReportPreview&&bloodReportName.match(/\.(jpg|jpeg|png)$/i)&&<img className="su-report-preview" src={bloodReportPreview} alt="Blood group report preview" />}
         <p className="su-note"><strong>REPORT UPLOADED</strong> status will be stored with your profile. Uploading a report does not mean BBBT has medically verified your blood group. Do not treat this as a substitute for hospital blood typing/cross-match.</p>
       </div>}
 

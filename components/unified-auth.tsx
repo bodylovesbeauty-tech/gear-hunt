@@ -66,8 +66,8 @@ export function UnifiedSignup(){
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location','branch',...(isInvestor?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
-  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',branch:'06 ROLE BRANCH',safety:'07 YOUR SAFETY',role:'08 YOUR ROLE',budget:'09 BBBT INTEREST',review:'10 REVIEW'}
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood']:[]),'branch',...(isInvestor?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
+  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',branch:'07 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
@@ -78,7 +78,7 @@ export function UnifiedSignup(){
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
   const currentStep=signupStepKeys[step]
-  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location','branch',...(selectedRole==='Investor'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
+  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood']:[]),'branch',...(selectedRole==='Investor'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
   const [photoPreview,setPhotoPreview]=useState('')
@@ -183,6 +183,7 @@ export function UnifiedSignup(){
       if(!f.baseLocation.trim())e.baseLocation='Required'
       if(f.pin.trim()&&!/^[0-9]{6}$/.test(f.pin.trim()))e.pin='Invalid PIN'
     }
+    if(currentStep==='blood'&&role==='Rider'&&!f.blood)e.blood='Select your blood group'
     if(currentStep==='role'){
       if(role==='Group Admin'){
         if(!f.groupName.trim())e.groupName='Required'
@@ -217,7 +218,7 @@ export function UnifiedSignup(){
     const status:Status=isAutoApproved(role)?'Approved':'Pending'
     const application={...f,vehicles,role,status,submittedAt,responsibilityAcknowledged:true}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,createdAt:submittedAt}
+    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),bloodGroup:role==='Rider'?f.blood.trim():undefined,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     saveIdentityToRegistry(identity)
@@ -335,6 +336,14 @@ export function UnifiedSignup(){
         <p className="auth-lede">YOUR RIDE</p><p className="su-note">Add the vehicle you currently ride with BBBT. You can manage additional vehicles after login.</p>
         {vehicles.slice(0,1).map((vehicle,index)=><fieldset className="vehicle-card" key={vehicle.id}><legend>VEHICLE {String(index+1).padStart(2,'0')}</legend><div className="bike-grid"><label>BIKE COMPANY / MAKE (Optional)<input value={vehicle.make} onChange={e=>updateVehicle(vehicle.id,'make',e.target.value)} placeholder="Royal Enfield"/></label><label>BIKE MODEL (Optional)<input value={vehicle.model} onChange={e=>updateVehicle(vehicle.id,'model',e.target.value)} placeholder="Classic 350"/></label><label>BIKE MODEL YEAR (Optional)<input value={vehicle.modelYear} onChange={e=>updateVehicle(vehicle.id,'modelYear',e.target.value)} inputMode="numeric" placeholder="2024"/></label><label>CURRENT KM / ODOMETER (Optional)<input value={vehicle.currentKm} onChange={e=>updateVehicle(vehicle.id,'currentKm',e.target.value)} inputMode="numeric" placeholder="18,500"/></label><label>BIKE REGISTRATION / NUMBER PLATE (Optional)<input value={vehicle.registration} onChange={e=>updateVehicle(vehicle.id,'registration',e.target.value)} placeholder="UP32AB1234"/></label></div><div className="vehicle-photos"><VehiclePhoto label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)" helper="For vehicle identity/reference." photo={vehicle.fullBikePhoto} onChange={file=>addVehiclePhoto(vehicle.id,'fullBikePhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'fullBikePhoto')} inputId={`${vehicle.id}-full`}/><VehiclePhoto label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)" helper="For current odometer/KM reference." photo={vehicle.meterPhoto} onChange={file=>addVehiclePhoto(vehicle.id,'meterPhoto',file)} onRemove={()=>removeVehiclePhoto(vehicle.id,'meterPhoto')} inputId={`${vehicle.id}-meter`}/></div><button type="button" className="text-button" onClick={()=>removeVehicle(vehicle.id)}>Remove vehicle</button></fieldset>)}{errors.vehicleRegistration&&<div className="su-step-error">{errors.vehicleRegistration}</div>}{false?<button type="button" className="btn btn-outline" onClick={addVehicle}>+ ADD ANOTHER VEHICLE</button>:<p className="su-note">Maximum 5 vehicles can be added.</p>}</div>}
 
+      {currentStep==='blood'&&role==='Rider'&&<div className="su-step">
+        <span className="eyebrow cyan-text">RIDER SAFETY PROFILE</span>
+        <h2>BLOOD GROUP</h2>
+        <p className="auth-lede">Your blood group helps BBBT prepare authorized safety and emergency support information.</p>
+        <label className={errors.blood?'invalid':''}>BLOOD GROUP <span className="field-hint">Required</span><select value={f.blood} onChange={set('blood')} aria-required="true" aria-describedby="blood-group-note"><option value="">Select blood group</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option><option value="O+">O+</option><option value="O-">O-</option></select>{errors.blood&&<span className="field-error" role="alert">{errors.blood}</span>}</label>
+        <p id="blood-group-note" className="su-note"><strong>Self-reported blood group.</strong> Do not treat this as a substitute for hospital blood typing/cross-match.</p>
+      </div>}
+
       {currentStep==='branch'&&<div className="su-step signup-branch-step" data-branch={activeSignupBranch.key}>
         <span className="eyebrow cyan-text">{activeSignupBranch.eyebrow}</span>
         <h2>{activeSignupBranch.title}</h2>
@@ -350,16 +359,6 @@ export function UnifiedSignup(){
             <label>EMERGENCY CONTACT NAME (Optional)<input value={f.ecName} onChange={set('ecName')} placeholder="Name and relationship"/></label>
             <label>EMERGENCY CONTACT NUMBER (Optional)<input value={f.ecNumber} onChange={set('ecNumber')} inputMode="tel" placeholder="+91 mobile number"/></label>
           </div>
-          <label>YOUR BLOOD GROUP (Optional)<select value={f.blood} onChange={set('blood')}>
-            <option value="">Select blood group</option>
-            <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
-            <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
-          </select></label>
-          <label>LATEST BLOOD GROUP TEST REPORT — LAST 1 MONTH (Optional)
-            <input type="file" accept=".pdf,image/jpeg,image/png" onChange={e=>{const file=e.target.files?.[0];if(!file)return;if(!['application/pdf','image/jpeg','image/png'].includes(file.type)){e.currentTarget.value='';setF(p=>({...p,bloodReport:''}));return}if(file.size>5*1024*1024){e.currentTarget.value='';setF(p=>({...p,bloodReport:''}));return}setF(p=>({...p,bloodReport:file.name}))}}/>
-            <small className="su-upload-note">Optional — not required to continue. PDF, JPG or PNG up to 5 MB. Stored locally for this prototype only.</small>
-            {f.bloodReport&&<span className="su-file-row">{f.bloodReport}<button type="button" onClick={e=>{const input=e.currentTarget.parentElement?.previousElementSibling as HTMLInputElement|null;if(input)input.value='';setF(p=>({...p,bloodReport:''}))}}>Clear</button></span>}
-          </label>
         </fieldset>
       </div>}
 

@@ -66,7 +66,7 @@ export function UnifiedSignup(){
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),'branch',...(isInvestor||role==='Rider'?[]:['safety']),'role','review'] as const
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(role==='Rider'?[]:['branch']),...(isInvestor||role==='Rider'?[]:['safety']),'role','review'] as const
   const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',responsibilities:'09 RIDER RESPONSIBILITIES & TERMS',safetySpending:'10 SAFETY-SPENDING PREFERENCE',branch:'11 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',review:'11 REVIEW'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
@@ -78,7 +78,7 @@ export function UnifiedSignup(){
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
   const currentStep=signupStepKeys[step]
-  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),'branch',...(selectedRole==='Investor'||selectedRole==='Rider'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf(selectedRole==='Rider'?'safetySpending':'role')}
+  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport','emergencyContacts','responsibilities','safetySpending']:[]),...(selectedRole==='Rider'?[]:['branch']),...(selectedRole==='Investor'||selectedRole==='Rider'?[]:['safety']),'role','review'];return keys.indexOf(selectedRole==='Rider'?'safetySpending':'role')}
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
   const [photoPreview,setPhotoPreview]=useState('')
@@ -142,6 +142,7 @@ export function UnifiedSignup(){
   function normalizeHandle(value:string){return value.trim().replace(/^@/,'').toLowerCase()}
   function normalizeEmail(value:string){return value.trim().toLowerCase()}
   function normalizeMobile(value:string){return normMobile(value)}
+  function maskContact(value:string){const compact=value.replace(/\s|-/g,'');return compact.length>4?`${compact.slice(0,2)}••••${compact.slice(-4)}`:'••••'}
   function checkAvailability(field:'handle'|'email'|'mobile',value:string){
     const normalized=field==='handle'?normalizeHandle(value):field==='email'?normalizeEmail(value):normalizeMobile(value)
     if(!normalized||(field==='email'&&!/^\S+@\S+\.\S+$/.test(normalized))||(field==='mobile'&&!/^\d{10,12}$/.test(normalized)))return
@@ -199,6 +200,18 @@ export function UnifiedSignup(){
       else {const reportDate=new Date(`${f.bloodReportDate}T00:00:00`);const now=new Date();const oldest=new Date(now);oldest.setMonth(now.getMonth()-1);if(Number.isNaN(reportDate.getTime())||reportDate>now)e.bloodReportDate='Report date cannot be in the future';else if(reportDate<oldest)e.bloodReportDate='Report must be from within the last 1 month'}
       if(!bloodReportPreview)e.bloodReport='Upload your latest report'
     }
+    if(currentStep==='review'&&role==='Rider'){
+      if(!f.blood)e.blood='Select your blood group before submitting'
+      if(!bloodReportPreview)e.bloodReport='Upload your latest report before submitting'
+      if(!f.bloodReportDate)e.bloodReportDate='Report date is required before submitting'
+      if(!f.ec1Name.trim())e.ec1Name='Full name is required'
+      if(!f.ec1Number.trim())e.ec1Number='Mobile number is required'
+      if(!f.ec1Relationship.trim())e.ec1Relationship='Relationship is required'
+      if(!f.ec2Name.trim())e.ec2Name='Full name is required'
+      if(!f.ec2Number.trim())e.ec2Number='Mobile number is required'
+      if(!f.ec2Relationship.trim())e.ec2Relationship='Relationship is required'
+      if(!checked)e.consent='You must acknowledge the Rider Terms before submitting'
+    }
     if(currentStep==='role'){
       if(role==='Group Admin'){
         if(!f.groupName.trim())e.groupName='Required'
@@ -224,6 +237,8 @@ export function UnifiedSignup(){
   function submit(ev:React.FormEvent){
     ev.preventDefault()
     if(step!==steps.length-1||!checked)return
+    const reviewErrors=validateStep(step)
+    if(Object.keys(reviewErrors).length){setErrors(reviewErrors);return}
     const dupes:Record<string,string>={}
     if(duplicateField('handle',f.handle))dupes.handle='This handle is already taken.'
     if(f.email.trim()&&duplicateField('email',f.email))dupes.email='This email address is already registered.'
@@ -493,6 +508,15 @@ export function UnifiedSignup(){
           <div><small>Base location</small><p className={previewLocation?'':'muted'}>{previewLocation||'Not added'}</p></div>
           <div><small>Vehicles</small><p className={vehicles.length?'':'muted'}>{vehicles.length?`${vehicles.length} vehicle${vehicles.length===1?'':'s'} added`:'Not added'}</p></div>
           <div><small>Role requested</small><p>{role}</p></div>
+          {role==='Rider'&&<>
+            <div><small>Vehicle summary</small><p className={vehicles.length?'':'muted'}>{vehicles[0]?[vehicles[0].make,vehicles[0].model,vehicles[0].modelYear].filter(Boolean).join(' · ')||'Vehicle added':'Not added'}</p></div>
+            <div><small>Privacy-safe location</small><p>{[f.city.trim(),f.state.trim(),f.zone.trim()].filter(Boolean).join(' · ')||f.baseLocation.trim()||'Not added'}</p></div>
+            <div><small>Blood group</small><p>{f.blood||'Not added'}</p></div>
+            <div><small>Lab report</small><p>{bloodReportName?`REPORT UPLOADED · ${f.bloodReportDate||'Date recorded'}`:'Not uploaded'}</p></div>
+            <div><small>Emergency contacts</small><p>{f.ec1Name.trim()&&f.ec1Number.trim()?`${f.ec1Name.trim()} · ${maskContact(f.ec1Number)}${f.ec2Name.trim()&&f.ec2Number.trim()?` · ${f.ec2Name.trim()} · ${maskContact(f.ec2Number)}`:''}`:'Not added'}</p></div>
+            <div><small>Terms consent</small><p>{checked?'Accepted · BBBT-RIDER-RESPONSIBILITIES-2026-09-05':'Not accepted'}</p></div>
+            <div><small>Safety spending</small><p>{f.safetySpendingPreference==='Other Amount'&&f.otherSafetyAmount?`₹${f.otherSafetyAmount}`:f.safetySpendingPreference||'Not provided'}</p></div>
+          </>}
           <div><small>Safety details</small><p className="muted">Kept private</p></div>
         </div>
 
@@ -502,6 +526,7 @@ export function UnifiedSignup(){
           <span>I have read and understood my BBBT role responsibilities.</span>
         </label>
         {!checked&&errors.consent&&<div className="su-step-error">{errors.consent}</div>}
+        {role==='Rider'&&Object.keys(errors).some(key=>['blood','bloodReport','bloodReportDate','ec1Name','ec1Number','ec1Relationship','ec2Name','ec2Number','ec2Relationship'].includes(key))&&<div className="su-step-error" role="alert">Please return to the required Rider safety steps and complete the highlighted fields before submitting.</div>}
 
         <div className="su-note"><strong>This is a prototype.</strong> No payment is being taken and this registration does not represent live emergency coverage. Role selection is a request and does not grant approval.</div>
       </div>}

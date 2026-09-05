@@ -377,6 +377,7 @@ function CommunityPage() {
       label="Rider Community"
       title="The road is shared. The knowledge should be too."
       lede="BBBT does not replace rider communities — it adds structure around them, connecting riders and local groups through safety, training and mutual support."
+      ctaHref="/signup"
       ctaLabel="Join the community"
     >
       <section className="pp-section">
@@ -416,7 +417,7 @@ function CommunityPage() {
         </div>
       </section>
 
-      <Band title="Bring your riding group into BBBT." text="Group admins and partners can start a controlled conversation about local participation." label="Connect your group" />
+      <Band title="Bring your riding group into BBBT." text="Group admins and partners can start a controlled conversation about local participation." href="/signup?role=Group%20Admin" label="Connect your group" />
     </PageFrame>
   )
 }

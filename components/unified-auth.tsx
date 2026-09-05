@@ -66,8 +66,8 @@ export function UnifiedSignup(){
   const [done,setDone]=useState(false)
   const [role,setRole]=useState<Role>('Rider')
   const isInvestor=role==='Investor'
-  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport']:[]),'branch',...(isInvestor?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
-  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',branch:'08 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
+  const signupStepKeys=['identity',...(showVehicleStep(role)?['vehicle']:[]),'location',...(showVehicleStep(role)?['blood','bloodReport','emergencyContacts']:[]),'branch',...(isInvestor||role==='Rider'?[]:['safety']),'role',...(isInvestor?[]:['budget']),'review'] as const
+  const stepLabels:Record<(typeof signupStepKeys)[number],string>={identity:'01 YOU',vehicle:'04 YOUR RIDE',location:'05 WHERE YOU RIDE',blood:'06 BLOOD GROUP',bloodReport:'07 LATEST BLOOD GROUP / LAB REPORT',emergencyContacts:'08 EMERGENCY CONTACTS',branch:'09 ROLE BRANCH',safety:'08 YOUR SAFETY',role:'09 YOUR ROLE',budget:'10 BBBT INTEREST',review:'11 REVIEW'}
   const steps=signupStepKeys.map(key=>stepLabels[key])
   const activeSignupBranch=signupBranchByRole[role]
   const languageLabel=(code:string)=>languages.find(option=>option.code===code)?.label||code
@@ -78,7 +78,7 @@ export function UnifiedSignup(){
   const [showResp,setShowResp]=useState(false)
   const [step,setStep]=useState(0)
   const currentStep=signupStepKeys[step]
-  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport']:[]),'branch',...(selectedRole==='Investor'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
+  const roleStepIndex=(selectedRole:Role)=>{const keys=['identity',...(showVehicleStep(selectedRole)?['vehicle']:[]),'location',...(showVehicleStep(selectedRole)?['blood','bloodReport','emergencyContacts']:[]),'branch',...(selectedRole==='Investor'||selectedRole==='Rider'?[]:['safety']),'role',...(selectedRole==='Investor'?[]:['budget']),'review'];return keys.indexOf('role')}
   const [errors,setErrors]=useState<Record<string,string>>({})
   const [pinStatus,setPinStatus]=useState('')
   const [photoPreview,setPhotoPreview]=useState('')
@@ -93,7 +93,7 @@ export function UnifiedSignup(){
     additionalLanguages:[] as string[],
     baseLocation:'',address:'',city:'',district:'',state:'',pin:'',zone: '',
     bikeMake:'',bikeModel:'',bikeYear:'',bikeKm:'',bikeReg:'',
-    ecName:'',ecNumber:'',blood:'',bloodReport:'',bloodReportDate:'',
+    ecName:'',ecNumber:'',ec1Name:'',ec1Number:'',ec1Relationship:'',ec2Name:'',ec2Number:'',ec2Relationship:'',blood:'',bloodReport:'',bloodReportDate:'',
     groupName:'',groupProfile:'',groupSize:'',groupHandle:'',
     marshalExp:'',
     councilEmail:'',councilYears:'',councilRides:'',councilProfile:'',councilWhy:'',councilConflict:'',
@@ -188,6 +188,10 @@ export function UnifiedSignup(){
       if(f.pin.trim()&&!/^[0-9]{6}$/.test(f.pin.trim()))e.pin='Invalid PIN'
     }
     if(currentStep==='blood'&&role==='Rider'&&!f.blood)e.blood='Select your blood group'
+    if(currentStep==='emergencyContacts'&&role==='Rider'){
+      const contacts=[{name:f.ec1Name,number:f.ec1Number,relationship:f.ec1Relationship},{name:f.ec2Name,number:f.ec2Number,relationship:f.ec2Relationship}]
+      contacts.forEach((contact,index)=>{const prefix=`ec${index+1}`;if(!contact.name.trim())e[`${prefix}Name`]='Full name is required';if(!contact.number.trim())e[`${prefix}Number`]='Mobile number is required';else if(!/^\\+?[0-9][0-9\\s-]{7,14}$/.test(contact.number.trim()))e[`${prefix}Number`]='Invalid mobile';if(!contact.relationship.trim())e[`${prefix}Relationship`]='Relationship is required'})
+    }
     if(currentStep==='bloodReport'&&role==='Rider'){
       if(!f.bloodReportDate)e.bloodReportDate='Report date is required'
       else {const reportDate=new Date(`${f.bloodReportDate}T00:00:00`);const now=new Date();const oldest=new Date(now);oldest.setMonth(now.getMonth()-1);if(Number.isNaN(reportDate.getTime())||reportDate>now)e.bloodReportDate='Report date cannot be in the future';else if(reportDate<oldest)e.bloodReportDate='Report must be from within the last 1 month'}
@@ -227,7 +231,7 @@ export function UnifiedSignup(){
     const status:Status=isAutoApproved(role)?'Approved':'Pending'
     const application={...f,vehicles,role,status,submittedAt,responsibilityAcknowledged:true}
     const applicationId=prototypeApplicationId(application)
-    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,createdAt:submittedAt}
+    const identity:PrototypeIdentity={id:applicationId,applicationId,fullName:f.fullName.trim(),handle:f.handle.trim(),mobile:f.mobile.trim(),email:f.email.trim(),requestedRole:role,status,selectedLanguages:[f.language,...f.additionalLanguages],vehicles,profilePhoto:photoPreview?{name:photoName,dataUrl:photoPreview}:null,address:f.address.trim(),city:f.city.trim(),state:f.state.trim(),district:f.district.trim(),pinCode:f.pin.trim(),bbbtZone:f.zone.trim(),emergencyName:role==='Rider'?f.ec1Name.trim():undefined,emergencyNumber:role==='Rider'?f.ec1Number.trim():undefined,emergencyContacts:role==='Rider'?[{fullName:f.ec1Name.trim(),mobile:f.ec1Number.trim(),relationship:f.ec1Relationship.trim()},{fullName:f.ec2Name.trim(),mobile:f.ec2Number.trim(),relationship:f.ec2Relationship.trim()}]:undefined,bloodGroup:role==='Rider'?f.blood.trim():undefined,bloodReport:role==='Rider'&&bloodReportPreview?{name:bloodReportName,dataUrl:bloodReportPreview,reportDate:f.bloodReportDate,uploadedAt:submittedAt,status:'REPORT UPLOADED'}:null,createdAt:submittedAt}
     sessionStorage.setItem(applicationKey,JSON.stringify({...application,applicationId}))
     sessionStorage.setItem(identityKey,JSON.stringify(identity))
     saveIdentityToRegistry(identity)
@@ -363,6 +367,15 @@ export function UnifiedSignup(){
         <p className="su-note"><strong>REPORT UPLOADED</strong> status will be stored with your profile. Uploading a report does not mean BBBT has medically verified your blood group. Do not treat this as a substitute for hospital blood typing/cross-match.</p>
       </div>}
 
+      {currentStep==='emergencyContacts'&&role==='Rider'&&<div className="su-step">
+        <span className="eyebrow cyan-text">RIDER SAFETY PROFILE</span>
+        <h2>EMERGENCY CONTACTS</h2>
+        <p className="auth-lede">Add trusted contacts who may be reached if you need help during an emergency.</p>
+        <fieldset className="form-section"><legend>EMERGENCY CONTACT 1</legend><div className="form-grid"><label className={errors.ec1Name?'invalid':''}>FULL NAME <span className="field-hint">Required</span><input value={f.ec1Name} onChange={set('ec1Name')} autoComplete="off" />{errors.ec1Name&&<span className="field-error" role="alert">{errors.ec1Name}</span>}</label><label className={errors.ec1Number?'invalid':''}>MOBILE NUMBER <span className="field-hint">Required</span><input value={f.ec1Number} onChange={set('ec1Number')} inputMode="tel" placeholder="+91 mobile number" autoComplete="off" />{errors.ec1Number&&<span className="field-error" role="alert">{errors.ec1Number}</span>}</label></div><label className={errors.ec1Relationship?'invalid':''}>RELATIONSHIP <span className="field-hint">Required</span><input value={f.ec1Relationship} onChange={set('ec1Relationship')} placeholder="Parent, partner, sibling or trusted contact" autoComplete="off" />{errors.ec1Relationship&&<span className="field-error" role="alert">{errors.ec1Relationship}</span>}</label></fieldset>
+        <fieldset className="form-section"><legend>EMERGENCY CONTACT 2</legend><div className="form-grid"><label className={errors.ec2Name?'invalid':''}>FULL NAME <span className="field-hint">Required</span><input value={f.ec2Name} onChange={set('ec2Name')} autoComplete="off" />{errors.ec2Name&&<span className="field-error" role="alert">{errors.ec2Name}</span>}</label><label className={errors.ec2Number?'invalid':''}>MOBILE NUMBER <span className="field-hint">Required</span><input value={f.ec2Number} onChange={set('ec2Number')} inputMode="tel" placeholder="+91 mobile number" autoComplete="off" />{errors.ec2Number&&<span className="field-error" role="alert">{errors.ec2Number}</span>}</label></div><label className={errors.ec2Relationship?'invalid':''}>RELATIONSHIP <span className="field-hint">Required</span><input value={f.ec2Relationship} onChange={set('ec2Relationship')} placeholder="Parent, partner, sibling or trusted contact" autoComplete="off" />{errors.ec2Relationship&&<span className="field-error" role="alert">{errors.ec2Relationship}</span>}</label></fieldset>
+        <p className="su-note"><strong>PRIVATE</strong> Emergency contacts are used for authorized safety and emergency communication purposes.</p>
+      </div>}
+
       {currentStep==='branch'&&<div className="su-step signup-branch-step" data-branch={activeSignupBranch.key}>
         <span className="eyebrow cyan-text">{activeSignupBranch.eyebrow}</span>
         <h2>{activeSignupBranch.title}</h2>
@@ -386,7 +399,7 @@ export function UnifiedSignup(){
           <legend>Choose your BBBT role</legend>
           <div className="role-checks">{roleList.map(r=>
             <label className="role-check" key={r}>
-              <input type="radio" name="role" checked={role===r} onChange={()=>{setRole(r);setStep(roleStepIndex(r));setChecked(false)}}/>
+              <input type="radio" name="role" checked={role===r} onChange={()=>{setRole(r);setStep(roleStepIndex(r));setChecked(false);setErrors({})}}/>
               <span><strong>{r}</strong><small>{descriptions[r]}</small></span>
             </label>)}</div>
         </fieldset>

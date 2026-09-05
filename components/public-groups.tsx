@@ -33,7 +33,7 @@ export function PublicGroupDirectory() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<'newest' | 'members' | 'name'>('newest')
   const [page, setPage] = useState(1)
-  useEffect(() => setGroups(readPublicGroups()), [])
+  useEffect(() => { let active = true; fetch('/api/public/groups').then(response => response.ok ? response.json() : Promise.reject()).then(data => { if (active) setGroups(Array.isArray(data.groups) ? data.groups : readPublicGroups()) }).catch(() => { if (active) setGroups(readPublicGroups()) }); return () => { active = false } }, [])
   const filtered = useMemo(() => sortPublicGroups(groups.filter(group => `${group.name} ${group.description || ''}`.toLowerCase().includes(query.toLowerCase())), sort), [groups, query, sort])
   const visible = filtered.slice(0, page * PAGE_SIZE)
   return <main className="public-group-page"><section className="public-group-hero"><div><p className="section-label">THE BBBT RIDER NETWORK</p><h1>Discover groups built by riders.</h1><p>Discover BBBT Groups created by riders and Group Admins.</p></div><StatusBadge tone="prototype">REAL GROUP DATA</StatusBadge></section><section className="public-group-toolbar" aria-label="Group directory controls"><label><span className="sr-only">Search groups</span><input value={query} onChange={event => { setQuery(event.target.value); setPage(1) }} placeholder="Search group name" /></label><label><span className="sr-only">Sort groups</span><select value={sort} onChange={event => { setSort(event.target.value as typeof sort); setPage(1) }}><option value="newest">Newest</option><option value="members">Most Members</option><option value="name">Name A–Z</option></select></label></section>{visible.length ? <><div className="public-group-grid">{visible.map(group => <GroupCard key={group.identifier} group={group} />)}</div>{visible.length < filtered.length && <button className="button button-outline public-group-load" onClick={() => setPage(value => value + 1)}>Load more groups</button>}</> : <section className="public-group-empty"><Users size={28} aria-hidden="true" /><h2>NO PUBLIC GROUPS YET</h2><p>BBBT Groups will appear here as riders and Group Admins create them.</p></section>}</main>
@@ -42,7 +42,7 @@ export function PublicGroupDirectory() {
 export function PublicGroupDetail({ identifier }: { identifier: string }) {
   const [group, setGroup] = useState<PublicGroup | null>(null)
   const [notice, setNotice] = useState('')
-  useEffect(() => setGroup(findPublicGroup(identifier)), [identifier])
+  useEffect(() => { let active = true; fetch(`/api/public/groups?identifier=${encodeURIComponent(identifier)}`).then(response => response.ok ? response.json() : Promise.reject()).then(data => { if (active) setGroup(data.groups?.[0] || findPublicGroup(identifier)) }).catch(() => { if (active) setGroup(findPublicGroup(identifier)) }); return () => { active = false } }, [identifier])
   const joinGroup = () => {
     if (!group) return
     const identity = (() => { try { return JSON.parse(sessionStorage.getItem(identityKey) || 'null') as PrototypeIdentity | null } catch { return null } })()

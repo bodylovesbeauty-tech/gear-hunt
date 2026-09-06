@@ -329,6 +329,16 @@ body:has(.pitch-room) .global-quick-access { display: none; }
 .pitch-room .pitch-top, .pitch-room .pitch-controls { font-size: .62rem; }.pitch-room .pitch-controls button { width: 2.4rem; height: 2.4rem; }.pitch-room .pitch-controls span { font-size: .62rem; }
 @media (max-width: 760px) { .pitch-room .pitch-canvas { min-height: auto; aspect-ratio: auto; max-height: none; }.pitch-room .pitch-grid { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem 0 1rem; }.pitch-room .pitch-copy h1 { max-width: 13ch; font-size: clamp(2.2rem, 10vw, 3.5rem); }.pitch-room .pitch-copy p { font-size: .92rem; }.pitch-room .pitch-visual { height: 22rem; }.pitch-room .problem-flow strong { min-width: 0; font-size: .65rem; }.pitch-room .pitch-table > div { min-height: 2.25rem; font-size: .64rem; }.pitch-room .pitch-stat span, .pitch-room .gear-growth strong { font-size: clamp(2.2rem, 10vw, 3.6rem); } }
 
+/* ---------- final slide legibility overrides ---------- */
+.pitch-room .pitch-copy h1 { color: var(--investor-ink) !important; font-size: clamp(2.5rem, 4.8vw, 5rem); line-height: 1.02; }
+.pitch-room .pitch-copy p { color: var(--investor-soft) !important; font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.6; }
+.pitch-room .pitch-source { color: var(--investor-mute) !important; font-size: .72rem; line-height: 1.55; }
+.pitch-room .pitch-visual * { text-rendering: optimizeLegibility; }
+.pitch-room .pitch-visual b, .pitch-room .pitch-visual span, .pitch-room .pitch-visual small, .pitch-room .pitch-visual i { line-height: 1.45; }
+.pitch-room .pitch-table > div { font-size: .78rem; }.pitch-room .pitch-table i, .pitch-room .pitch-table b { font-size: .7rem; }.pitch-room .pitch-timeline span { font-size: .95rem; }.pitch-room .pitch-flow b, .pitch-room .pitch-journey b, .pitch-room .pitch-compare > div, .pitch-room .pitch-future b, .pitch-room .pitch-future span { font-size: .72rem; }.pitch-room .pitch-roadmap span, .pitch-room .pitch-allocation span, .pitch-room .pitch-funnel b { font-size: .72rem; }
+.pitch-room .pitch-products small, .pitch-room .tour-pillars b, .pitch-room .pitch-map small, .pitch-room .pitch-map em { font-size: .65rem; }.pitch-room .pitch-overview span { font-size: .78rem; line-height: 1.35; }
+@media (max-width: 760px) { .pitch-room .pitch-copy h1 { font-size: clamp(2.35rem, 11vw, 4rem); }.pitch-room .pitch-copy p { font-size: 1rem; }.pitch-room .pitch-table > div { font-size: .7rem; }.pitch-room .pitch-table i, .pitch-room .pitch-table b { font-size: .64rem; } }
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .pp * { transition: none !important; animation: none !important; }

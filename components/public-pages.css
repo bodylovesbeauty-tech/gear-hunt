@@ -314,6 +314,21 @@ body:has(.pitch-room) .global-quick-access { display: none; }
 .pitch-room .deck-faq { color: var(--investor-ink); border-color: var(--investor-line); }.pitch-room .deck-faq h2, .pitch-room .deck-faq .faq-item button { color: var(--investor-ink); }.pitch-room .deck-faq .faq-item { border-color: var(--investor-line); background: var(--investor-graphite); }.pitch-room .deck-faq .faq-item p { color: var(--investor-soft); }.pitch-room .deck-faq .faq-item button svg { color: var(--investor-red); }
 .pitch-room .pitch-problem { background: var(--investor-graphite); }.pitch-room .pitch-problem img { opacity: .1; filter: saturate(.5) contrast(1.1); }.pitch-room .problem-flow { position: relative; z-index: 2; color: var(--investor-ink); }.pitch-room .problem-flow strong { color: var(--investor-ink); background: rgba(18,24,26,.94); border-color: rgba(244,246,244,.3); text-shadow: 0 1px 8px rgba(0,0,0,.55); }.pitch-room .problem-flow span { color: var(--investor-red); font-weight: 800; }
 
+/* ---------- investor readability pass ---------- */
+.pitch-room .pitch-canvas { min-height: min(760px, calc(100svh - 4rem)); }
+.pitch-room .pitch-grid { grid-template-columns: minmax(22rem, .84fr) minmax(26rem, 1.16fr); gap: clamp(2rem, 5vw, 5rem); }
+.pitch-room .pitch-copy { max-width: 38rem; }
+.pitch-room .pitch-copy h1 { max-width: 11ch; font-size: clamp(3rem, 5.7vw, 6.25rem); line-height: .94; letter-spacing: -.07em; text-wrap: balance; }
+.pitch-room .pitch-copy p { max-width: 48ch; font-size: clamp(1rem, 1.45vw, 1.25rem); line-height: 1.55; text-wrap: pretty; }
+.pitch-room .pitch-source { max-width: 60ch; font-size: .72rem; line-height: 1.55; }
+.pitch-room .pitch-visual { min-height: min(58vh, 34rem); }
+.pitch-room .visual-label, .pitch-room .pitch-stat small, .pitch-room .pitch-stat i, .pitch-room .pitch-chart > small, .pitch-room .pitch-gear > small { font-size: .72rem; letter-spacing: .08em; }
+.pitch-room .pitch-stat span, .pitch-room .gear-growth strong { font-size: clamp(3.2rem, 7vw, 7rem); }
+.pitch-room .problem-flow { gap: 1rem; padding: clamp(2rem, 5vw, 4rem); }.pitch-room .problem-flow strong { min-width: 15rem; padding: .9rem 1rem; font-size: .82rem; letter-spacing: .06em; }.pitch-room .problem-flow span { font-size: 1.25rem; }
+.pitch-room .pitch-table > div { min-height: 2.7rem; padding: .8rem .5rem; font-size: .82rem; }.pitch-room .pitch-table i, .pitch-room .pitch-table b { font-size: .72rem; }.pitch-room .pitch-timeline > div { padding: 1.1rem 0; }.pitch-room .pitch-timeline span { font-size: 1rem; }.pitch-room .pitch-journey b, .pitch-room .pitch-flow b, .pitch-room .pitch-compare > div, .pitch-room .pitch-architecture > b, .pitch-room .pitch-roadmap span, .pitch-room .pitch-allocation b, .pitch-room .pitch-allocation span, .pitch-room .pitch-funnel b, .pitch-room .pitch-future b, .pitch-room .pitch-future span { font-size: .72rem; line-height: 1.45; }
+.pitch-room .pitch-top, .pitch-room .pitch-controls { font-size: .7rem; }.pitch-room .pitch-controls button { width: 2.7rem; height: 2.7rem; }.pitch-room .pitch-controls span { font-size: .7rem; }
+@media (max-width: 760px) { .pitch-room .pitch-canvas { min-height: auto; }.pitch-room .pitch-grid { grid-template-columns: 1fr; gap: 1.5rem; }.pitch-room .pitch-copy h1 { max-width: 13ch; font-size: clamp(2.7rem, 12vw, 4.4rem); }.pitch-room .pitch-copy p { font-size: 1rem; }.pitch-room .pitch-visual { min-height: 23rem; }.pitch-room .problem-flow strong { min-width: 0; font-size: .72rem; }.pitch-room .pitch-table > div { min-height: 2.4rem; font-size: .7rem; }.pitch-room .pitch-stat span, .pitch-room .gear-growth strong { font-size: clamp(2.4rem, 12vw, 4.2rem); } }
+
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .pp * { transition: none !important; animation: none !important; }

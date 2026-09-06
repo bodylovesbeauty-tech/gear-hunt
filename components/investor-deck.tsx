@@ -29,7 +29,7 @@ const slides: Slide[] = [
   { eyebrow: '19 / PROPOSED USE', title: '₹1.50 Cr proposed 24-month allocation.', visual: 'allocation', tag: 'PROPOSED · NOT RAISED' },
   { eyebrow: '20 / OUTPUT', title: 'Capital should buy evidence, not theatre.', visual: 'unlock' },
   { eyebrow: '21 / FUTURE', title: 'Now → next → future.', visual: 'future' },
-  { eyebrow: '22 / CLOSE', title: 'We have not finished the journey. We have built the foundation.', sub: 'Request controlled investor access.', visual: 'close' },
+  { eyebrow: '22 / CLOSE', title: 'We have not finished the journey. We have built the foundation.', sub: 'Join as an investor to continue into the existing signup flow.', visual: 'close' },
 ]
 
 const faq: [string, string][] = [

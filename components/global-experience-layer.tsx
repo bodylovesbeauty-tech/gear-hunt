@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 const quickLinks = [
   ['SOS & Emergency', '/sos'],
-  ['Navigation', '/safety-guides'],
+  ['Navigation', '/corridor'],
   ['Weather', '/safety-guides'],
   ['Blood Mesh', '/safety'],
 ] as const

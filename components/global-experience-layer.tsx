@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 const quickLinks = [
-  ['SOS & Emergency', '/safety'],
+  ['SOS & Emergency', '/sos'],
   ['Navigation', '/safety-guides'],
   ['Weather', '/safety-guides'],
   ['Blood Mesh', '/safety'],

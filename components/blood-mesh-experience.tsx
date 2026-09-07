@@ -1,13 +1,67 @@
 'use client'
 
-import { useState } from 'react'
-import { ArrowRight, CheckCircle2, Heart, MapPin, Radio, ShieldAlert, Users } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ArrowRight, CheckCircle2, Droplet, Heart, MapPin, Phone, Radio, ShieldAlert, ShieldCheck, Users } from 'lucide-react'
 import Link from 'next/link'
+import { BLOOD_COMPATIBILITY, BLOOD_GROUPS, useRiderContext } from '@/lib/use-rider-context'
 import '@/components/blood-mesh-experience.css'
 
+type Donor = { name: string; group: string; km: number; lastDonated: string; consented: boolean }
+
+const DONOR_POOL: Donor[] = [
+  { name: 'Vikas P.', group: 'O-', km: 1.4, lastDonated: '4 months ago', consented: true },
+  { name: 'Sana R.', group: 'O-', km: 3.0, lastDonated: '2 months ago', consented: true },
+  { name: 'Imran S.', group: 'O+', km: 2.1, lastDonated: '6 months ago', consented: true },
+  { name: 'Farhan A.', group: 'O+', km: 4.5, lastDonated: '8 months ago', consented: false },
+  { name: 'Neha K.', group: 'A-', km: 2.8, lastDonated: '5 months ago', consented: true },
+  { name: 'Rahul D.', group: 'A+', km: 3.6, lastDonated: '3 months ago', consented: true },
+  { name: 'Zoya M.', group: 'B-', km: 1.9, lastDonated: '7 months ago', consented: true },
+  { name: 'Aditya V.', group: 'B+', km: 5.2, lastDonated: '9 months ago', consented: true },
+  { name: 'Kabir S.', group: 'AB+', km: 4.1, lastDonated: '2 months ago', consented: true },
+]
+
+type RequestState = 'idle' | 'consent' | 'scanning' | 'sent'
+
 export function BloodMeshExperience() {
+  const rider = useRiderContext()
   const [expanded, setExpanded] = useState<number | null>(null)
-  const bloodGroups = ['O+', 'O−', 'A+', 'A−', 'B+', 'B−', 'AB+', 'AB−']
+  const [need, setNeed] = useState('O+')
+  const [meshConsent, setMeshConsent] = useState(true)
+  const [reqState, setReqState] = useState<RequestState>('idle')
+  const [progress, setProgress] = useState(0)
+
+  // Sync the requested group to the signed-in rider's own blood group once known.
+  const activeNeed = need
+
+  const compatibleGroups = BLOOD_COMPATIBILITY[activeNeed] ?? [activeNeed]
+  const matches = useMemo(
+    () => DONOR_POOL.filter((d) => compatibleGroups.includes(d.group) && d.consented).sort((a, b) => a.km - b.km),
+    [compatibleGroups],
+  )
+
+  const runRequest = () => {
+    if (!meshConsent) {
+      setReqState('consent')
+      return
+    }
+    setReqState('scanning')
+    setProgress(0)
+    const started = Date.now()
+    const id = window.setInterval(() => {
+      const p = Math.min(100, ((Date.now() - started) / 2000) * 100)
+      setProgress(p)
+      if (p >= 100) {
+        window.clearInterval(id)
+        setReqState('sent')
+      }
+    }, 40)
+  }
+
+  const reset = () => {
+    setReqState('idle')
+    setProgress(0)
+  }
+
   const faqItems = [
     ['Is this hospital-grade matching?', 'No. Blood Mesh is a consent-led prototype. Never replace hospital typing with this tool.'],
     ['Are donors or hospitals connected?', 'No. This demo shows a request flow. No actual donor dispatch, hospital partnership or live matching exists.'],
@@ -18,14 +72,134 @@ export function BloodMeshExperience() {
 
   return (
     <main className="bm-page">
-      <header className="bm-hero">
+      {/* Working console */}
+      <section className="bm-console" aria-label="Blood Mesh console">
+        <div className="bm-console__inner">
+          <div className="bm-idbar">
+            <div className="bm-id">
+              <span className="bm-avatar" aria-hidden="true"><Droplet size={18} /></span>
+              <div>
+                <b>{rider.name}</b>
+                <small>{rider.memberId}</small>
+              </div>
+            </div>
+            <div className="bm-pills">
+              <span className="bm-pill bm-pill--blood"><Droplet size={13} /> {rider.blood}</span>
+              <span className={`bm-pill ${rider.kitActive ? 'bm-pill--kit' : 'bm-pill--kit-off'}`}><ShieldCheck size={13} /> {rider.kitActive ? 'Kit Active' : 'Kit Not Active'}</span>
+              <span className="bm-pill"><MapPin size={13} /> {rider.location}</span>
+            </div>
+          </div>
+
+          {!rider.authed && (
+            <div className="bm-banner">
+              <strong>DEMO VIEW</strong>
+              <span>Showing sample rider data. No personal medical data is shared, and no real donors are contacted.</span>
+              <Link href="/login?returnTo=/blood-mesh">Sign in to use your profile <ArrowRight size={13} /></Link>
+            </div>
+          )}
+
+          <div className="bm-console__grid">
+            <div className="bm-console__request">
+              <span className="bm-eyebrow">CRITICAL SUPPORT REQUEST</span>
+              <h2>Find compatible support, fast.</h2>
+              <p className="bm-field-label">Blood group needed</p>
+              <div className="bm-groups">
+                {BLOOD_GROUPS.map((g) => (
+                  <button key={g} type="button" className="bm-group-chip" aria-pressed={activeNeed === g} onClick={() => { setNeed(g); reset() }}>{g}</button>
+                ))}
+              </div>
+
+              <div className="bm-compat">
+                <span className="bm-field-label">Compatible donor groups</span>
+                <div className="bm-compat__chips">
+                  {compatibleGroups.map((g) => <span key={g} className="bm-compat__chip">{g}</span>)}
+                </div>
+                <small>Whole-blood donor compatibility for a {activeNeed} recipient.</small>
+              </div>
+
+              <label className="bm-consent">
+                <input type="checkbox" checked={meshConsent} onChange={(e) => { setMeshConsent(e.target.checked); reset() }} />
+                <span><b>My Blood Mesh participation is enabled.</b> A request is only broadcast to riders who have also consented.</span>
+              </label>
+
+              {reqState === 'idle' && (
+                <button type="button" className="bm-request-btn" onClick={runRequest}>
+                  <Radio size={16} /> Request {activeNeed} support
+                </button>
+              )}
+              {reqState === 'consent' && (
+                <div className="bm-alert" role="status">
+                  Enable Blood Mesh participation above to broadcast a request. Consent is required at every step.
+                  <button type="button" onClick={() => setReqState('idle')}>Dismiss</button>
+                </div>
+              )}
+              {reqState === 'scanning' && (
+                <div className="bm-scan" role="status" aria-live="polite">
+                  <div className="bm-scan__bar"><i style={{ width: `${progress}%` }} /></div>
+                  <span>Scanning {matches.length} consented donors within 6 km…</span>
+                </div>
+              )}
+              {reqState === 'sent' && (
+                <div className="bm-sent" role="status" aria-live="polite">
+                  <CheckCircle2 size={18} />
+                  <div>
+                    <b>Request simulated to {matches.length} compatible riders.</b>
+                    <span>Prototype only — no real donor is contacted and no medical data is shared. In a real emergency, hospital blood typing is always required.</span>
+                  </div>
+                  <button type="button" onClick={reset}>Reset</button>
+                </div>
+              )}
+
+              <div className="bm-console__stats">
+                <div><b>{matches.length}</b><span>Compatible nearby</span></div>
+                <div><b>{compatibleGroups.length}</b><span>Donor groups</span></div>
+                <div><b>6 km</b><span>Search radius</span></div>
+              </div>
+            </div>
+
+            <div className="bm-console__donors">
+              <div className="bm-donors__head">
+                <span className="bm-eyebrow">LIVE MATCH PREVIEW</span>
+                <span className="bm-donors__count">{matches.length} within 6 km</span>
+              </div>
+              {matches.length === 0 && <p className="bm-donors__empty">No consented compatible donors in range for {activeNeed}. Widen the radius or contact the nearest blood bank.</p>}
+              <ul className="bm-donor-list">
+                {matches.map((d) => (
+                  <li key={d.name} className="bm-donor">
+                    <span className="bm-donor__g">{d.group}</span>
+                    <div className="bm-donor__body">
+                      <b>{d.name}</b>
+                      <small>{d.lastDonated}</small>
+                    </div>
+                    <div className="bm-donor__end">
+                      <span className="bm-donor__km">{d.km} km</span>
+                      <span className="bm-donor__badge">Consented</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="bm-carepit">
+                <Phone size={14} />
+                <div>
+                  <b>Nearest blood bank</b>
+                  <span>Lilavati Hospital Blood Bank · 4.1 km · 24/7</span>
+                </div>
+                <a href="tel:18002672288" aria-label="Call nearest blood bank"><Phone size={14} /></a>
+              </div>
+            </div>
+          </div>
+          <p className="bm-console__foot">Blood Mesh sits under SOS. Prototype / safe simulation — no medical verification, donor dispatch or hospital partnership is connected. In a real emergency call 112.</p>
+        </div>
+      </section>
+
+      <header className="bm-hero" id="concept">
         <div className="bm-hero__content">
           <span className="bm-label">BLOOD MESH / CONSENT-LED SUPPORT</span>
           <h1>A concept for critical moments.</h1>
           <p>Blood Mesh explores how riders might understand a blood-support request without exposing private medical information or claiming hospital-grade matching.</p>
           <div className="bm-actions">
             <Link className="bm-button bm-button--primary" href="/signup?role=Rider">JOIN BBBT <ArrowRight size={16} /></Link>
-            <Link className="bm-button" href="#concept">VIEW CONCEPT</Link>
+            <Link className="bm-button" href="/sos">OPEN SOS</Link>
           </div>
         </div>
         <div className="bm-hero__visual">
@@ -71,69 +245,6 @@ export function BloodMeshExperience() {
             <h3>Privacy by design</h3>
             <p>Authorized riders own their data. The public demo shows no names, numbers or locations. Consent controls whether data is shared.</p>
           </article>
-        </div>
-      </section>
-
-      <section className="bm-section" id="concept">
-        <span className="bm-label">INTERACTIVE CONCEPT</span>
-        <h2>See how Blood Mesh handles a request.</h2>
-        <div className="bm-demo">
-          <div className="bm-card">
-            <strong>Blood Groups</strong>
-            <p>Select to see compatibility options:</p>
-            <div className="bm-groups">
-              {bloodGroups.map((bg) => (
-                <button key={bg} className="bm-group-chip" title={`Blood group ${bg}`}>
-                  {bg}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="bm-card bm-card--flow">
-            <strong>Request Flow</strong>
-            <div className="bm-flow-demo">
-              <div className="bm-step">
-                <span className="bm-step-num">1</span>
-                <div>
-                  <b>Incident detected</b>
-                  <span>Rider needs support</span>
-                </div>
-              </div>
-              <div className="bm-arrow">↓</div>
-              <div className="bm-step">
-                <span className="bm-step-num">2</span>
-                <div>
-                  <b>Consent checked</b>
-                  <span>Blood Mesh enabled?</span>
-                </div>
-              </div>
-              <div className="bm-arrow">↓</div>
-              <div className="bm-step">
-                <span className="bm-step-num">3</span>
-                <div>
-                  <b>Nearby check</b>
-                  <span>Compatible riders nearby</span>
-                </div>
-              </div>
-              <div className="bm-arrow">↓</div>
-              <div className="bm-step">
-                <span className="bm-step-num">4</span>
-                <div>
-                  <b>Request sent</b>
-                  <span>To compatible network</span>
-                </div>
-              </div>
-              <div className="bm-arrow">↓</div>
-              <div className="bm-step">
-                <span className="bm-step-num">5</span>
-                <div>
-                  <b>Consent choice</b>
-                  <span>Responders decide</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 

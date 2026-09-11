@@ -1159,14 +1159,6 @@ export function UnifiedSignup() {
       if (new Set(registrations).size !== registrations.length)
         e.vehicleRegistration =
           "This registration number is already used for another vehicle in this application.";
-      if (role === "Rider") {
-        const primary = vehicles[0];
-        if (!primary?.fullBikePhoto)
-          e.fullBikePhoto =
-            "Upload a full vehicle image with the registration plate visible";
-        if (!primary?.meterPhoto)
-          e.meterPhoto = "Upload a meter / instrument console image";
-      }
     }
     if (currentStep === "location") {
       if (!f.baseLocation.trim()) e.baseLocation = "Required";
@@ -1224,10 +1216,6 @@ export function UnifiedSignup() {
       if (!bloodReportPreview) e.bloodReport = "Upload your latest report";
     }
     if (currentStep === "review" && role === "Rider") {
-      if (!vehicles[0]?.fullBikePhoto)
-        e.fullBikePhoto = "Upload the full vehicle image before submitting";
-      if (!vehicles[0]?.meterPhoto)
-        e.meterPhoto = "Upload the meter / console image before submitting";
       if (!f.blood) e.blood = "Select your blood group before submitting";
       if (!bloodReportPreview)
         e.bloodReport = "Upload your latest report before submitting";

@@ -9,20 +9,18 @@ function identityPayload(identity: IdentityPayload) {
   return { id: identity.id, application_id: identity.applicationId || `APP-${identity.id}`, full_name: identity.fullName || identity.id, handle: identity.handle || identity.id, mobile: identity.mobile || `prototype-${identity.id}`, email: identity.email || null, requested_role: identity.requestedRole || 'Rider', status: identity.status || 'Approved', payload: identity }
 }
 
-export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const login = (url.searchParams.get('login') || '').trim()
-  if (!login) return NextResponse.json({ error: 'Missing login' }, { status: 400 })
+export async function GET() {
   const auth = await requireAuthorizedUser()
   if (auth.response) return auth.response
   const supabase = createAdminClient()
-  const normalizedHandle = login.replace(/^@/, '').toLowerCase()
-  const query = login.includes('@')
-    ? supabase.from('bbbt_identities').select('id,application_id,full_name,handle,mobile,email,requested_role,status,payload,created_at').ilike('email', login).maybeSingle()
-    : /^\+?[0-9\s-]+$/.test(login)
-      ? supabase.from('bbbt_identities').select('id,application_id,full_name,handle,mobile,email,requested_role,status,payload,created_at').eq('mobile', login).maybeSingle()
-      : supabase.from('bbbt_identities').select('id,application_id,full_name,handle,mobile,email,requested_role,status,payload,created_at').ilike('handle', normalizedHandle).maybeSingle()
-  const { data, error } = await query
+  const email = auth.user.email?.trim().toLowerCase()
+  const phone = auth.user.phone?.trim()
+  if (!email && !phone) return NextResponse.json({ error: 'Authenticated identity is incomplete' }, { status: 404 })
+
+  const identityQuery = email
+    ? supabase.from('bbbt_identities').select('id,application_id,full_name,handle,mobile,email,requested_role,status,payload,created_at').ilike('email', email).maybeSingle()
+    : supabase.from('bbbt_identities').select('id,application_id,full_name,handle,mobile,email,requested_role,status,payload,created_at').eq('mobile', phone!).maybeSingle()
+  const { data, error } = await identityQuery
   if (error) return NextResponse.json({ error: 'Unable to look up identity' }, { status: 500 })
   if (!data) return NextResponse.json({ error: 'Identity not found' }, { status: 404 })
   return NextResponse.json({ identity: publicIdentity({ id: data.id, application_id: data.application_id, full_name: data.full_name, handle: data.handle, requested_role: data.requested_role, status: data.status }) })

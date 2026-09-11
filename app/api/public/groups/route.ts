@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { actorMatches, publicError, publicGroup, requireAuthorizedUser } from '@/lib/supabase/authorization'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const url = new URL(request.url)
   const identifier = url.searchParams.get('identifier')
-  let query = supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,payload,created_at').eq('status', 'ACTIVE')
+  let query = supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,created_at').eq('status', 'ACTIVE')
   if (identifier) query = query.eq('share_token', identifier)
   const { data, error } = await query.order('created_at', { ascending: false })
   if (error) return publicError(error)

@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.from('bbbt_rides').select('id,group_id,invite_token,creator_id,title,route,date_text,status,created_at').eq('invite_token', id).maybeSingle()
     if (error) return publicError(error)
     if (!data) return NextResponse.json({ error: 'Ride not found' }, { status: 404 })
-    const members = await supabase.from('bbbt_ride_memberships').select('id,user_id,status,joined_at,source_referral_id').eq('ride_id', data.id)
+    const members = await supabase.from('bbbt_ride_memberships').select('id,user_id,joined_at,source_referral_id').eq('ride_id', data.id)
     return NextResponse.json({ ride: publicNetworkRow(data), memberships: (members.data || []).map(publicMembership) })
   }
   return NextResponse.json({ error: 'Invalid network request' }, { status: 400 })

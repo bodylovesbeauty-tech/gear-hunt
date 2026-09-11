@@ -1167,8 +1167,8 @@ export function UnifiedSignup() {
       if (f.pin.trim() && !/^[0-9]{6}$/.test(f.pin.trim()))
         e.pin = "Invalid PIN";
     }
-    if (currentStep === "blood" && role === "Rider" && !f.blood)
-      e.blood = "Select your blood group";
+    // Blood group is optional during initial signup. Profile completion and
+    // Safety Kit activation enforce it after the account is created.
     if (currentStep === "emergencyContacts" && role === "Rider") {
       const contacts = [
         {
@@ -1203,7 +1203,7 @@ export function UnifiedSignup() {
       !/^\d+$/.test(f.otherSafetyAmount.trim())
     )
       e.otherSafetyAmount = "Enter a numeric amount";
-    if (currentStep === "bloodReport" && role === "Rider") {
+    if (currentStep === "bloodReport" && role === "Rider" && bloodReportPreview) {
       if (!f.bloodReportDate) e.bloodReportDate = "Report date is required";
       else {
         const reportDate = new Date(`${f.bloodReportDate}T00:00:00`);
@@ -1215,13 +1215,9 @@ export function UnifiedSignup() {
         else if (reportDate < oldest)
           e.bloodReportDate = "Report must be from within the last 1 month";
       }
-      if (!bloodReportPreview) e.bloodReport = "Upload your latest report";
     }
     if (currentStep === "review" && role === "Rider") {
-      if (!f.blood) e.blood = "Select your blood group before submitting";
-      if (!bloodReportPreview)
-        e.bloodReport = "Upload your latest report before submitting";
-      if (!f.bloodReportDate)
+      if (bloodReportPreview && !f.bloodReportDate)
         e.bloodReportDate = "Report date is required before submitting";
       if (!f.ec1Name.trim()) e.ec1Name = "Full name is required";
       if (!f.ec1Number.trim()) e.ec1Number = "Mobile number is required";
@@ -2212,7 +2208,7 @@ export function UnifiedSignup() {
               emergency support information.
             </p>
             <label className={errors.blood ? "invalid" : ""}>
-              BLOOD GROUP <span className="field-hint">Required</span>
+              BLOOD GROUP <span className="field-hint">Optional</span>
               <select
                 value={f.blood}
                 onChange={set("blood")}
@@ -2251,7 +2247,7 @@ export function UnifiedSignup() {
               month.
             </p>
             <label className={errors.bloodReportDate ? "invalid" : ""}>
-              REPORT DATE <span className="field-hint">Required</span>
+              REPORT DATE <span className="field-hint">Optional</span>
               <input
                 type="date"
                 value={f.bloodReportDate}
@@ -2268,7 +2264,7 @@ export function UnifiedSignup() {
             <label className={errors.bloodReport ? "invalid" : ""}>
               UPLOAD REPORT{" "}
               <span className="field-hint">
-                Required · PDF, JPG, JPEG or PNG · Max 5 MB
+                Optional · PDF, JPG, JPEG or PNG · Max 5 MB
               </span>
               <input
                 type="file"

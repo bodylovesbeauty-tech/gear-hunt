@@ -864,6 +864,7 @@ function SafetyKitModule({
     },
   );
   const [review, setReview] = useState(false);
+  const [activationError, setActivationError] = useState("");
   const [chooser, setChooser] = useState(false);
   const [sos, setSos] = useState(false);
   const [locationGranted, setLocationGranted] = useState(false);
@@ -889,8 +890,16 @@ function SafetyKitModule({
     setKit(next);
     onSave(next);
   };
-  const activate = () =>
+  const activate = () => {
+    if (!identity?.bloodGroup || !identity.bloodReport?.reportDate) {
+      setActivationError(
+        "Add your blood group and a valid latest blood report before activating the Safety Kit.",
+      );
+      return;
+    }
+    setActivationError("");
     update({ ...kit, status: "ACTIVE", activatedAt: new Date().toISOString() });
+  };
   return (
     <section className="safety-kit-module">
       <div className="safety-kit-heading">
@@ -1011,6 +1020,7 @@ function SafetyKitModule({
           </button>
         </div>
       )}
+      {activationError && <p className="profile-note">{activationError}</p>}
       {review ? (
         <div className="kit-review">
           <strong>SAFETY KIT ACTIVATION REVIEW</strong>
@@ -1192,6 +1202,9 @@ function ProfileModule({
   const [bloodReport, setBloodReport] = useState<{
     name: string;
     dataUrl: string;
+    reportDate: string;
+    uploadedAt: string;
+    status: "REPORT UPLOADED";
   } | null>(null);
   const [safetyKit, setSafetyKit] = useState<PrototypeIdentity["safetyKit"]>();
   const [saved, setSaved] = useState(false);
@@ -1232,20 +1245,32 @@ function ProfileModule({
     city,
     pinCode,
     bloodGroup,
+    bloodReport,
+    bloodReport?.reportDate,
+    profilePhoto,
     emergencyName,
     emergencyNumber,
   ].filter(Boolean).length;
   const vehicleComplete = vehicles.filter(
-    (v) => v.make && v.model && v.modelYear && v.currentKm && v.registration,
+    (v) =>
+      v.make &&
+      v.model &&
+      v.modelYear &&
+      v.currentKm &&
+      v.registration &&
+      v.fullBikePhoto &&
+      v.meterPhoto,
   ).length;
   const completion = Math.round(
-    (required / 10) * 75 +
-      (vehicles.length ? (vehicleComplete / vehicles.length) * 25 : 25),
+    (required / 13) * 75 +
+      (vehicles.length ? (vehicleComplete / vehicles.length) * 25 : 0),
   );
   const verified =
     completion === 100 &&
     Boolean(
       bloodGroup &&
+        bloodReport?.reportDate &&
+        profilePhoto &&
         emergencyName &&
         emergencyNumber &&
         vehicles.some(
@@ -1255,7 +1280,8 @@ function ProfileModule({
             v.modelYear &&
             v.currentKm &&
             v.registration &&
-            v.fullBikePhoto,
+            v.fullBikePhoto &&
+            v.meterPhoto,
         ),
     );
   const fileToData = (file: File | null, kind: "photo" | "report") => {
@@ -1269,7 +1295,13 @@ function ProfileModule({
     reader.onload = () =>
       kind === "photo"
         ? setProfilePhoto({ name: file.name, dataUrl: String(reader.result) })
-        : setBloodReport({ name: file.name, dataUrl: String(reader.result) });
+        : setBloodReport({
+            name: file.name,
+            dataUrl: String(reader.result),
+            reportDate: bloodReport?.reportDate || "",
+            uploadedAt: new Date().toISOString(),
+            status: "REPORT UPLOADED",
+          });
     reader.readAsDataURL(file);
   };
   const normReg = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");

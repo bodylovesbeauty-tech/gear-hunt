@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 export type AuthorizedUser = {
   id: string
   email?: string | null
+  phone?: string | null
   isAdmin: boolean
 }
 
@@ -14,6 +15,7 @@ export async function getAuthorizedUser(): Promise<AuthorizedUser | null> {
   return {
     id: user.id,
     email: user.email,
+    phone: user.phone,
     isAdmin: user.app_metadata?.role === 'admin' || user.app_metadata?.is_admin === true,
   }
 }

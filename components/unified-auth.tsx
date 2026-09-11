@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isEmailIdentifier, normalizeIndianPhone } from "@/lib/phone";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import {
   applicationKey,
@@ -132,27 +133,31 @@ export function UniversalLogin() {
       );
   }, []);
   const submit = async () => {
-    const email = loginId.trim();
-    if (!email || !email.includes("@")) {
-      setLoginError("Sign in with your email or mobile number.");
-      return;
-    }
-    if (!loginPwd) {
+  const identifier = loginId.trim();
+  const email = isEmailIdentifier(identifier) ? identifier.toLowerCase() : null;
+  const phone = email ? null : normalizeIndianPhone(identifier);
+  if (!email && !phone) {
+  setLoginError("Enter a valid email or Indian mobile number.");
+  return;
+  }
+  if (!loginPwd) {
       setLoginError("Enter your password.");
       return;
     }
     setLoginError("");
     setBusy(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password: loginPwd });
-    if (error) {
+  const { error } = await supabase.auth.signInWithPassword(
+    email ? { email, password: loginPwd } : { phone: phone!, password: loginPwd },
+  );
+  if (error) {
       setBusy(false);
       const message = error.message.toLowerCase();
       setLoginError(message.includes("confirm") ? "Confirm your email before signing in." : message.includes("rate") ? "Too many attempts. Please try again later." : "Invalid email or password.");
       return;
     }
     try {
-      const identityResponse = await fetch(`/api/identity?login=${encodeURIComponent(email)}`);
+      const identityResponse = await fetch("/api/identity");
       if (identityResponse.ok) {
         const { identity } = await identityResponse.json();
         const approved = identity.status === "Approved";
@@ -1111,7 +1116,7 @@ export function UnifiedSignup() {
       password: f.password,
       options: {
         emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
-        data: { full_name: f.fullName.trim(), requested_role: role, handle: f.handle.trim() },
+        data: { full_name: f.fullName.trim(), requested_role: role, handle: f.handle.trim(), mobile: normalizeIndianPhone(f.mobile) },
       },
     });
     if (authError) {
@@ -1167,8 +1172,8 @@ export function UnifiedSignup() {
       applicationId,
       fullName: f.fullName.trim(),
       handle: f.handle.trim(),
-      mobile: f.mobile.trim(),
-      email: f.email.trim(),
+  mobile: normalizeIndianPhone(f.mobile) || f.mobile.trim(),
+  email: f.email.trim(),
       requestedRole: role,
       status,
       selectedLanguages: [f.language, ...f.additionalLanguages],

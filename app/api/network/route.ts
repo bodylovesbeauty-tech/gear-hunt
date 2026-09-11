@@ -14,17 +14,40 @@ export async function GET(request: Request) {
   const id = url.searchParams.get('id')
   const supabase = createAdminClient()
   if (type === 'GROUP' && id) {
-    const { data, error } = await supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,created_at').or(`id.eq.${id},share_token.eq.${id}`).eq('status', 'ACTIVE').maybeSingle()
+    const { data, error } = await supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,admin_id,created_at').or(`id.eq.${id},share_token.eq.${id}`).eq('status', 'ACTIVE').maybeSingle()
     if (error) return publicError(error)
     if (!data) return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+
+    const { data: membership, error: membershipError } = await supabase
+      .from('bbbt_group_memberships')
+      .select('id')
+      .eq('group_id', data.id)
+      .eq('user_id', auth.user.id)
+      .eq('status', 'ACTIVE')
+      .maybeSingle()
+    if (membershipError) return publicError(membershipError)
+    if (data.admin_id !== auth.user.id && !membership) return NextResponse.json({ error: 'Group access denied' }, { status: 403 })
+
     const members = await supabase.from('bbbt_group_memberships').select('id,user_id,role,status,joined_at,source_referral_id').eq('group_id', data.id).eq('status', 'ACTIVE')
+    if (members.error) return publicError(members.error)
     return NextResponse.json({ group: publicNetworkRow(data), memberships: (members.data || []).map(publicMembership) })
   }
   if (type === 'RIDE' && id) {
     const { data, error } = await supabase.from('bbbt_rides').select('id,group_id,invite_token,creator_id,title,route,date_text,status,created_at').eq('invite_token', id).maybeSingle()
     if (error) return publicError(error)
     if (!data) return NextResponse.json({ error: 'Ride not found' }, { status: 404 })
+
+    const [{ data: rideMembership, error: rideMembershipError }, { data: groupMembership, error: groupMembershipError }] = await Promise.all([
+      supabase.from('bbbt_ride_memberships').select('id').eq('ride_id', data.id).eq('user_id', auth.user.id).maybeSingle(),
+      data.group_id
+        ? supabase.from('bbbt_group_memberships').select('id').eq('group_id', data.group_id).eq('user_id', auth.user.id).eq('status', 'ACTIVE').maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ])
+    if (rideMembershipError || groupMembershipError) return publicError(rideMembershipError || groupMembershipError)
+    if (data.creator_id !== auth.user.id && !rideMembership && !groupMembership) return NextResponse.json({ error: 'Ride access denied' }, { status: 403 })
+
     const members = await supabase.from('bbbt_ride_memberships').select('id,user_id,joined_at,source_referral_id').eq('ride_id', data.id)
+    if (members.error) return publicError(members.error)
     return NextResponse.json({ ride: publicNetworkRow(data), memberships: (members.data || []).map(publicMembership) })
   }
   return NextResponse.json({ error: 'Invalid network request' }, { status: 400 })

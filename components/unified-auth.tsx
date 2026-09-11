@@ -467,33 +467,6 @@ export function UnifiedSignup() {
   const [showResp, setShowResp] = useState(false);
   const [step, setStep] = useState(0);
   const currentStep = signupStepKeys[step];
-  const roleStepIndex = (selectedRole: Role) => {
-    const keys = [
-      "identity",
-      ...(showVehicleStep(selectedRole) ? ["vehicle"] : []),
-      "location",
-      ...(showVehicleStep(selectedRole)
-        ? [
-            "blood",
-            "bloodReport",
-            "emergencyContacts",
-            "responsibilities",
-            "safetySpending",
-          ]
-        : []),
-      ...(selectedRole === "Rider" ? [] : ["branch"]),
-      ...(selectedRole === "Investor" ||
-      selectedRole === "Rider" ||
-      selectedRole === "Group Marshal" ||
-      selectedRole === "Independent Marshal" ||
-      selectedRole === "Founding Rider Council Member"
-        ? []
-        : ["safety"]),
-      "role",
-      "review",
-    ];
-    return keys.indexOf(selectedRole === "Rider" ? "safetySpending" : "role");
-  };
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pinStatus, setPinStatus] = useState("");
   const [photoPreview, setPhotoPreview] = useState("");
@@ -2513,33 +2486,9 @@ export function UnifiedSignup() {
 
         {currentStep === "role" && (
           <div className="su-step">
-            <fieldset className="role-fieldset">
-              <legend>Choose your BBBT role</legend>
-              <div className="role-checks">
-                {roleList.map((r) => (
-                  <label className="role-check" key={r}>
-                    <input
-                      type="radio"
-                      name="role"
-                      checked={role === r}
-                      onChange={() => {
-                        setRole(r);
-                        setStep(roleStepIndex(r));
-                        setChecked(false);
-                        setErrors({});
-                      }}
-                    />
-                    <span>
-                      <strong>{r}</strong>
-                      <small>{descriptions[r]}</small>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
             <p className="auth-lede" style={{ marginTop: 0 }}>
-              Role selection is a request. It does not automatically grant
-              approval.
+              Your selected role is already recorded from the beginning of signup.
+              The fields below collect only the additional information for that role.
             </p>
 
             {role === "Marshal" && (

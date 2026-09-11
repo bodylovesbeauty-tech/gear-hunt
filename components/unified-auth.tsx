@@ -1152,6 +1152,8 @@ export function UnifiedSignup() {
       if (availability.mobile === "Already in use ✕")
         e.mobile = "This mobile number is already registered";
     }
+    // Vehicle details and photos are optional during signup. If a rider supplies
+    // them, still validate duplicate registration numbers before continuing.
     if (currentStep === "vehicle" && showVehicleStep(role)) {
       const registrations = vehicles
         .map((v) => normalizeRegistration(v.registration))
@@ -2149,7 +2151,7 @@ export function UnifiedSignup() {
                 </div>
                 <div className="vehicle-photos">
                   <VehiclePhoto
-                    label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Required)"
+                    label="PHOTO 1 — FULL BIKE + REGISTRATION NUMBER VISIBLE (Optional)"
                     helper="For vehicle identity/reference."
                     photo={vehicle.fullBikePhoto}
                     error={photoErrors[`${vehicle.id}-fullBikePhoto`]}
@@ -2162,7 +2164,7 @@ export function UnifiedSignup() {
                     inputId={`${vehicle.id}-full`}
                   />
                   <VehiclePhoto
-                    label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Required)"
+                    label="PHOTO 2 — METER / CONSOLE + KM READING VISIBLE (Optional)"
                     helper="For current odometer/KM reference."
                     photo={vehicle.meterPhoto}
                     error={photoErrors[`${vehicle.id}-meterPhoto`]}

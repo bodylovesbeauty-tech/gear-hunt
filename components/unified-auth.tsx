@@ -107,7 +107,7 @@ function AuthFrame({
           </p>
           <div className="auth-visual-meta">
             <ShieldCheck aria-hidden="true" />
-            <span>Prototype systems are clearly labelled before launch.</span>
+            <span>Secure account access for approved BBBT roles.</span>
           </div>
         </div>
       </aside>
@@ -117,74 +117,8 @@ function AuthFrame({
     </main>
   );
 }
-function StatePage({ status, role }: { status: Status; role: Role }) {
-  const copy = {
-    Approved: ["Application Approved", "Your BBBT application is approved."],
-    Pending: [
-      "Application Under Review",
-      "Your application is with the BBBT review team. We will share the next step after verification.",
-    ],
-    Rejected: [
-      "Application Not Approved",
-      "Your current application was not approved. You may contact BBBT support if you believe this needs review.",
-    ],
-    Suspended: [
-      "Account Suspended",
-      "Access is paused while BBBT reviews the account. Contact support for the next step.",
-    ],
-  }[status] || ["", ""];
-  let identity: PrototypeIdentity | null = null;
-  try {
-    identity = JSON.parse(sessionStorage.getItem(identityKey) || "null");
-  } catch {}
-  return (
-    <AuthFrame eyebrow={`APPLICATION STATUS / ${status.toUpperCase()}`}>
-      <span
-        className={`eyebrow ${status === "Pending" ? "orange-text" : "red-text"}`}
-      >
-        {status === "Pending" ? "REVIEW IN PROGRESS" : "ACCESS STATUS"}
-      </span>
-      <h1>{copy[0]}</h1>
-      <p className="auth-lede">
-        {status === "Pending"
-          ? "This is a prototype review state. Approval shown here is simulated and does not represent production approval."
-          : copy[1]}
-      </p>
-      <div className="status-detail">
-        {identity && (
-          <>
-            <span>Application ID</span>
-            <strong>{identity.applicationId}</strong>
-            <span>Submitted</span>
-            <strong>{new Date(identity.createdAt).toLocaleString()}</strong>
-          </>
-        )}
-        <span>Role applied for</span>
-        <strong>{role}</strong>
-        <span>Application status</span>
-        <strong>
-          {status}
-          {status === "Pending" && " / Prototype"}
-        </strong>
-      </div>
-      {status === "Pending" && (
-        <p className="su-help">
-          Need help with this prototype application?{" "}
-          <a href="mailto:connect@bbbt.in">connect@bbbt.in</a>
-        </p>
-      )}
-      <Link className="btn btn-cyan" href="/login">
-        BACK TO LOGIN <ArrowRight size={16} />
-      </Link>
-    </AuthFrame>
-  );
-}
 export function UniversalLogin() {
   const [busy, setBusy] = useState(false);
-  const [state, setState] = useState<{ status: Status; role: Role } | null>(
-    null,
-  );
-  const [prototype, setPrototype] = useState<PrototypeIdentity | null>(null);
   const [loginId, setLoginId] = useState("");
   const [loginPwd, setLoginPwd] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -196,18 +130,11 @@ export function UniversalLogin() {
         returnContextKey,
         JSON.stringify({ path: returnTo, createdAt: new Date().toISOString() }),
       );
-    const status = p.get("status") as Status | null;
-    const role = p.get("role") as Role | null;
-    if (status && role) setState({ status, role });
-    try {
-      setPrototype(JSON.parse(sessionStorage.getItem(identityKey) || "null"));
-    } catch {}
   }, []);
-  if (state) return <StatePage {...state} />;
   const submit = async () => {
     const email = loginId.trim();
     if (!email || !email.includes("@")) {
-      setLoginError("Sign in with the email address on your BBBT account.");
+      setLoginError("Sign in with your email or mobile number.");
       return;
     }
     if (!loginPwd) {
@@ -257,54 +184,8 @@ export function UniversalLogin() {
       window.location.assign("/dashboard/soscore");
     }
   };
-  const review = () => {
-    setLoginError("Prototype review controls cannot approve or authenticate an account.");
-  };
   return (
     <AuthFrame>
-      {prototype && (
-        <section className="prototype-review">
-          <span className="eyebrow orange-text">APPLICATION STATUS</span>
-          <p>
-            Your application status is shown below. Account access is controlled by BBBT approval and Supabase authentication.
-          </p>
-          <div className="status-detail">
-            <span>Application ID</span>
-            <strong>{prototype.applicationId}</strong>
-            <span>Applicant Name</span>
-            <strong>{prototype.fullName}</strong>
-            <span>Requested Role</span>
-            <strong>{prototype.requestedRole}</strong>
-            <span>Submitted</span>
-            <strong>{new Date(prototype.createdAt).toLocaleString()}</strong>
-            <span>Current Status</span>
-            <strong>{prototype.status}</strong>
-          </div>
-          <div>
-            <button
-              type="button"
-              className="btn btn-cyan"
-              onClick={() => review()}
-            >
-              APPROVE
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => review()}
-            >
-              REJECT
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => review()}
-            >
-              SUSPEND
-            </button>
-          </div>
-        </section>
-      )}
       <Link className="auth-brand mobile-brand" href="/">
         <img src="/bbbt-logo-red.png" alt="BBBT" />
       </Link>
@@ -343,7 +224,7 @@ export function UniversalLogin() {
             type="password"
             value={loginPwd}
             onChange={(e) => setLoginPwd(e.target.value)}
-            placeholder="Enter prototype password"
+            placeholder="Enter your password"
           />
         </label>
         {loginError && (
@@ -357,68 +238,8 @@ export function UniversalLogin() {
       </form>
       <div className="auth-links">
         <Link href="/signup">Create a BBBT account</Link>
-        <span>Prototype recovery flow</span>
+        <span>Account recovery</span>
       </div>
-      {prototype && (
-        <section className="prototype-application">
-          <span className="eyebrow orange-text">
-            YOUR PROTOTYPE APPLICATION
-          </span>
-          <p>
-            <b>Name:</b> {prototype.fullName}
-          </p>
-          <p>
-            <b>Role:</b> {prototype.requestedRole}
-          </p>
-          <p>
-            <b>Status:</b> {prototype.status.toUpperCase()}
-          </p>
-          <p className="su-help">Application ID: {prototype.applicationId}</p>
-          <button
-            className="btn btn-outline"
-            type="button"
-            onClick={() => {
-              setBusy(true);
-              window.location.assign(
-                `/login?status=${prototype.status}&role=${encodeURIComponent(prototype.requestedRole)}`,
-              );
-            }}
-          >
-            CONTINUE <ArrowRight size={16} />
-          </button>
-        </section>
-      )}
-      {prototype && (
-        <section className="prototype-review">
-          <span className="eyebrow orange-text">PROTOTYPE REVIEW CONTROLS</span>
-          <p>
-            DEMO / PROTOTYPE — changes apply only to this stored application.
-          </p>
-          <div>
-            <button
-              type="button"
-              className="btn btn-cyan"
-              onClick={() => review()}
-            >
-              APPROVE
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => review()}
-            >
-              REJECT
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => review()}
-            >
-              SUSPEND
-            </button>
-          </div>
-        </section>
-      )}
     </AuthFrame>
   );
 }

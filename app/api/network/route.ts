@@ -7,22 +7,47 @@ function token(prefix: string) {
 }
 
 export async function GET(request: Request) {
+  const auth = await requireAuthorizedUser()
+  if (auth.response) return auth.response
   const url = new URL(request.url)
   const type = url.searchParams.get('type')
   const id = url.searchParams.get('id')
   const supabase = createAdminClient()
   if (type === 'GROUP' && id) {
-    const { data, error } = await supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,created_at').or(`id.eq.${id},share_token.eq.${id}`).eq('status', 'ACTIVE').maybeSingle()
+    const { data, error } = await supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,admin_id,created_at').or(`id.eq.${id},share_token.eq.${id}`).eq('status', 'ACTIVE').maybeSingle()
     if (error) return publicError(error)
     if (!data) return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+
+    const { data: membership, error: membershipError } = await supabase
+      .from('bbbt_group_memberships')
+      .select('id')
+      .eq('group_id', data.id)
+      .eq('user_id', auth.user.id)
+      .eq('status', 'ACTIVE')
+      .maybeSingle()
+    if (membershipError) return publicError(membershipError)
+    if (data.admin_id !== auth.user.id && !membership) return NextResponse.json({ error: 'Group access denied' }, { status: 403 })
+
     const members = await supabase.from('bbbt_group_memberships').select('id,user_id,role,status,joined_at,source_referral_id').eq('group_id', data.id).eq('status', 'ACTIVE')
+    if (members.error) return publicError(members.error)
     return NextResponse.json({ group: publicNetworkRow(data), memberships: (members.data || []).map(publicMembership) })
   }
   if (type === 'RIDE' && id) {
     const { data, error } = await supabase.from('bbbt_rides').select('id,group_id,invite_token,creator_id,title,route,date_text,status,created_at').eq('invite_token', id).maybeSingle()
     if (error) return publicError(error)
     if (!data) return NextResponse.json({ error: 'Ride not found' }, { status: 404 })
-    const members = await supabase.from('bbbt_ride_memberships').select('id,user_id,status,joined_at,source_referral_id').eq('ride_id', data.id)
+
+    const [{ data: rideMembership, error: rideMembershipError }, { data: groupMembership, error: groupMembershipError }] = await Promise.all([
+      supabase.from('bbbt_ride_memberships').select('id').eq('ride_id', data.id).eq('user_id', auth.user.id).maybeSingle(),
+      data.group_id
+        ? supabase.from('bbbt_group_memberships').select('id').eq('group_id', data.group_id).eq('user_id', auth.user.id).eq('status', 'ACTIVE').maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+    ])
+    if (rideMembershipError || groupMembershipError) return publicError(rideMembershipError || groupMembershipError)
+    if (data.creator_id !== auth.user.id && !rideMembership && !groupMembership) return NextResponse.json({ error: 'Ride access denied' }, { status: 403 })
+
+    const members = await supabase.from('bbbt_ride_memberships').select('id,user_id,joined_at,source_referral_id').eq('ride_id', data.id)
+    if (members.error) return publicError(members.error)
     return NextResponse.json({ ride: publicNetworkRow(data), memberships: (members.data || []).map(publicMembership) })
   }
   return NextResponse.json({ error: 'Invalid network request' }, { status: 400 })
@@ -59,6 +84,9 @@ export async function POST(request: Request) {
       const { ride, identity } = body
       if (!ride?.id || !ride?.inviteToken || !ride?.title || !identity?.id) return NextResponse.json({ error: 'Invalid ride payload' }, { status: 400 })
       if (!actorMatches(auth.user, identity.id)) return NextResponse.json({ error: 'Ride ownership mismatch' }, { status: 403 })
+      const { data: existingRide, error: existingRideError } = await supabase.from('bbbt_rides').select('id,creator_id').eq('id', ride.id).maybeSingle()
+      if (existingRideError) throw existingRideError
+      if (existingRide && existingRide.creator_id !== auth.user.id) return NextResponse.json({ error: 'Ride ownership mismatch' }, { status: 403 })
       await supabase.from('bbbt_identities').upsert({ id: identity.id, application_id: identity.applicationId || `APP-${identity.id}`, full_name: identity.fullName || identity.id, handle: identity.handle || identity.id, mobile: identity.mobile || `prototype-${identity.id}`, email: identity.email || null, requested_role: identity.requestedRole || 'Rider', payload: identity }, { onConflict: 'id' })
       const { data, error } = await supabase.from('bbbt_rides').upsert({ id: ride.id, group_id: ride.groupId || null, invite_token: ride.inviteToken, creator_id: identity.id, title: ride.title, route: ride.route, date_text: ride.date, status: ride.status || 'CREATED', payload: ride }, { onConflict: 'id' }).select('id,invite_token').single()
       if (error) throw error

@@ -47,7 +47,11 @@ export function publicIdentity(identity: Record<string, unknown>) {
   }
 }
 
-export function publicGroup(row: Record<string, any>, memberCount = 0) {
+type NetworkRow = { id?: string; share_token?: string | null; name?: string | null; created_at?: string | null; payload?: { image?: string; location?: string } | null; description?: string | null; title?: string | null; invite_token?: string | null; route?: string | null; date_text?: string | null; group_id?: string | null; creator_id?: string | null; status?: string | null }
+
+type GroupRow = Omit<NetworkRow, 'payload'> & { group_size?: string | null; group_handle?: string | null; payload?: { image?: string; location?: string } | null }
+
+export function publicGroup(row: GroupRow, memberCount = 0) {
   return {
     targetId: row.id,
     identifier: row.share_token,
@@ -61,7 +65,7 @@ export function publicGroup(row: Record<string, any>, memberCount = 0) {
   }
 }
 
-export function publicMembership(row: Record<string, unknown>) {
+export function publicMembership(row: { id?: string; group_id?: string | null; ride_id?: string | null; role?: string | null; status?: string | null; joined_at?: string | null }) {
   return {
     id: row.id,
     group_id: row.group_id,
@@ -72,7 +76,7 @@ export function publicMembership(row: Record<string, unknown>) {
   }
 }
 
-export function publicNetworkRow(row: Record<string, unknown>) {
+export function publicNetworkRow(row: NetworkRow) {
   return {
     id: row.id,
     name: row.name,
@@ -89,7 +93,7 @@ export function publicNetworkRow(row: Record<string, unknown>) {
   }
 }
 
-export function publicReferral(row: Record<string, unknown>) {
+export function publicReferral(row: { id?: string; public_token?: string; target_type?: string; target_id?: string | null; status?: string | null; created_at?: string | null }) {
   return {
     id: row.id,
     public_token: row.public_token,

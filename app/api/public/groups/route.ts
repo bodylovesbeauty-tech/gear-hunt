@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { actorMatches, publicError, publicGroup, requireAuthorizedUser } from '@/lib/supabase/authorization'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const url = new URL(request.url)
   const identifier = url.searchParams.get('identifier')
-  let query = supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,payload,created_at').eq('status', 'ACTIVE')
+  let query = supabase.from('bbbt_groups').select('id,name,share_token,description,group_size,group_handle,status,created_at').eq('status', 'ACTIVE')
   if (identifier) query = query.eq('share_token', identifier)
   const { data, error } = await query.order('created_at', { ascending: false })
   if (error) return publicError(error)
@@ -28,6 +27,9 @@ export async function POST(request: Request) {
     if (auth.response) return auth.response
     if (!actorMatches(auth.user, identity.id)) return NextResponse.json({ error: 'Group ownership mismatch' }, { status: 403 })
     const supabase = createAdminClient()
+    const { data: existingGroup, error: existingGroupError } = await supabase.from('bbbt_groups').select('id,admin_id').eq('id', group.id).maybeSingle()
+    if (existingGroupError) throw existingGroupError
+    if (existingGroup && existingGroup.admin_id !== auth.user.id) return NextResponse.json({ error: 'Group ownership mismatch' }, { status: 403 })
     const { error: identityError } = await supabase.from('bbbt_identities').upsert({ id: identity.id, application_id: identity.applicationId || `APP-${identity.id}`, full_name: identity.fullName || 'Rider', handle: identity.handle || identity.id, mobile: identity.mobile || `verified-${identity.id}`, email: identity.email || auth.user.email || null, requested_role: identity.requestedRole || 'Rider', payload: identity }, { onConflict: 'id' })
     if (identityError) throw identityError
     const { error: groupError } = await supabase.from('bbbt_groups').upsert({ id: group.id, name: group.name, share_token: group.shareToken, admin_id: identity.id, description: group.description || null, group_size: group.groupSize || null, group_handle: group.groupHandle || null, payload: group }, { onConflict: 'id' })

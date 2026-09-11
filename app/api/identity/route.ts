@@ -2,14 +2,19 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { actorMatches, publicIdentity, publicError, requireAuthorizedUser } from '@/lib/supabase/authorization'
 
-function identityPayload(identity: any) {
-  return { id: identity.id, application_id: identity.applicationId || `APP-${identity.id}`, full_name: identity.fullName, handle: identity.handle, mobile: identity.mobile, email: identity.email || null, requested_role: identity.requestedRole, status: identity.status || 'Approved', payload: identity }
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+type IdentityPayload = { id: string; applicationId?: string; fullName?: string; handle?: string; mobile?: string; email?: string | null; requestedRole?: string; status?: string; [key: string]: JsonValue | undefined }
+
+function identityPayload(identity: IdentityPayload) {
+  return { id: identity.id, application_id: identity.applicationId || `APP-${identity.id}`, full_name: identity.fullName || identity.id, handle: identity.handle || identity.id, mobile: identity.mobile || `prototype-${identity.id}`, email: identity.email || null, requested_role: identity.requestedRole || 'Rider', status: identity.status || 'Approved', payload: identity }
 }
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const login = (url.searchParams.get('login') || '').trim()
   if (!login) return NextResponse.json({ error: 'Missing login' }, { status: 400 })
+  const auth = await requireAuthorizedUser()
+  if (auth.response) return auth.response
   const supabase = createAdminClient()
   const normalizedHandle = login.replace(/^@/, '').toLowerCase()
   const query = login.includes('@')

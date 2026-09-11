@@ -15,6 +15,7 @@ import { OpenRides } from "@/components/open-rides";
 import { FRCDashboardShell } from "@/components/frc-dashboard-shell";
 import { ExaminationEngine } from "@/components/examination-engine";
 import { RiderContextPanel } from "@/components/rider-context-panel";
+import { createClient } from "@/lib/supabase/client";
 import {
   applicationKey,
   dashboardFor,
@@ -89,7 +90,7 @@ function EmptyState({ title, body }: { title: string; body: string }) {
       </span>
       <strong>{title}</strong>
       <p>{body}</p>
-      <span className="status-badge status-prototype">Prototype module</span>
+      <span className="status-badge status-prototype">Coming soon</span>
     </div>
   );
 }
@@ -1984,19 +1985,41 @@ export function RoleDashboard({ role = "Rider" }: { role?: Role }) {
   const [copied, setCopied] = useState(false);
   const [identity, setIdentity] = useState<PrototypeIdentity | null>(null);
   useEffect(() => {
-    const identityRaw = sessionStorage.getItem(identityKey);
-    if (identityRaw) setIdentity(JSON.parse(identityRaw));
-    const raw = sessionStorage.getItem(sessionKey);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    setUser(parsed.user);
-    const active = (parsed.activeRole || parsed.user.approvedRoles[0]) as Role;
-    if (
-      parsed.user.status !== "Approved" ||
-      !parsed.user.approvedRoles.includes(role) ||
-      active !== role
-    )
-      setDenied(true);
+    let cancelled = false;
+    const loadAuthenticatedIdentity = async () => {
+      const supabase = createClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser?.email) {
+        if (!cancelled) setDenied(true);
+        return;
+      }
+      const response = await fetch(`/api/identity?login=${encodeURIComponent(authUser.email)}`);
+      if (!response.ok) {
+        if (!cancelled) setDenied(true);
+        return;
+      }
+      const { identity: savedIdentity } = await response.json();
+      const approved = savedIdentity.status === "Approved";
+      const resolvedRole = savedIdentity.requestedRole as Role;
+      const resolvedUser: DemoUser = {
+        id: savedIdentity.id,
+        name: savedIdentity.fullName,
+        handle: savedIdentity.handle,
+        primaryRole: resolvedRole,
+        approvedRoles: approved ? [resolvedRole] : [],
+        status: savedIdentity.status,
+        referral: `BBBT.in/join/${savedIdentity.handle.replace(/^@/, "")}`,
+      };
+      if (!cancelled) {
+        setIdentity(savedIdentity);
+        setUser(resolvedUser);
+        setDenied(!approved || resolvedRole !== role);
+      }
+    };
+    loadAuthenticatedIdentity().catch(() => {
+      if (!cancelled) setDenied(true);
+    });
+    return () => { cancelled = true; };
   }, [role]);
   if (!user)
     return (
@@ -2060,6 +2083,12 @@ export function RoleDashboard({ role = "Rider" }: { role?: Role }) {
     window.location.assign(dashboardFor(r));
   };
   const referral = "bbbt.in/join/" + user.handle.replace("@", "");
+  const identityFields = identity
+    ? [identity.fullName, identity.handle, identity.mobile, identity.email, identity.address, identity.city, identity.pinCode, identity.bloodGroup, identity.bloodReport?.reportDate, identity.profilePhoto, identity.emergencyName, identity.emergencyNumber]
+    : [];
+  const profileCompletion = identity
+    ? Math.round((identityFields.filter(Boolean).length / 12) * 100)
+    : 0;
   return (
     <main className="role-dashboard">
       <header className="dash-topbar">
@@ -2126,8 +2155,8 @@ export function RoleDashboard({ role = "Rider" }: { role?: Role }) {
             </h1>
             <p>{roleTone[role]} for a disciplined, connected rider network.</p>
             <div className="profile-progress">
-              <span>Profile completion</span>
-              <strong>42%</strong>
+                <span>Profile completion</span>
+                <strong>{profileCompletion}%</strong>
               <i>
                 <b />
               </i>
@@ -2137,7 +2166,7 @@ export function RoleDashboard({ role = "Rider" }: { role?: Role }) {
             <div className="dash-card">
               <span className="eyebrow">SAFETY STATUS</span>
               <strong className="green-text">Verified</strong>
-              <small>Emergency readiness profile is in prototype review.</small>
+                  <small>Emergency readiness profile status.</small>
             </div>
             <div className="dash-card">
               <span className="eyebrow">BBB T IDENTITY</span>
@@ -2229,7 +2258,7 @@ export function RoleDashboard({ role = "Rider" }: { role?: Role }) {
                   ? "Your connected safety network will appear here."
                   : `Your ${(roleTone[role] ?? "role").toLowerCase()} modules will appear here.`
               }
-              body="This prototype establishes the experience and information architecture. Real data, approvals and operational services will be connected in a controlled future phase."
+              body="This module is planned for a future release. Your approved account and safety profile remain available here."
             />
           </section>
         </section>

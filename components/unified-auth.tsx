@@ -13,6 +13,7 @@ import {
   normMobile,
   prototypeApplicationId,
   returnContextKey,
+  sessionKey,
   type DemoUser,
   type PrototypeIdentity,
   type PrototypeVehicle,
@@ -223,6 +224,25 @@ export function UniversalLogin() {
       setLoginError(message.includes("confirm") ? "Confirm your email before signing in." : message.includes("rate") ? "Too many attempts. Please try again later." : "Invalid email or password.");
       return;
     }
+    try {
+      const identityResponse = await fetch(`/api/identity?login=${encodeURIComponent(email)}`);
+      if (identityResponse.ok) {
+        const { identity } = await identityResponse.json();
+        const approved = identity.status === "Approved";
+        const resolvedRole = identity.requestedRole as Role;
+        const user = {
+          id: identity.id,
+          name: identity.fullName,
+          handle: identity.handle,
+          primaryRole: resolvedRole,
+          approvedRoles: approved ? [resolvedRole] : [],
+          status: identity.status as Status,
+          referral: `BBBT.in/join/${identity.handle.replace(/^@/, "")}`,
+        };
+        sessionStorage.setItem(identityKey, JSON.stringify(identity));
+        sessionStorage.setItem(sessionKey, JSON.stringify({ user, activeRole: resolvedRole }));
+      }
+    } catch {}
     const returnTo = (() => {
       try {
         return JSON.parse(sessionStorage.getItem(returnContextKey) || "null")?.path as string | undefined;
@@ -244,10 +264,9 @@ export function UniversalLogin() {
     <AuthFrame>
       {prototype && (
         <section className="prototype-review">
-          <span className="eyebrow orange-text">PROTOTYPE REVIEW</span>
+          <span className="eyebrow orange-text">APPLICATION STATUS</span>
           <p>
-            This is a simulated prototype approval flow, not production
-            approval.
+            Your application status is shown below. Account access is controlled by BBBT approval and Supabase authentication.
           </p>
           <div className="status-detail">
             <span>Application ID</span>

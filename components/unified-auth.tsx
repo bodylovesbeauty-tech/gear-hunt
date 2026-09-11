@@ -1,22 +1,17 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import {
   applicationKey,
-  dashboardFor,
-  demoUsers,
   duplicateField,
   groupKey,
   identityKey,
   isAutoApproved,
-  normEmail,
   normHandle,
   normMobile,
   prototypeApplicationId,
-  readRegistry,
-  saveIdentityToRegistry,
-  sessionKey,
   returnContextKey,
   type DemoUser,
   type PrototypeIdentity,
@@ -209,138 +204,41 @@ export function UniversalLogin() {
   }, []);
   if (state) return <StatePage {...state} />;
   const submit = async () => {
-    const q = loginId.trim();
-    if (!q) {
-      setLoginError("Enter your registered email or mobile number.");
+    const email = loginId.trim();
+    if (!email || !email.includes("@")) {
+      setLoginError("Sign in with the email address on your BBBT account.");
       return;
     }
     if (!loginPwd) {
-      setLoginError("Enter your prototype password.");
-      return;
-    }
-    const reg = readRegistry();
-    const nEmail = normEmail(q);
-    const nMobile = normMobile(q);
-    const nHandle = normHandle(q);
-    let sharedIdentity: PrototypeIdentity | null = null;
-    try {
-      const response = await fetch(
-        `/api/identity?login=${encodeURIComponent(q)}`,
-      );
-      if (response.ok) {
-        const data = await response.json();
-        sharedIdentity = data.identity as PrototypeIdentity;
-      }
-    } catch {}
-    const localIdentity = reg.find(
-      (u) =>
-        (u.email && normEmail(u.email) === nEmail) ||
-        (nMobile && u.mobile && normMobile(u.mobile) === nMobile) ||
-        normHandle(u.handle) === nHandle,
-    );
-    const identity =
-      sharedIdentity && localIdentity && sharedIdentity.id === localIdentity.id
-        ? {
-            ...sharedIdentity,
-            ...localIdentity,
-            status:
-              localIdentity.status === "Approved" ||
-              sharedIdentity.status === "Approved"
-                ? "Approved"
-                : (sharedIdentity.status as Status),
-          }
-        : sharedIdentity || localIdentity;
-    const demo = !identity
-      ? demoUsers.find((u) => normHandle(u.handle) === nHandle)
-      : undefined;
-    if (!identity && !demo) {
-      setLoginError(
-        "No registered BBBT identity was found for these details. Please sign up first.",
-      );
+      setLoginError("Enter your password.");
       return;
     }
     setLoginError("");
     setBusy(true);
-    if (identity) {
-      const approved = identity.status === "Approved";
-      const user: DemoUser = {
-        id: identity.id,
-        name: identity.fullName,
-        handle: identity.handle,
-        primaryRole: identity.requestedRole,
-        approvedRoles: approved ? [identity.requestedRole] : [],
-        status: identity.status,
-        referral: `BBBT.in/join/${normHandle(identity.handle)}`,
-      };
-      if (approved) {
-        sessionStorage.setItem(
-          sessionKey,
-          JSON.stringify({ user, activeRole: identity.requestedRole }),
-        );
-        const returnTo = (() => {
-          try {
-            return JSON.parse(
-              sessionStorage.getItem(returnContextKey) || "null",
-            )?.path as string | undefined;
-          } catch {
-            return undefined;
-          }
-        })();
-        if (returnTo && returnTo.startsWith("/")) {
-          sessionStorage.removeItem(returnContextKey);
-          window.location.assign(returnTo);
-        } else window.location.assign(dashboardFor(identity.requestedRole));
-      } else
-        window.location.assign(
-          `/login?status=${identity.status}&role=${encodeURIComponent(identity.requestedRole)}`,
-        );
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password: loginPwd });
+    if (error) {
+      setBusy(false);
+      const message = error.message.toLowerCase();
+      setLoginError(message.includes("confirm") ? "Confirm your email before signing in." : message.includes("rate") ? "Too many attempts. Please try again later." : "Invalid email or password.");
       return;
     }
-    sessionStorage.setItem(
-      sessionKey,
-      JSON.stringify({
-        user: demo!,
-        activeRole: demo!.approvedRoles[0] || demo!.primaryRole,
-      }),
-    );
-    window.location.assign(
-      demo!.status === "Approved"
-        ? dashboardFor(demo!.approvedRoles[0] || demo!.primaryRole)
-        : `/login?status=${demo!.status}&role=${encodeURIComponent(demo!.primaryRole)}`,
-    );
+    const returnTo = (() => {
+      try {
+        return JSON.parse(sessionStorage.getItem(returnContextKey) || "null")?.path as string | undefined;
+      } catch {
+        return undefined;
+      }
+    })();
+    if (returnTo && returnTo.startsWith("/")) {
+      sessionStorage.removeItem(returnContextKey);
+      window.location.assign(returnTo);
+    } else {
+      window.location.assign("/dashboard/soscore");
+    }
   };
-  const review = (status: Status) => {
-    if (!prototype) return;
-    const next = { ...prototype, status };
-    const application = JSON.parse(
-      sessionStorage.getItem(applicationKey) || "{}",
-    );
-    sessionStorage.setItem(
-      applicationKey,
-      JSON.stringify({ ...application, status }),
-    );
-    sessionStorage.setItem(identityKey, JSON.stringify(next));
-    saveIdentityToRegistry(next);
-    setPrototype(next);
-    if (status === "Approved") {
-      const user: DemoUser = {
-        id: next.id,
-        name: next.fullName,
-        handle: next.handle,
-        primaryRole: next.requestedRole,
-        approvedRoles: [next.requestedRole],
-        status: "Approved",
-        referral: `BBBT.in/join/${next.handle.replace("@", "")}`,
-      };
-      sessionStorage.setItem(
-        sessionKey,
-        JSON.stringify({ user, activeRole: next.requestedRole }),
-      );
-      window.location.assign(dashboardFor(next.requestedRole));
-    } else
-      window.location.assign(
-        `/login?status=${status}&role=${encodeURIComponent(next.requestedRole)}`,
-      );
+  const review = () => {
+    setLoginError("Prototype review controls cannot approve or authenticate an account.");
   };
   return (
     <AuthFrame>
@@ -367,21 +265,21 @@ export function UniversalLogin() {
             <button
               type="button"
               className="btn btn-cyan"
-              onClick={() => review("Approved")}
+              onClick={() => review()}
             >
               APPROVE
             </button>
             <button
               type="button"
               className="btn btn-outline"
-              onClick={() => review("Rejected")}
+              onClick={() => review()}
             >
               REJECT
             </button>
             <button
               type="button"
               className="btn btn-outline"
-              onClick={() => review("Suspended")}
+              onClick={() => review()}
             >
               SUSPEND
             </button>
@@ -481,21 +379,21 @@ export function UniversalLogin() {
             <button
               type="button"
               className="btn btn-cyan"
-              onClick={() => review("Approved")}
+              onClick={() => review()}
             >
               APPROVE
             </button>
             <button
               type="button"
               className="btn btn-outline"
-              onClick={() => review("Rejected")}
+              onClick={() => review()}
             >
               REJECT
             </button>
             <button
               type="button"
               className="btn btn-outline"
-              onClick={() => review("Suspended")}
+              onClick={() => review()}
             >
               SUSPEND
             </button>
@@ -771,6 +669,8 @@ export function UnifiedSignup() {
     handle: "",
     mobile: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     language: "en",
     additionalLanguages: [] as string[],
     baseLocation: "",
@@ -1242,8 +1142,9 @@ export function UnifiedSignup() {
       const m = f.mobile.trim();
       if (!m) e.mobile = "Required";
       else if (!/^\+?[0-9][0-9\s-]{7,14}$/.test(m)) e.mobile = "Invalid mobile";
-      if (f.email.trim() && !/^\S+@\S+\.\S+$/.test(f.email.trim()))
-        e.email = "Invalid email";
+  if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) e.email = "Email is required";
+  if (f.password.length < 8) e.password = "Use at least 8 characters";
+  if (f.password !== f.confirmPassword) e.confirmPassword = "Passwords do not match";
       if (availability.handle === "Already in use ✕")
         e.handle = "This handle is already registered";
       if (availability.email === "Already in use ✕")
@@ -1384,7 +1285,7 @@ export function UnifiedSignup() {
     setChecked(true);
     setShowResp(false);
   }
-  function submit(ev: React.FormEvent) {
+  async function submit(ev: React.FormEvent) {
     ev.preventDefault();
     if (currentStep !== "submit" || (role === "Rider" && !checked)) return;
     const reviewErrors = validateStep(signupStepKeys.indexOf("review"));
@@ -1405,6 +1306,19 @@ export function UnifiedSignup() {
       return;
     }
     const submittedAt = new Date().toISOString();
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signUp({
+      email: f.email.trim(),
+      password: f.password,
+      options: {
+        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
+        data: { full_name: f.fullName.trim(), requested_role: role, handle: f.handle.trim() },
+      },
+    });
+    if (authError) {
+      setErrors({ email: authError.message.toLowerCase().includes("rate") ? "Too many signup attempts. Please try later." : "Unable to create the account. Check your details and try again." });
+      return;
+    }
     const status: Status = isAutoApproved(role) ? "Approved" : "Pending";
     const safetyPreference =
       role === "Rider"
@@ -1542,12 +1456,16 @@ export function UnifiedSignup() {
       JSON.stringify({ ...application, applicationId }),
     );
     sessionStorage.setItem(identityKey, JSON.stringify(identity));
-    saveIdentityToRegistry(identity);
-    fetch("/api/identity", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "sync-identity", identity }),
-    }).catch(() => {});
+    const { data: { user: authenticatedUser } } = await supabase.auth.getUser();
+    if (authenticatedUser) {
+      const ownedIdentity = { ...identity, id: authenticatedUser.id };
+      sessionStorage.setItem(identityKey, JSON.stringify(ownedIdentity));
+      await fetch("/api/identity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync-identity", identity: ownedIdentity }),
+      });
+    }
     if (role === "Group Admin") {
       const groupHandle =
         normalizeHandle(f.groupHandle) || normalizeHandle(f.handle);
@@ -1989,14 +1907,31 @@ export function UnifiedSignup() {
                     {availability.email}
                   </span>
                 )}
-                <input
-                  value={f.email}
-                  onChange={set("email")}
-                  onBlur={() => checkAvailability("email", f.email)}
-                  type="email"
-                  placeholder="you@example.com"
-                  aria-required="false"
-                />
+          <input
+            value={f.email}
+            onChange={set("email")}
+            onBlur={() => checkAvailability("email", f.email)}
+            type="email"
+            placeholder="you@example.com"
+            required
+            aria-required="true"
+          />
+          <input
+            value={f.password}
+            onChange={set("password")}
+            type="password"
+            placeholder="Create a password"
+            minLength={8}
+            required
+          />
+          <input
+            value={f.confirmPassword}
+            onChange={set("confirmPassword")}
+            type="password"
+            placeholder="Confirm password"
+            minLength={8}
+            required
+          />
                 {errors.email && (
                   <span className="field-error" role="alert">
                     {errors.email}

@@ -1,18 +1,17 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-  const url = new URL(request.url)
-  const code = url.searchParams.get('code')
-  const next = url.searchParams.get('next')
-  const adminIntent = request.headers.get('cookie')?.split(';').some((cookie) => cookie.trim().startsWith('bbbt_admin_login=1'))
-  let destination = adminIntent ? '/admin' : (next?.startsWith('/') ? next : '/dashboard/soscore')
-  if (code) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.exchangeCodeForSession(code)
-    if (user?.email?.toLowerCase() === 'brandbikebrotherhoodtrust@gmail.com') destination = '/admin'
-  }
-  const response = NextResponse.redirect(new URL(destination, request.url))
-  response.cookies.set('bbbt_admin_login', '', { path: '/', maxAge: 0 })
-  return response
+function safeNext(value: string | null) {
+  return value && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard/soscore";
+}
+
+export async function GET(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get("code");
+  if (!code) return NextResponse.redirect(new URL("/auth/error", request.url));
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) return NextResponse.redirect(new URL("/auth/error", request.url));
+
+  return NextResponse.redirect(new URL(safeNext(request.nextUrl.searchParams.get("next")), request.url));
 }

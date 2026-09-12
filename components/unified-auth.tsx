@@ -1265,6 +1265,14 @@ export function UnifiedSignup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "sync-identity", identity: ownedIdentity }),
       });
+      if (role === "Rider") {
+        await supabase.from("rider_profiles").upsert({ id: authenticatedUser.id, blood_group: f.blood.trim() || null, blood_report_date: f.bloodReportDate || null, completion_percent: 0, updated_at: submittedAt });
+        const contacts = [
+          { full_name: f.ec1Name.trim(), mobile: normalizeIndianPhone(f.ec1Number) || f.ec1Number.trim(), relationship: f.ec1Relationship.trim() },
+          { full_name: f.ec2Name.trim(), mobile: normalizeIndianPhone(f.ec2Number) || f.ec2Number.trim(), relationship: f.ec2Relationship.trim() },
+        ].filter((contact) => contact.full_name && contact.mobile && contact.relationship);
+        if (contacts.length) await supabase.from("rider_emergency_contacts").insert(contacts.map((contact, index) => ({ rider_id: authenticatedUser.id, contact_order: index + 1, ...contact })));
+      }
     }
     if (role === "Group Admin") {
       const groupHandle =

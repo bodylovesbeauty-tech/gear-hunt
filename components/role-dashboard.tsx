@@ -1978,13 +1978,22 @@ function ProfileModule({
     </section>
   );
 }
-export function RoleDashboard({ role = "Rider" }: { role?: Role }) {
-  const [user, setUser] = useState<DemoUser | null>(null);
+export function RoleDashboard({
+  role = "Rider",
+  initialUser,
+  initialIdentity,
+}: {
+  role?: Role;
+  initialUser?: DemoUser;
+  initialIdentity?: PrototypeIdentity;
+}) {
+  const [user, setUser] = useState<DemoUser | null>(initialUser ?? null);
   const [denied, setDenied] = useState(false);
   const [section, setSection] = useState("Overview");
   const [copied, setCopied] = useState(false);
-  const [identity, setIdentity] = useState<PrototypeIdentity | null>(null);
+  const [identity, setIdentity] = useState<PrototypeIdentity | null>(initialIdentity ?? null);
   useEffect(() => {
+    if (initialUser && initialIdentity) return;
     let cancelled = false;
     const loadAuthenticatedIdentity = async () => {
       const supabase = createClient();
@@ -2074,12 +2083,6 @@ export function RoleDashboard({ role = "Rider" }: { role?: Role }) {
     window.location.assign("/login");
   };
   const switchRole = (r: Role) => {
-    const raw = sessionStorage.getItem(sessionKey);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      parsed.activeRole = r;
-      sessionStorage.setItem(sessionKey, JSON.stringify(parsed));
-    }
     window.location.assign(dashboardFor(r));
   };
   const referral = "bbbt.in/join/" + user.handle.replace("@", "");

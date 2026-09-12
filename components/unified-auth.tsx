@@ -133,11 +133,9 @@ export function UniversalLogin() {
       );
   }, []);
   const submit = async () => {
-  const identifier = loginId.trim();
-  const email = isEmailIdentifier(identifier) ? identifier.toLowerCase() : null;
-  const phone = email ? null : normalizeIndianPhone(identifier);
-  if (!email && !phone) {
-  setLoginError("Enter a valid email or Indian mobile number.");
+  const email = loginId.trim().toLowerCase();
+  if (!isEmailIdentifier(email)) {
+  setLoginError("Enter a valid email address.");
   return;
   }
   if (!loginPwd) {
@@ -147,9 +145,7 @@ export function UniversalLogin() {
     setLoginError("");
     setBusy(true);
     const supabase = createClient();
-  const { error } = await supabase.auth.signInWithPassword(
-    email ? { email, password: loginPwd } : { phone: phone!, password: loginPwd },
-  );
+  const { error } = await supabase.auth.signInWithPassword({ email, password: loginPwd });
   if (error) {
       setBusy(false);
       const message = error.message.toLowerCase();
@@ -211,7 +207,7 @@ export function UniversalLogin() {
         }}
       >
         <label>
-          EMAIL OR MOBILE
+          EMAIL ADDRESS
           <input
             required
             value={loginId}
@@ -219,7 +215,7 @@ export function UniversalLogin() {
               setLoginId(e.target.value);
               setLoginError("");
             }}
-            placeholder="Registered email or mobile number"
+            placeholder="Enter your registered email address"
           />
         </label>
         <label>

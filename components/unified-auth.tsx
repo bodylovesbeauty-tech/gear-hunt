@@ -1037,10 +1037,12 @@ export function UnifiedSignup() {
       if (!f.ec1Number.trim()) e.ec1Number = "Mobile number is required";
       if (!f.ec1Relationship.trim())
         e.ec1Relationship = "Relationship is required";
-      if (!f.ec2Name.trim()) e.ec2Name = "Full name is required";
-      if (!f.ec2Number.trim()) e.ec2Number = "Mobile number is required";
-      if (!f.ec2Relationship.trim())
-        e.ec2Relationship = "Relationship is required";
+      const hasSecondContact = Boolean(f.ec2Name.trim() || f.ec2Number.trim() || f.ec2Relationship.trim());
+      if (hasSecondContact) {
+        if (!f.ec2Name.trim()) e.ec2Name = "Full name is required";
+        if (!f.ec2Number.trim()) e.ec2Number = "Mobile number is required";
+        if (!f.ec2Relationship.trim()) e.ec2Relationship = "Relationship is required";
+      }
       if (!checked)
         e.consent = "You must acknowledge the Rider Terms before submitting";
     }
@@ -1112,7 +1114,7 @@ export function UnifiedSignup() {
       password: f.password,
       options: {
         emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
-        data: { full_name: f.fullName.trim(), requested_role: role, handle: f.handle.trim(), mobile: normalizeIndianPhone(f.mobile) },
+        data: { full_name: f.fullName.trim(), requested_role: role, handle: f.handle.trim(), mobile: normalizeIndianPhone(f.mobile), blood_group: role === "Rider" ? f.blood.trim() || null : null, blood_report_date: role === "Rider" ? f.bloodReportDate || null : null, emergency_contacts: role === "Rider" ? [{ full_name: f.ec1Name.trim(), mobile: normalizeIndianPhone(f.ec1Number) || f.ec1Number.trim(), relationship: f.ec1Relationship.trim() }, ...(f.ec2Name.trim() && f.ec2Number.trim() && f.ec2Relationship.trim() ? [{ full_name: f.ec2Name.trim(), mobile: normalizeIndianPhone(f.ec2Number) || f.ec2Number.trim(), relationship: f.ec2Relationship.trim() }] : [])] : [] },
       },
     });
     if (authError) {
